@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オンライン初任者研修 お申し込みフォーム | ホリスケアアカデミー</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #2BBCD4;
+      --teal-dark: #1A9AB0;
+      --teal-light: #E0F7FB;
+      --teal-pale: #F0FBFD;
+      --pink: #F2708A;
+      --pink-light: #FEF0F3;
+      --yellow: #FFD84D;
+      --yellow-light: #FFFBEB;
+      --green: #4CAF72;
+      --green-light: #EBF7EF;
+      --white: #FFFFFF;
+      --bg: #F7FAFB;
+      --text: #333333;
+      --text-mid: #666666;
+      --text-light: #AAAAAA;
+      --border: #D8EEF2;
+      --red: #E05050;
+      --shadow: rgba(43,188,212,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+
+    /* ===== HEADER ===== */
+    .site-header {
+      background: white;
+      border-bottom: 3px solid var(--teal);
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .header-logo-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--teal); display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif JP', serif; color: white; font-size: 14px; font-weight: 700;
+    }
+    .header-logo-text { font-size: 15px; font-weight: 700; color: var(--teal-dark); }
+    .header-logo-sub { font-size: 10px; color: var(--text-light); display: block; }
+    .header-tel { font-size: 13px; color: var(--text-mid); }
+    .header-tel strong { color: var(--teal-dark); font-size: 16px; }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, var(--teal) 0%, #1A9AB0 100%);
+      padding: 48px 24px 64px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute;
+      top: -60px; left: -60px;
+      width: 240px; height: 240px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .hero::after {
+      content: ''; position: absolute;
+      bottom: -8px; left: 0; right: 0;
+      height: 40px; background: var(--bg);
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .hero-badge { display: none; }
+    .hero h1 {
+      font-size: clamp(22px, 4.5vw, 32px);
+      color: white; font-weight: 700; line-height: 1.4; margin-bottom: 10px;
+    }
+    .hero h1 span { color: var(--yellow); }
+    .hero-sub { color: rgba(255,255,255,0.85); font-size: 14px; }
+
+    /* ===== STEP BAR ===== */
+    .step-bar { background: white; border-bottom: 1px solid var(--border); padding: 14px 20px; }
+    .step-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+    .step-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-light); }
+    .step-item.active { color: var(--teal-dark); font-weight: 700; }
+    .step-item.done { color: var(--teal); }
+    .step-circle {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #E8E8E8; color: #999;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-item.active .step-circle { background: var(--teal); color: white; }
+    .step-item.done .step-circle { background: var(--teal-light); color: var(--teal-dark); }
+    .step-line { width: 48px; height: 2px; background: #E8E8E8; margin: 0 8px; flex-shrink: 0; }
+    .step-line.done { background: var(--teal-light); }
+
+    /* ===== WRAP ===== */
+    .page-wrap { max-width: 760px; margin: 0 auto; padding: 36px 16px 80px; }
+
+    /* ===== NOTICE ===== */
+    .notice-box {
+      background: var(--yellow-light); border: 1px solid #FFE066;
+      border-left: 4px solid var(--yellow); border-radius: 8px;
+      padding: 14px 18px; margin-bottom: 28px; font-size: 13px; line-height: 1.8;
+    }
+    .notice-box strong { color: #B8860B; }
+
+    /* ===== CARD ===== */
+    .form-card {
+      background: white; border-radius: 16px;
+      border: 1px solid var(--border); margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+    .card-head {
+      background: var(--teal-pale); border-bottom: 2px solid var(--teal-light);
+      padding: 16px 24px; display: flex; align-items: center; gap: 10px;
+    }
+    .card-head-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--teal); display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .card-head-title { font-size: 15px; font-weight: 700; color: var(--teal-dark); }
+    .card-body { padding: 0 24px; }
+
+    /* ===== FIELD ROW ===== */
+    .f-row {
+      display: grid; grid-template-columns: 185px 1fr;
+      gap: 0 16px; align-items: start;
+      padding: 18px 0; border-bottom: 1px solid var(--border);
+    }
+    .f-row:last-child { border-bottom: none; }
+    .f-label { font-size: 13px; font-weight: 500; color: var(--text); padding-top: 10px; line-height: 1.5; }
+    .req {
+      display: inline-block; background: var(--pink);
+      color: white; font-size: 10px; padding: 1px 6px;
+      border-radius: 3px; margin-left: 5px; font-weight: 700; vertical-align: 1px;
+    }
+
+    /* ===== INPUTS ===== */
+    input[type=text], input[type=email], input[type=tel], input[type=date], select, textarea {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid #C8E6EA; border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text);
+      background: white; transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none; appearance: none; -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal); box-shadow: 0 0 0 3px rgba(43,188,212,0.15);
+    }
+    input.err, select.err { border-color: var(--red); }
+    .hint { font-size: 11px; color: var(--text-light); margin-top: 5px; }
+    .err-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+    .err-msg.show { display: block; }
+
+    /* select arrow */
+    .sel-wrap { position: relative; }
+    .sel-wrap::after {
+      content: '▼'; position: absolute;
+      right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 10px; color: var(--text-mid); pointer-events: none;
+    }
+
+    /* ===== RADIO ===== */
+    .radio-row { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 8px; }
+    .r-label {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-size: 14px; color: var(--text);
+      background: var(--bg); border: 1.5px solid var(--border);
+      padding: 8px 16px; border-radius: 8px;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .r-label:has(input:checked) { border-color: var(--teal); background: var(--teal-pale); }
+    .r-label input[type=radio] { accent-color: var(--teal); width: 16px; height: 16px; }
+
+    /* ===== COURSE BOX ===== */
+    .course-box {
+      background: var(--teal-pale); border: 1.5px solid var(--teal-light);
+      border-radius: 12px; padding: 20px; margin-bottom: 4px;
+    }
+    .course-name {
+      font-size: 16px; font-weight: 700;
+      color: var(--teal-dark); margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px dashed var(--teal-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cinfo { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+    .cinfo .ct { color: var(--text-mid); min-width: 68px; }
+    .cinfo .cv { font-weight: 500; }
+    .price-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal); color: white;
+      padding: 7px 20px; border-radius: 20px;
+      font-size: 16px; font-weight: 700; margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(43,188,212,0.3);
+    }
+
+    /* ===== ADDRESS ===== */
+    .zip-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .zip-row input { width: 150px; }
+    .zip-btn {
+      background: var(--teal-light); border: 1.5px solid var(--teal);
+      border-radius: 8px; padding: 10px 16px; font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif; cursor: pointer;
+      color: var(--teal-dark); font-weight: 500; white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .zip-btn:hover { background: #C0EAF2; }
+
+    /* ===== SUBMIT ===== */
+    .submit-area { text-align: center; margin-top: 36px; }
+    .submit-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      color: white; border: none; border-radius: 50px;
+      padding: 18px 72px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 17px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.06em;
+      box-shadow: 0 6px 24px rgba(43,188,212,0.4);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-note { font-size: 12px; color: var(--text-light); margin-top: 12px; }
+
+    /* ===== CONFIRM ===== */
+    #confirm-screen { display: none; }
+    #confirm-screen.active { display: block; }
+    #form-screen.hidden { display: none; }
+
+    .conf-table { width: 100%; border-collapse: collapse; }
+    .conf-table tr { border-bottom: 1px solid var(--border); }
+    .conf-table tr:last-child { border-bottom: none; }
+    .conf-table td { padding: 13px 8px; font-size: 14px; vertical-align: top; }
+    .conf-table td:first-child { width: 185px; font-size: 12px; color: var(--text-mid); font-weight: 500; padding-top: 15px; }
+    .conf-table td:last-child { font-weight: 500; }
+
+    .conf-actions { display: flex; gap: 14px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .back-btn {
+      background: white; border: 2px solid var(--border); border-radius: 50px;
+      padding: 14px 36px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px;
+      cursor: pointer; color: var(--text-mid); font-weight: 500; transition: border-color 0.2s;
+    }
+    .back-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .final-btn {
+      background: linear-gradient(135deg, var(--pink) 0%, #D45070 100%);
+      color: white; border: none; border-radius: 50px;
+      padding: 14px 52px; font-family: 'Noto Sans JP', sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(242,112,138,0.35); transition: opacity 0.2s;
+    }
+    .final-btn:hover { opacity: 0.9; }
+    .final-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+    /* ===== COMPLETE ===== */
+    #complete-screen { display: none; }
+    #complete-screen.active { display: block; }
+    .complete-box {
+      background: white; border-radius: 16px; border: 1px solid var(--border);
+      padding: 60px 32px; text-align: center;
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+    .complete-icon {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin: 0 auto 24px;
+      box-shadow: 0 8px 28px rgba(43,188,212,0.35);
+    }
+    .complete-box h2 {
+      font-size: 24px; font-weight: 700;
+      color: var(--teal-dark); margin-bottom: 16px;
+    }
+    .complete-box p { font-size: 14px; line-height: 2; color: var(--text-mid); }
+    .app-id-box {
+      display: inline-block; background: var(--teal-pale);
+      border: 1px solid var(--teal-light); border-radius: 8px;
+      padding: 10px 28px; font-size: 13px; margin-top: 20px;
+      color: var(--teal-dark); font-weight: 700;
+    }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+      background: var(--teal-dark); color: rgba(255,255,255,0.7);
+      text-align: center; padding: 24px; font-size: 12px; margin-top: 60px;
+    }
+    .site-footer strong { color: white; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .site-header { padding: 10px 16px; }
+      .header-tel { display: none; }
+      .page-wrap { padding: 24px 12px 60px; }
+      .card-body { padding: 0 16px; }
+      .f-row { grid-template-columns: 1fr; gap: 6px; }
+      .f-label { padding-top: 0; }
+      .submit-btn { padding: 16px 40px; font-size: 15px; }
+      .conf-actions { flex-direction: column-reverse; align-items: center; }
+      .back-btn, .final-btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <a class="header-logo" href="https://academy.holiscare.or.jp/" target="_blank">
+    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:40px; width:auto;">
+  </a>
+  <div class="header-tel">📞 <strong>082-545-2402</strong></div>
+</header>
+
+<!-- ヒーロー -->
+<div class="hero">
+  <h1>オンライン初任者研修<br>お申し込みフォーム</h1>
+  <p class="hero-sub">通学不要・動画教材で、自分のペースで学べます</p>
+</div>
+
+<!-- ステップバー -->
+<div class="step-bar">
+  <div class="step-inner">
+    <div class="step-item active" id="s1">
+      <div class="step-circle">1</div><span>情報を入力</span>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-item" id="s2">
+      <div class="step-circle">2</div><span>内容を確認</span>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-item" id="s3">
+      <div class="step-circle">3</div><span>申し込み完了</span>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ===== 入力画面 ===== -->
+  <div id="form-screen">
+
+    <div class="notice-box">
+      <strong>【自動返信メールについて】</strong><br>
+      お申し込み後、ご登録のメールアドレスへ確認メールが届きます。届かない場合は迷惑メールフォルダをご確認ください。<br>
+      「<strong>holiscare.or.jp</strong>」からのメールを受信許可してください。
+    </div>
+
+    <form id="the-form" novalidate>
+
+      <!-- 講座・日程 -->
+      <div class="form-card">
+        <div class="card-head">
+          <div class="card-head-icon">📋</div>
+          <span class="card-head-title">講座・日程・支払方法</span>
+        </div>
+        <div class="card-body">
+
+          <div class="f-row">
+            <div class="f-label">講座名</div>
+            <div>
+              <div class="course-box">
+                <div class="course-name">オンライン初任者研修</div>
+                <div style="font-size:13px; color:var(--text-mid); margin-top:4px;">動画教材＋添削問題</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">受講料</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:16px; padding-top:6px;">
+                <span class="price-pill" style="margin-top:0;">¥ 33,000（税込）</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">テキスト<span class="req">必須</span></div>
+            <div>
+              <div class="radio-row">
+                <label class="r-label"><input type="radio" name="textbook" value="購入（6,600円）" checked>購入（＋6,600円）</label>
+                <label class="r-label"><input type="radio" name="textbook" value="不要（すでに所持）">不要（すでに所持）</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">支払方法<span class="req">必須</span></div>
+            <div>
+              <div class="sel-wrap">
+                <select name="payment" id="payment">
+                  <option value="">── 選択してください ──</option>
+                  <option value="クレジットカード">クレジットカード</option>
+                  <option value="銀行振込">銀行振込</option>
+                  <option value="コンビニ払い">コンビニ払い</option>
+                </select>
+              </div>
+              <div class="err-msg" id="err-payment">支払方法を選択してください</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 個人情報 -->
+      <div class="form-card">
+        <div class="card-head">
+          <div class="card-head-icon">👤</div>
+          <span class="card-head-title">お申し込み者情報</span>
+        </div>
+        <div class="card-body">
+
+          <div class="f-row">
+            <div class="f-label">お名前<span class="req">必須</span></div>
+            <div>
+              <input type="text" name="name" id="name" placeholder="例）山田　太郎">
+              <div class="err-msg" id="err-name">お名前を入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">ふりがな<span class="req">必須</span></div>
+            <div>
+              <input type="text" name="kana" id="kana" placeholder="例）やまだ　たろう">
+              <div class="err-msg" id="err-kana">ふりがなを入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">性別<span class="req">必須</span></div>
+            <div>
+              <div class="radio-row">
+                <label class="r-label"><input type="radio" name="gender" value="男性">男性</label>
+                <label class="r-label"><input type="radio" name="gender" value="女性">女性</label>
+                <label class="r-label"><input type="radio" name="gender" value="回答しない">回答しない</label>
+              </div>
+              <div class="err-msg" id="err-gender">性別を選択してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">生年月日<span class="req">必須</span></div>
+            <div>
+              <input type="date" name="birthdate" id="birthdate" style="width:200px;">
+              <div class="err-msg" id="err-birthdate">生年月日を入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">電話番号（本人）<span class="req">必須</span></div>
+            <div>
+              <input type="tel" name="phone" id="phone" placeholder="例）082-545-2402">
+              <div class="hint">ハイフンあり・なしどちらでも可</div>
+              <div class="err-msg" id="err-phone">電話番号を入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">メールアドレス<span class="req">必須</span></div>
+            <div>
+              <input type="email" name="email" id="email" placeholder="例）taro@example.com">
+              <div class="err-msg" id="err-email">正しいメールアドレスを入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">メールアドレス（確認用）<span class="req">必須</span></div>
+            <div>
+              <input type="email" name="email2" id="email2" placeholder="もう一度入力してください">
+              <div class="hint">コピー＆ペーストではなく手入力してください</div>
+              <div class="err-msg" id="err-email2">メールアドレスが一致しません</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 住所 -->
+      <div class="form-card">
+        <div class="card-head">
+          <div class="card-head-icon">🏠</div>
+          <span class="card-head-title">ご住所</span>
+        </div>
+        <div class="card-body">
+
+          <div class="f-row">
+            <div class="f-label">郵便番号<span class="req">必須</span></div>
+            <div>
+              <div class="zip-row">
+                <span style="font-weight:500;">〒</span>
+                <input type="text" name="zip" id="zip" placeholder="730-0051" maxlength="8" style="width:150px;">
+                <button type="button" class="zip-btn" onclick="searchZip()">🔍 住所を自動入力</button>
+              </div>
+              <div class="hint">7桁入力後にボタンを押すと住所が自動で入ります</div>
+              <div class="err-msg" id="err-zip">郵便番号を入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">都道府県・市区町村・番地<span class="req">必須</span></div>
+            <div>
+              <input type="text" name="address1" id="address1" placeholder="例）広島市中区大手町3-1-7">
+              <div class="err-msg" id="err-address1">住所を入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">建物名・部屋番号</div>
+            <div>
+              <input type="text" name="address2" id="address2" placeholder="例）ユナイテッドMKビル 4F">
+              <div class="hint">マンション・アパートの場合は部屋番号まで入力してください</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">確認書類の郵送先</div>
+            <div>
+              <div class="radio-row">
+                <label class="r-label"><input type="radio" name="alt_addr" value="いいえ" checked>上記住所と同じ</label>
+                <label class="r-label"><input type="radio" name="alt_addr" value="はい">別の住所に送る</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="alt-fields" style="display:none;">
+            <div class="f-row">
+              <div class="f-label">別途郵送先住所</div>
+              <div>
+                <input type="text" name="alt_zip" placeholder="郵便番号" style="margin-bottom:8px; width:160px;">
+                <input type="text" name="alt_addr1" placeholder="都道府県・市区町村・番地" style="margin-bottom:8px;">
+                <input type="text" name="alt_addr2" placeholder="建物名・部屋番号">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- その他 -->
+      <div class="form-card">
+        <div class="card-head">
+          <div class="card-head-icon">📝</div>
+          <span class="card-head-title">その他</span>
+        </div>
+        <div class="card-body">
+
+          <div class="f-row">
+            <div class="f-label">お勤め先（医療・福祉機関）</div>
+            <div>
+              <input type="text" name="workplace" placeholder="例）○○病院　△△デイサービス">
+              <div class="hint">お勤めでない方は空欄で構いません</div>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">ご優待コード</div>
+            <div>
+              <input type="text" name="coupon" placeholder="お持ちの方のみご入力ください" style="width:220px;">
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="f-label">ご質問・お問い合わせ</div>
+            <div>
+              <textarea name="message" rows="4" placeholder="ご不明な点がございましたらお気軽にご記入ください"></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="submit-area">
+        <button type="submit" class="submit-btn">入力内容を確認する →</button>
+        <p class="submit-note">次の画面で内容をご確認いただいてから送信します</p>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ===== 確認画面 ===== -->
+  <div id="confirm-screen">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-icon">✅</div>
+        <span class="card-head-title">入力内容のご確認</span>
+      </div>
+      <div class="card-body" style="padding-bottom:24px;">
+        <p style="font-size:13px;color:var(--text-mid);margin:16px 0;">以下の内容でよろしければ「申し込みを確定する」ボタンを押してください。</p>
+        <table class="conf-table" id="conf-table"></table>
+      </div>
+    </div>
+    <div class="conf-actions">
+      <button class="back-btn" onclick="backToForm()">← 入力画面に戻る</button>
+      <button class="final-btn" id="final-btn" onclick="finalSubmit()">申し込みを確定する ✓</button>
+    </div>
+  </div>
+
+  <!-- ===== 完了画面 ===== -->
+  <div id="complete-screen">
+    <div class="complete-box">
+      <div class="complete-icon">✓</div>
+      <h2>お申し込みが完了しました！</h2>
+      <p>
+        ご登録のメールアドレスへ確認メールをお送りしました。<br>
+        メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
+        ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
+      </p>
+      <div class="app-id-box" id="app-id-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- フッター -->
+<footer class="site-footer">
+  <strong>ホリスケアアカデミー</strong>　｜　広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F<br>
+  TEL：082-545-2402　｜　holiscare.or.jp
+</footer>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const cfg = {
+    apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
+    authDomain: "holiscare-academy.firebaseapp.com",
+    projectId: "holiscare-academy",
+    storageBucket: "holiscare-academy.firebasestorage.app",
+    messagingSenderId: "698886904450",
+    appId: "1:698886904450:web:04b9202840ffd321da329b"
+  };
+  const app = initializeApp(cfg);
+  const db = getFirestore(app);
+  window.__db = db;
+  window.__addDoc = addDoc;
+  window.__col = collection;
+  window.__ts = serverTimestamp;
+</script>
+
+<script>
+  // 別住所トグル
+  document.querySelectorAll('[name="alt_addr"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('alt-fields').style.display = r.value === 'はい' ? 'block' : 'none';
+    });
+  });
+
+  // 郵便番号検索
+  async function searchZip() {
+    const raw = document.getElementById('zip').value.replace(/-/g, '');
+    if (raw.length !== 7 || isNaN(raw)) {
+      alert('7桁の郵便番号を半角数字で入力してください\n例：730-0051');
+      return;
+    }
+    try {
+      const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${raw}`);
+      const data = await res.json();
+      if (data.results) {
+        const r = data.results[0];
+        document.getElementById('address1').value = r.address1 + r.address2 + r.address3;
+      } else {
+        alert('住所が見つかりませんでした。郵便番号をご確認ください。');
+      }
+    } catch { alert('通信エラーが発生しました。再度お試しください。'); }
+  }
+  window.searchZip = searchZip;
+
+  // バリデーション
+  function validate() {
+    let ok = true;
+    const checks = [
+      { id: 'payment',   errId: 'err-payment',   type: 'select' },
+      { id: 'name',      errId: 'err-name' },
+      { id: 'kana',      errId: 'err-kana' },
+      { id: 'birthdate', errId: 'err-birthdate' },
+      { id: 'phone',     errId: 'err-phone' },
+      { id: 'email',     errId: 'err-email',     type: 'email' },
+      { id: 'zip',       errId: 'err-zip' },
+      { id: 'address1',  errId: 'err-address1' },
+    ];
+    checks.forEach(c => {
+      const el = document.getElementById(c.id);
+      const err = document.getElementById(c.errId);
+      const pass = c.type === 'email'
+        ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim())
+        : el.value.trim() !== '';
+      if (!pass) { el.classList.add('err'); err.classList.add('show'); ok = false; }
+      else        { el.classList.remove('err'); err.classList.remove('show'); }
+    });
+    const e1 = document.getElementById('email').value.trim();
+    const e2 = document.getElementById('email2').value.trim();
+    const ee = document.getElementById('err-email2');
+    if (!e2 || e1 !== e2) { document.getElementById('email2').classList.add('err'); ee.classList.add('show'); ok = false; }
+    else                  { document.getElementById('email2').classList.remove('err'); ee.classList.remove('show'); }
+    const g = document.querySelector('[name="gender"]:checked');
+    const eg = document.getElementById('err-gender');
+    if (!g) { eg.classList.add('show'); ok = false; }
+    else    { eg.classList.remove('show'); }
+    return ok;
+  }
+
+  function getVals() {
+    const fd = new FormData(document.getElementById('the-form'));
+    return {
+      course:    'オンライン初任者研修',
+      fee:       '33,000円（税込）',
+      textbook:  fd.get('textbook'),
+      payment:   fd.get('payment'),
+      name:      fd.get('name'),
+      kana:      fd.get('kana'),
+      gender:    fd.get('gender'),
+      birthdate: fd.get('birthdate'),
+      phone:     fd.get('phone'),
+      email:     fd.get('email'),
+      zip:       fd.get('zip'),
+      address:   (fd.get('address1') || '') + (fd.get('address2') ? '　' + fd.get('address2') : ''),
+      altAddr:   fd.get('alt_addr'),
+      workplace: fd.get('workplace') || '（なし）',
+      coupon:    fd.get('coupon')    || '（なし）',
+      message:   fd.get('message')  || '（なし）',
+    };
+  }
+
+  const LABELS = {
+    course:'講座名', fee:'受講料',
+    textbook:'テキスト', payment:'支払方法',
+    name:'お名前', kana:'ふりがな', gender:'性別',
+    birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
+    zip:'郵便番号', address:'ご住所', altAddr:'確認書類の郵送先',
+    workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
+  };
+
+  document.getElementById('the-form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validate()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    const vals = getVals();
+    window.__formVals = vals;
+    document.getElementById('conf-table').innerHTML =
+      Object.entries(LABELS).map(([k, lbl]) =>
+        `<tr><td>${lbl}</td><td>${vals[k] || '—'}</td></tr>`
+      ).join('');
+    document.getElementById('form-screen').classList.add('hidden');
+    document.getElementById('confirm-screen').classList.add('active');
+    document.getElementById('s1').classList.replace('active', 'done');
+    document.getElementById('line1').classList.add('done');
+    document.getElementById('s2').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  function backToForm() {
+    document.getElementById('form-screen').classList.remove('hidden');
+    document.getElementById('confirm-screen').classList.remove('active');
+    document.getElementById('s1').classList.remove('done');
+    document.getElementById('s1').classList.add('active');
+    document.getElementById('line1').classList.remove('done');
+    document.getElementById('s2').classList.remove('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  window.backToForm = backToForm;
+
+  async function finalSubmit() {
+    const btn = document.getElementById('final-btn');
+    btn.disabled = true; btn.textContent = '送信中...';
+    try {
+      const ref = await window.__addDoc(
+        window.__col(window.__db, 'applications'),
+        { ...window.__formVals, formType: 'shonin_online', status: '未対応', createdAt: window.__ts() }
+      );
+      document.getElementById('confirm-screen').classList.remove('active');
+      document.getElementById('complete-screen').classList.add('active');
+      document.getElementById('app-id-box').textContent = '受付番号：' + ref.id;
+      document.getElementById('s2').classList.replace('active', 'done');
+      document.getElementById('line2').classList.add('done');
+      document.getElementById('s3').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      alert('送信に失敗しました。時間をおいて再度お試しください。\n\n' + err.message);
+      btn.disabled = false; btn.textContent = '申し込みを確定する ✓';
+    }
+  }
+  window.finalSubmit = finalSubmit;
+</script>
+
+</body>
+</html>
