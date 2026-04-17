@@ -17,9 +17,9 @@
       --yellow: #FFD84D;
       --white: #FFFFFF;
       --bg: #F4FAFB;
-      --sidebar: #0E7A8F;
-      --sidebar-dark: #095E6E;
-      --sidebar-hover: #1A9AB0;
+      --sidebar: #1A9AB0;
+      --sidebar-dark: #0E7A8F;
+      --sidebar-hover: #2BBCD4;
       --text: #1A3A40;
       --text-mid: #4A7A85;
       --text-light: #8AB8C0;
@@ -108,7 +108,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.12);
       background: var(--sidebar-dark);
     }
-    .sb-logo img { height: 36px; width: auto; filter: brightness(0) invert(1); }
+    .sb-logo img { height: 36px; width: auto; background: white; border-radius: 6px; padding: 4px 8px; }
     .sb-logo .sb-tag {
       display: inline-block; background: rgba(255,255,255,0.2);
       color: white; font-size: 10px; padding: 2px 8px;
@@ -525,7 +525,7 @@
     textbook:'テキスト', payment:'支払方法',
     name:'お名前', kana:'ふりがな', gender:'性別',
     birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
-    zip:'郵便番号', address:'ご住所', altAddr:'確認書類の郵送先',
+    zip:'郵便番号', address:'ご住所', altAddr:'確認書類の郵送先', altAddress:'別途郵送先住所',
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
   };
 
@@ -614,7 +614,7 @@
     curId = id;
     document.getElementById('modal-dl').innerHTML =
       Object.entries(LABELS).map(([k,lbl]) =>
-        `<div class="drow"><dt>${lbl}</dt><dd>${a[k]||'—'}</dd></div>`
+        a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
       ).join('');
     document.getElementById('m-status').value = a.status||'未対応';
     document.getElementById('modal').classList.add('open');
