@@ -670,67 +670,44 @@
   // 別住所トグル
   document.querySelectorAll('[name="alt_addr"]').forEach(function(r) {
     r.addEventListener('change', function() {
-      const altFields = document.getElementById('alt-fields');
+      const af = document.getElementById('alt-fields');
       if (this.value === '別の住所に送る') {
-        altFields.classList.add('show');
+        af.classList.add('show');
       } else {
-        altFields.classList.remove('show');
+        af.classList.remove('show');
       }
     });
   });
 
-  // 郵便番号検索
+  // 郵便番号検索（メイン住所）
   async function searchZip() {
     const raw = document.getElementById('zip').value.replace(/-/g, '');
-    if (raw.length !== 7 || isNaN(raw)) {
-      alert('7桁の郵便番号を半角数字で入力してください\n例：730-0051');
-      return;
-    }
+    if (raw.length !== 7 || isNaN(raw)) { alert('7桁の郵便番号を半角数字で入力してください\n例：730-0051'); return; }
     try {
-      const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${raw}`);
+      const res = await fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + raw);
       const data = await res.json();
       if (data.results) {
         const r = data.results[0];
         document.getElementById('address1').value = r.address1 + r.address2 + r.address3;
-      } else {
-        alert('住所が見つかりませんでした。郵便番号をご確認ください。');
-      }
-    } catch { alert('通信エラーが発生しました。再度お試しください。'); }
+      } else { alert('住所が見つかりませんでした。'); }
+    } catch { alert('通信エラーが発生しました。'); }
   }
   window.searchZip = searchZip;
 
+  // 郵便番号検索（別途郵送先）
   async function searchAltZip() {
     const raw = document.getElementById('alt_zip').value.replace(/-/g, '');
-    if (raw.length !== 7 || isNaN(raw)) {
-      alert('7桁の郵便番号を半角数字で入力してください\n例：730-0051');
-      return;
-    }
+    if (raw.length !== 7 || isNaN(raw)) { alert('7桁の郵便番号を半角数字で入力してください\n例：730-0051'); return; }
     try {
-      const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${raw}`);
+      const res = await fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + raw);
       const data = await res.json();
       if (data.results) {
         const r = data.results[0];
         document.getElementById('alt_addr1').value = r.address1 + r.address2 + r.address3;
-      } else {
-        alert('住所が見つかりませんでした。郵便番号をご確認ください。');
-      }
-    } catch { alert('通信エラーが発生しました。再度お試しください。'); }
+      } else { alert('住所が見つかりませんでした。'); }
+    } catch { alert('通信エラーが発生しました。'); }
   }
-  window.searchAltZip = searchAltZip;ください\n例：730-0051');
-      return;
-    }
-    try {
-      const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${raw}`);
-      const data = await res.json();
-      if (data.results) {
-        const r = data.results[0];
-        document.getElementById('address1').value = r.address1 + r.address2 + r.address3;
-      } else {
-        alert('住所が見つかりませんでした。郵便番号をご確認ください。');
-      }
-    } catch { alert('通信エラーが発生しました。再度お試しください。'); }
-  }
-  window.searchZip = searchZip;
+  window.searchAltZip = searchAltZip;
 
   // バリデーション
   function validate() {
@@ -743,11 +720,11 @@
       { id: 'mei_kana',  errId: 'err-kana' },
       { id: 'birthdate', errId: 'err-birthdate' },
       { id: 'phone',     errId: 'err-phone' },
-      { id: 'email',     errId: 'err-email',     type: 'email' },
+      { id: 'email',     errId: 'err-email', type: 'email' },
       { id: 'zip',       errId: 'err-zip' },
       { id: 'address1',  errId: 'err-address1' },
     ];
-    checks.forEach(c => {
+    checks.forEach(function(c) {
       const el = document.getElementById(c.id);
       const err = document.getElementById(c.errId);
       const pass = c.type === 'email'
@@ -756,18 +733,20 @@
       if (!pass) { el.classList.add('err'); err.classList.add('show'); ok = false; }
       else        { el.classList.remove('err'); err.classList.remove('show'); }
     });
+
     const e1 = document.getElementById('email').value.trim();
     const e2 = document.getElementById('email2').value.trim();
     const ee = document.getElementById('err-email2');
     if (!e2 || e1 !== e2) { document.getElementById('email2').classList.add('err'); ee.classList.add('show'); ok = false; }
     else                  { document.getElementById('email2').classList.remove('err'); ee.classList.remove('show'); }
+
     const g = document.querySelector('[name="gender"]:checked');
     const eg = document.getElementById('err-gender');
     if (!g) { eg.classList.add('show'); ok = false; }
     else    { eg.classList.remove('show'); }
 
-    // 別途郵送先のバリデーション
-    const isAlt = document.querySelector('[name="alt_addr"]:checked')?.value === '別の住所に送る';
+    const isAlt = document.querySelector('[name="alt_addr"]:checked') &&
+                  document.querySelector('[name="alt_addr"]:checked').value === '別の住所に送る';
     if (isAlt) {
       const az = document.getElementById('alt_zip');
       const aa = document.getElementById('alt_addr1');
@@ -778,32 +757,30 @@
       if (!aa.value.trim()) { aa.classList.add('err'); aae.classList.add('show'); ok = false; }
       else                  { aa.classList.remove('err'); aae.classList.remove('show'); }
     }
-
     return ok;
   }
 
   function getVals() {
     const fd = new FormData(document.getElementById('the-form'));
+    const isAlt = fd.get('alt_addr') === '別の住所に送る';
     return {
-      course:    'オンライン初任者研修',
-      fee:       '33,000円（税込）',
-      textbook:  fd.get('textbook'),
-      payment:   fd.get('payment'),
-      name:      (fd.get('sei') || '') + '　' + (fd.get('mei') || ''),
-      kana:      (fd.get('sei_kana') || '') + '　' + (fd.get('mei_kana') || ''),
-      gender:    fd.get('gender'),
-      birthdate: fd.get('birthdate'),
-      phone:     fd.get('phone'),
-      email:     fd.get('email'),
-      zip:       fd.get('zip'),
-      address:   (fd.get('address1') || '') + (fd.get('address2') ? '　' + fd.get('address2') : ''),
-      altAddr:   fd.get('alt_addr'),
-      altAddress: fd.get('alt_addr') === '別の住所に送る'
-        ? '〒' + (fd.get('alt_zip')||'') + '　' + (fd.get('alt_addr1')||'') + (fd.get('alt_addr2') ? '　' + fd.get('alt_addr2') : '')
-        : '',
-      workplace: fd.get('workplace') || '（なし）',
-      coupon:    fd.get('coupon')    || '（なし）',
-      message:   fd.get('message')  || '（なし）',
+      course:     'オンライン初任者研修',
+      fee:        '33,000円（税込）',
+      textbook:   fd.get('textbook'),
+      payment:    fd.get('payment'),
+      name:       (fd.get('sei') || '') + '　' + (fd.get('mei') || ''),
+      kana:       (fd.get('sei_kana') || '') + '　' + (fd.get('mei_kana') || ''),
+      gender:     fd.get('gender'),
+      birthdate:  fd.get('birthdate'),
+      phone:      fd.get('phone'),
+      email:      fd.get('email'),
+      zip:        fd.get('zip'),
+      address:    (fd.get('address1') || '') + (fd.get('address2') ? '　' + fd.get('address2') : ''),
+      altAddr:    fd.get('alt_addr'),
+      altAddress: isAlt ? ('〒' + (fd.get('alt_zip')||'') + '　' + (fd.get('alt_addr1')||'') + (fd.get('alt_addr2') ? '　' + fd.get('alt_addr2') : '')) : '',
+      workplace:  fd.get('workplace') || '（なし）',
+      coupon:     fd.get('coupon')    || '（なし）',
+      message:    fd.get('message')   || '（なし）',
     };
   }
 
@@ -816,15 +793,17 @@
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
   };
 
-  document.getElementById('the-form').addEventListener('submit', e => {
+  document.getElementById('the-form').addEventListener('submit', function(e) {
     e.preventDefault();
     if (!validate()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     const vals = getVals();
     window.__formVals = vals;
     document.getElementById('conf-table').innerHTML =
-      Object.entries(LABELS).map(([k, lbl]) =>
-        `<tr><td>${lbl}</td><td>${vals[k] || '—'}</td></tr>`
-      ).join('');
+      Object.entries(LABELS).map(function(entry) {
+        const k = entry[0]; const lbl = entry[1];
+        if (!vals[k]) return '';
+        return '<tr><td>' + lbl + '</td><td>' + vals[k] + '</td></tr>';
+      }).join('');
     document.getElementById('form-screen').classList.add('hidden');
     document.getElementById('confirm-screen').classList.add('active');
     document.getElementById('s1').classList.replace('active', 'done');
@@ -850,7 +829,7 @@
     try {
       const ref = await window.__addDoc(
         window.__col(window.__db, 'applications'),
-        { ...window.__formVals, formType: 'shonin_online', status: '未対応', createdAt: window.__ts() }
+        Object.assign({}, window.__formVals, { formType: 'shonin_online', status: '未対応', createdAt: window.__ts() })
       );
       document.getElementById('confirm-screen').classList.remove('active');
       document.getElementById('complete-screen').classList.add('active');
