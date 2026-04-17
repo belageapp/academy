@@ -286,8 +286,6 @@
     }
     .site-footer strong { color: white; }
 
-    #alt-fields { display: none; }
-    #alt-fields.show { display: block; }
     #alt-fields .f-row {
       display: grid; grid-template-columns: 185px 1fr;
       gap: 0 16px; align-items: start;
@@ -670,12 +668,8 @@
   // 別住所トグル
   document.querySelectorAll('[name="alt_addr"]').forEach(function(r) {
     r.addEventListener('change', function() {
-      const af = document.getElementById('alt-fields');
-      if (this.value === '別の住所に送る') {
-        af.classList.add('show');
-      } else {
-        af.classList.remove('show');
-      }
+      document.getElementById('alt-fields').style.display =
+        this.value === '別の住所に送る' ? 'block' : 'none';
     });
   });
 
