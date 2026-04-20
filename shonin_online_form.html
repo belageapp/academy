@@ -597,8 +597,15 @@
 
       <div class="submit-area">
         <div class="g-recaptcha" data-sitekey="6LezGsEsAAAAAASJkEeKXyeP_KSk6DmFrcEqtHzV" style="display:inline-block; margin-bottom:16px;"></div>
-        <div class="err-msg show" id="err-recaptcha" style="display:none; margin-bottom:12px;">「私はロボットではありません」にチェックを入れてください</div>
+        <div class="err-msg" id="err-recaptcha" style="display:none; margin-bottom:12px;">「私はロボットではありません」にチェックを入れてください</div>
         <br>
+        <div style="margin-bottom:20px; text-align:center;">
+          <label style="display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; color:var(--text);">
+            <input type="checkbox" id="privacy-agree" style="width:18px; height:18px; accent-color:var(--teal); cursor:pointer; flex-shrink:0;">
+            <span><a href="privacy.html" target="_blank" style="color:var(--teal-dark); font-weight:700;">プライバシーポリシー</a>に同意する</span>
+          </label>
+          <div class="err-msg" id="err-privacy" style="margin-top:6px;">プライバシーポリシーへの同意が必要です</div>
+        </div>
         <button type="submit" class="submit-btn">入力内容を確認する →</button>
         <p class="submit-note">次の画面で内容をご確認いただいてから送信します</p>
       </div>
@@ -805,6 +812,16 @@
       return;
     }
     document.getElementById('err-recaptcha').style.display = 'none';
+
+    // プライバシーポリシー同意チェック
+    const privacyAgree = document.getElementById('privacy-agree');
+    const privacyErr = document.getElementById('err-privacy');
+    if (!privacyAgree.checked) {
+      privacyErr.classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    privacyErr.classList.remove('show');
     const vals = getVals();
     window.__formVals = vals;
     document.getElementById('conf-table').innerHTML =
