@@ -364,7 +364,8 @@
       <span class="sb-tag">ADMIN</span>
     </div>
     <div class="sb-section">メニュー</div>
-    <div class="sb-item active"><span class="ico">📋</span>申し込み管理</div>
+    <div class="sb-item active" id="menu-applications" onclick="showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
+    <div class="sb-item" id="menu-notices" onclick="showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -376,11 +377,13 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-title">📋 申し込み管理</div>
+      <div class="topbar-title" id="topbar-title">📋 申し込み管理</div>
       <div class="topbar-user" id="t-user"></div>
     </div>
     <div class="content">
 
+      <!-- ===== 申し込み管理セクション ===== -->
+      <div id="section-applications">
       <div class="stats">
         <div class="stat">
           <div class="stat-lbl">総申し込み数</div>
@@ -445,6 +448,70 @@
           <div class="pg-btns" id="pbtns"></div>
         </div>
       </div>
+      </div><!-- /section-applications -->
+
+      <!-- ===== お知らせ管理セクション ===== -->
+      <div id="section-notices" style="display:none;">
+
+        <!-- 新規投稿 -->
+        <div class="tcard" style="margin-bottom:20px;">
+          <div class="thead">
+            <div class="thead-title">📢 新規お知らせを投稿する</div>
+          </div>
+          <div style="padding:24px;">
+            <div style="margin-bottom:16px;">
+              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">タイトル<span style="color:var(--red);margin-left:4px;">必須</span></label>
+              <input type="text" id="n-title" placeholder="例）スクーリングの日程についてのご案内"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;">
+            </div>
+            <div style="margin-bottom:16px;">
+              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">本文<span style="color:var(--red);margin-left:4px;">必須</span></label>
+              <textarea id="n-body" rows="5" placeholder="お知らせの内容を入力してください"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;resize:vertical;"></textarea>
+            </div>
+            <div style="margin-bottom:16px;">
+              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">送信対象</label>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;background:var(--teal-pale);border:1.5px solid var(--border);padding:8px 16px;border-radius:8px;">
+                  <input type="radio" name="n-target" value="all" checked style="accent-color:var(--teal);"> 全受講生
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;background:var(--teal-pale);border:1.5px solid var(--border);padding:8px 16px;border-radius:8px;">
+                  <input type="radio" name="n-target" value="specific" style="accent-color:var(--teal);"> 特定の受講生
+                </label>
+              </div>
+            </div>
+            <div id="specific-target" style="display:none;margin-bottom:16px;">
+              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">メールアドレス（複数の場合はカンマ区切り）</label>
+              <input type="text" id="n-emails" placeholder="例）taro@example.com, hanako@example.com"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;">
+            </div>
+            <div style="margin-bottom:20px;">
+              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">ファイル添付（任意）</label>
+              <input type="file" id="n-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                style="font-size:13px;font-family:'Noto Sans JP',sans-serif;">
+              <div style="font-size:11px;color:var(--text-light);margin-top:4px;">PDF・画像・Word文書が添付できます（最大10MB）</div>
+            </div>
+            <button onclick="postNotice()" style="background:linear-gradient(135deg,var(--teal) 0%,var(--teal-dark) 100%);color:white;border:none;border-radius:8px;padding:12px 32px;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(43,188,212,0.3);">
+              投稿する
+            </button>
+            <div id="n-msg" style="display:none;margin-top:12px;font-size:13px;padding:10px 14px;border-radius:8px;"></div>
+          </div>
+        </div>
+
+        <!-- 投稿済みお知らせ一覧 -->
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">投稿済みお知らせ一覧</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadNotices()">🔄 更新</button>
+            </div>
+          </div>
+          <div id="notices-list" style="padding:0;">
+            <div style="text-align:center;padding:40px;color:var(--text-light);">読み込み中…</div>
+          </div>
+        </div>
+
+      </div><!-- /section-notices -->
 
     </div>
   </div>
@@ -476,8 +543,9 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const cfg = {
     apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
@@ -492,8 +560,10 @@
   const db   = getFirestore(app);
   const auth = getAuth(app);
 
+  const storage = getStorage(app);
   window.__db        = db;
   window.__auth      = auth;
+  window.__storage   = storage;
   window.__login     = (e,p) => signInWithEmailAndPassword(auth,e,p);
   window.__logout    = () => signOut(auth);
   window.__getDocs   = getDocs;
@@ -502,6 +572,13 @@
   window.__orderBy   = orderBy;
   window.__doc       = doc;
   window.__updateDoc = updateDoc;
+  window.__addDoc    = addDoc;
+  window.__serverTs  = serverTimestamp;
+  window.__deleteDoc = deleteDoc;
+  window.__ref       = ref;
+  window.__uploadBytes    = uploadBytes;
+  window.__getDownloadURL = getDownloadURL;
+  window.__deleteObject   = deleteObject;
 
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -650,6 +727,119 @@
     a.click();
   }
   window.exportCSV = exportCSV;
+
+  // ===== セクション切り替え =====
+  function showSection(section) {
+    document.getElementById('section-applications').style.display = section === 'applications' ? 'block' : 'none';
+    document.getElementById('section-notices').style.display      = section === 'notices'      ? 'block' : 'none';
+    document.getElementById('topbar-title').textContent = section === 'applications' ? '📋 申し込み管理' : '📢 お知らせ管理';
+    document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('menu-' + section).classList.add('active');
+    if (section === 'notices') loadNotices();
+  }
+  window.showSection = showSection;
+
+  // 特定受講生トグル
+  document.querySelectorAll('[name="n-target"]').forEach(r => {
+    r.addEventListener('change', function() {
+      document.getElementById('specific-target').style.display = this.value === 'specific' ? 'block' : 'none';
+    });
+  });
+
+  // ===== お知らせ投稿 =====
+  async function postNotice() {
+    const title  = document.getElementById('n-title').value.trim();
+    const body   = document.getElementById('n-body').value.trim();
+    const target = document.querySelector('[name="n-target"]:checked').value;
+    const emails = target === 'specific' ? document.getElementById('n-emails').value.trim() : '';
+    const file   = document.getElementById('n-file').files[0];
+    const msg    = document.getElementById('n-msg');
+
+    if (!title || !body) {
+      msg.style.display = 'block'; msg.style.background = '#FEE2E2'; msg.style.color = '#991B1B';
+      msg.textContent = 'タイトルと本文は必須です'; return;
+    }
+
+    msg.style.display = 'block'; msg.style.background = '#E0F7FB'; msg.style.color = '#1A9AB0';
+    msg.textContent = '投稿中...';
+
+    try {
+      let fileUrl = ''; let fileName = '';
+      if (file) {
+        const storageRef = window.__ref(window.__storage, 'notices/' + Date.now() + '_' + file.name);
+        await window.__uploadBytes(storageRef, file);
+        fileUrl  = await window.__getDownloadURL(storageRef);
+        fileName = file.name;
+      }
+
+      await window.__addDoc(window.__col(window.__db, 'notices'), {
+        title, body, target,
+        emails: emails ? emails.split(',').map(e => e.trim()) : [],
+        fileUrl, fileName,
+        createdAt: window.__serverTs(),
+        createdBy: window.__auth.currentUser.email,
+      });
+
+      msg.style.background = '#D1FAE5'; msg.style.color = '#065F46';
+      msg.textContent = '投稿しました！';
+      document.getElementById('n-title').value = '';
+      document.getElementById('n-body').value  = '';
+      document.getElementById('n-file').value  = '';
+      loadNotices();
+    } catch(e) {
+      msg.style.background = '#FEE2E2'; msg.style.color = '#991B1B';
+      msg.textContent = '投稿に失敗しました：' + e.message;
+    }
+  }
+  window.postNotice = postNotice;
+
+  // ===== お知らせ一覧読み込み =====
+  async function loadNotices() {
+    const list = document.getElementById('notices-list');
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light);">読み込み中…</div>';
+    try {
+      const q    = window.__query(window.__col(window.__db, 'notices'), window.__orderBy('createdAt', 'desc'));
+      const snap = await window.__getDocs(q);
+      if (snap.empty) {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light);">投稿済みのお知らせはありません</div>';
+        return;
+      }
+      list.innerHTML = snap.docs.map(d => {
+        const n = d.data();
+        const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '—';
+        const targetLabel = n.target === 'all' ? '全受講生' : '特定受講生';
+        return `
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;">
+            <div style="flex:1;">
+              <div style="font-size:11px;color:var(--text-light);margin-bottom:3px;">${dt}　対象：${targetLabel}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${n.title}</div>
+              <div style="font-size:13px;color:var(--text-mid);line-height:1.7;">${n.body}</div>
+              ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);display:inline-block;margin-top:6px;">📎 ${n.fileName}</a>` : ''}
+            </div>
+            <button onclick="deleteNotice('${d.id}', '${n.fileUrl}')"
+              style="background:none;border:1.5px solid #FCA5A5;color:#991B1B;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;">
+              削除
+            </button>
+          </div>`;
+      }).join('');
+    } catch(e) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);">読み込みエラー：${e.message}</div>`;
+    }
+  }
+  window.loadNotices = loadNotices;
+
+  // ===== お知らせ削除 =====
+  async function deleteNotice(id, fileUrl) {
+    if (!confirm('このお知らせを削除しますか？')) return;
+    try {
+      await window.__deleteDoc(window.__doc(window.__db, 'notices', id));
+      if (fileUrl) {
+        try { await window.__deleteObject(window.__ref(window.__storage, fileUrl)); } catch(e) {}
+      }
+      loadNotices();
+    } catch(e) { alert('削除に失敗しました：' + e.message); }
+  }
+  window.deleteNotice = deleteNotice;
 </script>
 
 </body>
