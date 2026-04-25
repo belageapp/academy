@@ -841,21 +841,63 @@
   }
   window.backToForm = backToForm;
 
-  async function finalSubmit() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function finalSubmit() {
     const btn = document.getElementById('final-btn');
     btn.disabled = true; btn.textContent = '送信中...';
+    const payment = window.__formVals.payment;
     try {
       const ref = await window.__addDoc(
         window.__col(window.__db, 'applications'),
-        Object.assign({}, window.__formVals, { formType: 'shonin_online', status: '未対応', createdAt: window.__ts() })
+        Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'pending', createdAt: window.__ts() })
       );
-      document.getElementById('confirm-screen').classList.remove('active');
-      document.getElementById('complete-screen').classList.add('active');
-      document.getElementById('app-id-box').textContent = '受付番号：' + ref.id;
-      document.getElementById('s2').classList.replace('active', 'done');
-      document.getElementById('line2').classList.add('done');
-      document.getElementById('s3').classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const docId = ref.id;
+
+      if (payment === 'クレジットカード' || payment === 'コンビニ払い') {
+        btn.textContent = '決済ページへ移動中...';
+        const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            docId: docId,
+            textbook: window.__formVals.textbook === '購入（6,600円）' ? 'purchase' : 'none',
+            name: window.__formVals.name,
+            email: window.__formVals.email,
+          })
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('決済URLの取得に失敗しました');
+        }
+      } else {
+        document.getElementById('confirm-screen').classList.remove('active');
+        document.getElementById('complete-screen').classList.add('active');
+        document.getElementById('app-id-box').textContent = '受付番号：' + docId;
+        document.getElementById('s2').classList.replace('active', 'done');
+        document.getElementById('line2').classList.add('done');
+        document.getElementById('s3').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } catch (err) {
       alert('送信に失敗しました。時間をおいて再度お試しください。\n\n' + err.message);
       btn.disabled = false; btn.textContent = '申し込みを確定する ✓';
