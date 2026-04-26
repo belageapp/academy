@@ -764,14 +764,18 @@ if (!pass) {
       el.classList.add('err'); err.classList.add('show'); ok = false;
       if (c.isBirthdate) {
         ['birthdate_year','birthdate_month','birthdate_day'].forEach(id => {
-          document.getElementById(id).classList.add('err');
+          const el = document.getElementById(id);
+          el.classList.add('err');
+          el.style.borderColor = 'var(--red)';
         });
       }
     } else {
       el.classList.remove('err'); err.classList.remove('show');
       if (c.isBirthdate) {
         ['birthdate_year','birthdate_month','birthdate_day'].forEach(id => {
-          document.getElementById(id).classList.remove('err');
+          const el = document.getElementById(id);
+          el.classList.remove('err');
+          el.style.borderColor = '#ccc';
         });
       }
     }
