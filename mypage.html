@@ -301,7 +301,15 @@ const q = query(
         courseList.innerHTML = '<div class="no-course">受講中の講座はありません</div>';
       } else {
         courseList.innerHTML = '';
-        snap.docs.forEach(doc => {
+        const allDocs = snap.docs.sort((a, b) => {
+          const ta = a.data().createdAt?.toMillis?.() || 0;
+          const tb = b.data().createdAt?.toMillis?.() || 0;
+          return tb - ta;
+        });
+        const showDocs = allDocs.slice(0, 3);
+        const hiddenDocs = allDocs.slice(3);
+
+        showDocs.forEach(doc => {
           const data = doc.data();
           const status = data.status || 'pending';
           const statusText = statusLabel[status] || status;
@@ -317,8 +325,36 @@ const q = query(
             </div>
             <div class="course-arrow">›</div>
           `;
-          courseList.appendChild(card);
+courseList.appendChild(card);
         });
+
+        if (hiddenDocs.length > 0) {
+          const moreBtn = document.createElement('button');
+          moreBtn.textContent = `すべて表示（全${allDocs.length}件）`;
+          moreBtn.style.cssText = 'width:100%; padding:12px; background:white; border:1.5px solid var(--border); border-radius:10px; color:var(--teal); font-size:13px; font-weight:700; cursor:pointer; font-family:"Noto Sans JP",sans-serif; margin-top:4px;';
+          moreBtn.onclick = () => {
+            hiddenDocs.forEach(doc => {
+              const data = doc.data();
+              const status = data.status || 'pending';
+              const statusText = statusLabel[status] || status;
+              const card = document.createElement('a');
+              card.className = 'course-card';
+              card.href = `mypage_course.html?id=${doc.id}`;
+              card.innerHTML = `
+                <div class="course-icon">📋</div>
+                <div class="course-info">
+                  <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
+                  <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
+                  <span class="status-badge status-${statusText}">${statusText}</span>
+                </div>
+                <div class="course-arrow">›</div>
+              `;
+              courseList.insertBefore(card, moreBtn);
+            });
+            moreBtn.remove();
+          };
+          courseList.appendChild(moreBtn);
+        }
       }
 } catch(e) {
       console.error('Firestoreエラー:', e.code, e.message);
