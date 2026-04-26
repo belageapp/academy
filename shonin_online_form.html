@@ -807,8 +807,9 @@
       if (y && m && d) {
         document.getElementById('birthdate').value = `${y}年${m}月${d}日`;
         const disp = document.getElementById('bdpicker-display');
-        disp.textContent = `${y}年${m}月${d}日`;
+disp.textContent = `${y}年${m}月${d}日`;
         disp.style.color = '#333';
+        disp.style.borderColor = '#ccc';
       }
     }
     document.getElementById('bdpicker-overlay').style.display = 'none';
@@ -838,9 +839,15 @@
         : el.value.trim() !== '';
 if (!pass) {
       el.classList.add('err'); err.classList.add('show'); ok = false;
+      if (c.id === 'birthdate') {
+        document.getElementById('bdpicker-display').style.borderColor = 'var(--red)';
+      }
       
-    } else {
+} else {
       el.classList.remove('err'); err.classList.remove('show');
+      if (c.id === 'birthdate') {
+        document.getElementById('bdpicker-display').style.borderColor = '#ccc';
+      }
 
     }
     });
