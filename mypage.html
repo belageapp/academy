@@ -317,9 +317,9 @@ const q = query(
           courseList.appendChild(card);
         });
       }
-    } catch(e) {
-      console.error(e);
-      document.getElementById('course-list').innerHTML = '<div class="no-course">データの取得に失敗しました</div>';
+} catch(e) {
+      console.error('Firestoreエラー:', e.code, e.message);
+      document.getElementById('course-list').innerHTML = '<div class="no-course">データの取得に失敗しました: ' + e.message + '</div>';
     }
 
     // お知らせ（固定 or Firestoreから取得）
