@@ -197,7 +197,8 @@
 
     /* ===== ADDRESS ===== */
     .zip-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .zip-row input { width: 150px; }
+    .zip-row input { width: 130px; }
+.zip-btn { white-space: nowrap; }
     .zip-btn {
       background: var(--teal-light); border: 1.5px solid var(--teal);
       border-radius: 8px; padding: 10px 16px; font-size: 13px;
@@ -291,8 +292,9 @@
       gap: 0 16px; align-items: start;
       padding: 18px 0; border-bottom: 1px solid var(--border);
     }
-    @media (max-width: 600px) {
-      .site-header { padding: 10px 16px; }
+@media (max-width: 600px) {
+    #alt-fields .f-row { grid-template-columns: 1fr; }
+    .site-header { padding: 10px 16px; }
       .header-tel { display: none; }
       .page-wrap { padding: 24px 12px 60px; }
       .card-body { padding: 0 16px; }
