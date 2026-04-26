@@ -528,13 +528,21 @@
       <dl id="modal-dl"></dl>
       <div class="modal-status">
         <label>ステータスを変更する</label>
-        <select id="m-status">
-          <option value="未対応">未対応</option>
-          <option value="対応中">対応中</option>
-          <option value="完了">完了</option>
-          <option value="キャンセル">キャンセル</option>
-        </select>
-        <button class="save-btn" onclick="saveStatus()">保存する</button>
+<select id="m-status">
+              <option value="pending">入金待ち</option>
+              <option value="confirmed">受講確定</option>
+              <option value="video_done">動画教材完了</option>
+              <option value="task_done">添削課題完了</option>
+              <option value="ojt_done">OJT完了</option>
+              <option value="completed">修了</option>
+              <option value="cancelled">キャンセル</option>
+            </select>
+            <button class="save-btn" onclick="saveStatus()">保存する</button>
+            <div id="bank-confirm-area" style="display:none; margin-top:12px;">
+              <button onclick="confirmBankPayment()" style="width:100%; padding:12px; background:#4CAF72; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">
+                ✅ 振込入金を確認した → 受講確定にする
+              </button>
+            </div>
       </div>
     </div>
   </div>
@@ -693,8 +701,11 @@
       Object.entries(LABELS).map(([k,lbl]) =>
         a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
       ).join('');
-    document.getElementById('m-status').value = a.status||'未対応';
-    document.getElementById('modal').classList.add('open');
+document.getElementById('m-status').value = a.status || 'pending';
+  // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
+  const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
+  document.getElementById('bank-confirm-area').style.display = isBankPending ? 'block' : 'none';
+  document.getElementById('modal').classList.add('open');
   }
   window.openModal = openModal;
 
@@ -714,6 +725,24 @@
     } catch(e) { alert('更新に失敗しました：'+e.message); }
   }
   window.saveStatus = saveStatus;
+
+  async function confirmBankPayment() {
+    if (!curId) return;
+    if (!confirm('振込入金を確認しました。受講確定にしますか？')) return;
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
+        status: 'confirmed',
+        confirmedAt: window.__serverTimestamp(),
+      });
+      const idx = all.findIndex(a => a.id === curId);
+      if (idx > -1) all[idx].status = 'confirmed';
+      document.getElementById('m-status').value = 'confirmed';
+      document.getElementById('bank-confirm-area').style.display = 'none';
+      updateStats(); doFilter();
+      alert('受講確定にしました！');
+    } catch(e) { alert('更新に失敗しました：' + e.message); }
+  }
+  window.confirmBankPayment = confirmBankPayment;
 
   function exportCSV() {
     const headers = ['申込日時','お名前','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','支払方法','テキスト','お勤め先','優待コード','ステータス'];
