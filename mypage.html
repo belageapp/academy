@@ -315,7 +315,9 @@ const q = query(
           const statusText = statusLabel[status] || status;
           const card = document.createElement('a');
           card.className = 'course-card';
-          card.href = `mypage_course.html?id=${doc.id}`;
+          const courseCode = data.courseCode || '4010';
+const courseFile = courseCode === '4010' ? 'mypage_course_shonin.html' : 'mypage_course.html';
+card.href = `${courseFile}?id=${doc.id}`;
           card.innerHTML = `
             <div class="course-icon">📋</div>
             <div class="course-info">
@@ -340,7 +342,9 @@ courseList.appendChild(card);
               const statusText = statusLabel[status] || status;
               const card = document.createElement('a');
               card.className = 'course-card';
-              card.href = `mypage_course.html?id=${doc.id}`;
+              const courseCode = data.courseCode || '4010';
+const courseFile = courseCode === '4010' ? 'mypage_course_shonin.html' : 'mypage_course.html';
+card.href = `${courseFile}?id=${doc.id}`;
               card.innerHTML = `
                 <div class="course-icon">📋</div>
                 <div class="course-info">
