@@ -251,7 +251,7 @@
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut, updatePassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+ import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const cfg = {
     apiKey: "AIzaSyCl48Fay9AbMLRXJ7npya4PJIgDQPvltxs",
@@ -288,8 +288,7 @@
     try {
 const q = query(
         collection(db, 'applications'),
-        where('uid', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        where('uid', '==', user.uid)
       );
       const snap = await getDocs(q);
 
