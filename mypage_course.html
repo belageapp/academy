@@ -254,6 +254,8 @@
       </div>
       <div id="app-detail">
         <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
+        <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
+        <div class="app-row"><span class="app-label">修了日</span><span class="app-value" id="app-completed">—</span></div>
         <div class="app-row"><span class="app-label">受講料</span><span class="app-value" id="app-fee">—</span></div>
         <div class="app-row"><span class="app-label">支払方法</span><span class="app-value" id="app-payment">—</span></div>
         <div class="app-row"><span class="app-label">テキスト</span><span class="app-value" id="app-textbook">—</span></div>
@@ -391,6 +393,8 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
       document.getElementById('course-subtitle').textContent = '受講番号：' + (data.studentNo || '—');
       document.getElementById('app-course').textContent = data.course || 'オンライン初任者研修';
+        document.getElementById('app-applied').textContent = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—';
+        document.getElementById('app-completed').textContent = data.completedAt ? new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
       document.getElementById('app-fee').textContent = data.fee || '33,000円（税込）';
       document.getElementById('app-payment').textContent = data.payment || '—';
       document.getElementById('app-textbook').textContent =

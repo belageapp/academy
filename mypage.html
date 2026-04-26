@@ -320,7 +320,8 @@ const q = query(
             <div class="course-icon">📋</div>
             <div class="course-info">
               <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
-              <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
+<div class="course-meta">受講番号：${data.studentNo || '—'}</div>
+              <div class="course-meta">申込日：${data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—'}${data.completedAt ? '　修了日：' + new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : ''}</div>
               <span class="status-badge status-${statusText}">${statusText}</span>
             </div>
             <div class="course-arrow">›</div>

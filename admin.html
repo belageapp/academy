@@ -705,7 +705,9 @@
     if (!curId) return;
     const ns = document.getElementById('m-status').value;
     try {
-      await window.__updateDoc(window.__doc(window.__db,'applications',curId),{status:ns});
+      const updateData = { status: ns };
+      if (ns === '完了') updateData.completedAt = window.__serverTimestamp();
+      await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
       updateStats(); doFilter(); closeModal();
