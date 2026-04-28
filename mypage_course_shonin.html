@@ -403,6 +403,37 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       statusEl.textContent = statusText;
       statusEl.className = 'status-badge status-' + statusText;
 
+      // ステータスによる表示制御
+      const isConfirmed = ['confirmed','video_done','task_done','ojt_done','completed'].includes(status);
+      const isVideoDone = ['video_done','task_done','ojt_done','completed'].includes(status);
+      const isTaskDone = ['task_done','ojt_done','completed'].includes(status);
+      const canReceipt = isConfirmed;
+
+      // 添削課題・動画教材のロック表示
+      if (!isConfirmed) {
+        document.querySelector('.grid-2').insertAdjacentHTML('afterend', `
+          <div style="background:#fff8e1; border:1px solid #ffe082; border-radius:12px; padding:20px; text-align:center; margin-bottom:28px;">
+            <div style="font-size:24px; margin-bottom:8px;">🔒</div>
+            <div style="font-weight:700; color:#B8860B; margin-bottom:4px;">入金確認後に利用できます</div>
+            <div style="font-size:13px; color:#888;">動画教材・添削課題は受講確定後にご利用いただけます</div>
+          </div>
+        `);
+        document.querySelector('.video-section').style.display = 'none';
+        document.getElementById('task-list').closest('.card').style.opacity = '0.4';
+        document.getElementById('task-list').closest('.card').style.pointerEvents = 'none';
+      }
+
+      // 領収書の制御
+      if (!canReceipt) {
+        document.querySelectorAll('.doc-btn').forEach(btn => {
+          if (btn.getAttribute('onclick')?.includes('領収書')) {
+            btn.style.opacity = '0.4';
+            btn.style.pointerEvents = 'none';
+            btn.querySelector('.doc-sub').textContent = '受講確定後';
+          }
+        });
+      }
+
       // 添削課題
       const taskList = document.getElementById('task-list');
       taskList.innerHTML = tasks.map(t => `
@@ -412,8 +443,8 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
             <div class="task-name">${t.name}</div>
             <div class="task-count">${t.count}</div>
           </div>
-          <span class="task-status task-未提出">未提出</span>
-          <button class="task-btn" onclick="openTask(${t.num})">回答する</button>
+          <span class="task-status ${isTaskDone ? 'task-合格' : 'task-未提出'}">${isTaskDone ? '完了' : '未提出'}</span>
+          ${isTaskDone ? '<span style="color:var(--green); font-size:12px;">✅</span>' : `<button class="task-btn" onclick="openTask(${t.num})">回答する</button>`}
         </div>
       `).join('');
 
@@ -426,7 +457,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
             <div class="video-title">${v.title}</div>
             <div class="video-duration">${v.duration}</div>
           </div>
-          <button class="video-btn" onclick="alert('動画URLは管理者が設定します')">視聴する</button>
+          ${isVideoDone ? '<span style="color:var(--green); font-weight:700; font-size:13px;">✅ 視聴済み</span>' : '<button class="video-btn" onclick="alert(\'動画URLは管理者が設定します\')">視聴する</button>'}
         </div>
       `).join('');
 
