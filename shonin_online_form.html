@@ -669,20 +669,6 @@
     <div class="conf-actions">
       <button class="back-btn" onclick="backToForm()">← 入力画面に戻る</button>
       <button class="final-btn" id="final-btn" onclick="finalSubmit()">申し込みを確定する ✓</button>
-      <script>
-        (function(){
-          const p = window.__formVals?.payment;
-          const btn = document.getElementById('final-btn');
-          const desc = document.getElementById('confirm-desc');
-          if (p === 'クレジットカード') {
-            btn.textContent = 'クレジット決済へ →';
-            desc.textContent = '以下の内容でよろしければ決済画面へ進んでください。決済が完了した時点で申し込みが確定されます。';
-          } else {
-            btn.textContent = '申し込みを確定する ✓';
-            desc.textContent = '以下の内容でよろしければ「申し込みを確定する」ボタンを押してください。';
-          }
-        })();
-      </script>
     </div>
   </div>
 
@@ -1013,6 +999,17 @@ const gLabels = document.querySelectorAll('[name="gender"]');
     document.getElementById('s1').classList.replace('active', 'done');
     document.getElementById('line1').classList.add('done');
     document.getElementById('s2').classList.add('active');
+    // ボタンテキストを支払方法によって切り替え
+    const _payment = vals.payment;
+    const _btn = document.getElementById('final-btn');
+    const _desc = document.getElementById('confirm-desc');
+    if (_payment === 'クレジットカード') {
+      _btn.textContent = 'クレジット決済へ →';
+      _desc.textContent = '以下の内容でよろしければ決済画面へ進んでください。決済が完了した時点で申し込みが確定されます。';
+    } else {
+      _btn.textContent = '申し込みを確定する ✓';
+      _desc.textContent = '以下の内容でよろしければ「申し込みを確定する」ボタンを押してください。';
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
