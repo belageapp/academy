@@ -4,24 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>お申し込み完了 | ホリスケアアカデミー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f0f9fb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  .complete-box {
+    background: white; border-radius: 16px; border: 1px solid #C8EAF0;
+    padding: 60px 32px; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    max-width: 560px; width: 100%;
+  }
+  .complete-icon {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: linear-gradient(135deg, #2BBCD4 0%, #1A9AB0 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; margin: 0 auto 24px;
+    box-shadow: 0 8px 28px rgba(43,188,212,0.35);
+    color: white; font-weight: 900;
+  }
+  h2 { font-size: 24px; font-weight: 700; color: #1A9AB0; margin-bottom: 16px; }
+  p { font-size: 14px; line-height: 2; color: #666; }
+  .btn-wrap { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+  .btn-primary { background: #2BBCD4; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; }
+  .btn-secondary { background: #f0f9fb; color: #2BBCD4; border: 1px solid #2BBCD4; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; }
+  .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa; text-align: center; line-height: 1.8; }
+</style>
 </head>
-<body style="font-family:'Noto Sans JP',sans-serif; margin:0; padding:0; background:#f0f9fb;">
-<div style="max-width:600px; margin:40px auto; padding:20px;">
-  <div style="background:#2BBCD4; padding:28px; text-align:center; border-radius:12px 12px 0 0;">
-    <h1 style="color:white; font-size:22px; margin:0;">✅ お申し込みが完了しました</h1>
-  </div>
-  <div style="background:white; padding:32px; border-radius:0 0 12px 12px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-    <p style="color:#333; font-size:15px; line-height:1.8;">ご決済ありがとうございます。<br>自動返信メールをご確認ください。<br>ご不明な点は <a href="mailto:info@holiscare.or.jp" style="color:#2BBCD4;">info@holiscare.or.jp</a> までご連絡ください。</p>
-    <div style="text-align:center; margin-top:28px;">
-      <a href="https://belageapp.github.io/holiscare-academy/mypage_login.html" style="background:#2BBCD4; color:white; padding:12px 32px; border-radius:8px; text-decoration:none; font-size:14px; margin-right:12px;">マイページへ →</a>
-      <a href="https://academy.holiscare.or.jp" style="background:#f0f9fb; color:#2BBCD4; border:1px solid #2BBCD4; padding:12px 32px; border-radius:8px; text-decoration:none; font-size:14px;">トップページへ</a>
+<body>
+  <div class="complete-box">
+    <div class="complete-icon">✓</div>
+    <h2>お申し込みが完了しました！</h2>
+    <p>
+      ご決済ありがとうございます。<br>
+      ご登録のメールアドレスへ確認メールをお送りしました。<br>
+      メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
+      ご不明な点は <strong style="color:#1A9AB0;">082-545-2402</strong> までお問い合わせください。
+    </p>
+    <div class="btn-wrap">
+      <a href="https://belageapp.github.io/holiscare-academy/mypage_login.html" class="btn-primary">マイページへ →</a>
+      <a href="https://academy.holiscare.or.jp" class="btn-secondary">トップページへ</a>
     </div>
-    <div style="border-top:1px solid #eee; margin-top:32px; padding-top:16px; font-size:12px; color:#888; text-align:center;">
-      <p style="margin:0;">特定非営利活動法人Social Care Good　ホリスケアアカデミー</p>
-      <p style="margin:4px 0;">広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F</p>
-      <p style="margin:4px 0;">TEL：082-545-2402　／　info@holiscare.or.jp</p>
+    <div class="footer">
+      <p>特定非営利活動法人Social Care Good　ホリスケアアカデミー</p>
+      <p>広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F</p>
+      <p>TEL：082-545-2402　／　info@holiscare.or.jp</p>
     </div>
   </div>
-</div>
 </body>
 </html>
