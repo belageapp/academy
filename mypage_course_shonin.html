@@ -354,7 +354,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
 
   const statusLabel = {
     pending: '入金待ち', awaiting_payment: '入金待ち',
-    confirmed: '受講確定', video_done: '動画教材完了',
+    paid: '受講確定', confirmed: '受講確定', video_done: '動画教材完了',
     task_done: '添削課題完了', ojt_done: 'OJT完了',
     completed: '修了', cancelled: 'キャンセル',
   };
@@ -404,7 +404,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       statusEl.className = 'status-badge status-' + statusText;
 
       // ステータスによる表示制御
-      const isConfirmed = ['confirmed','video_done','task_done','ojt_done','completed'].includes(status);
+      const isConfirmed = ['paid','confirmed','video_done','task_done','ojt_done','completed'].includes(status);
       const isVideoDone = ['video_done','task_done','ojt_done','completed'].includes(status);
       const isTaskDone = ['task_done','ojt_done','completed'].includes(status);
       const canReceipt = isConfirmed;
