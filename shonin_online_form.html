@@ -1046,15 +1046,17 @@ const gLabels = document.querySelectorAll('[name="gender"]');
 async function finalSubmit() {
     const btn = document.getElementById('final-btn');
     btn.disabled = true; btn.textContent = '送信中...';
-    const payment = window.__formVals.payment;
+const payment = window.__formVals.payment;
     try {
-      const ref = await window.__addDoc(
-        window.__col(window.__db, 'applications'),
-        Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'pending', createdAt: window.__ts() })
-      );
-      const docId = ref.id;
+      let docId;
 
       if (payment === 'クレジットカード') {
+        // クレジットカードの場合はFirestoreに仮保存（アカウント未作成）
+        const ref = await window.__addDoc(
+          window.__col(window.__db, 'applications'),
+          Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'awaiting_payment', createdAt: window.__ts() })
+        );
+        docId = ref.id;
         btn.textContent = '決済ページへ移動中...';
         const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
           method: 'POST',
@@ -1074,6 +1076,12 @@ async function finalSubmit() {
           throw new Error('決済URLの取得に失敗しました');
         }
       } else {
+        // 銀行振込の場合はFirestoreに保存
+        const ref = await window.__addDoc(
+          window.__col(window.__db, 'applications'),
+          Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'pending', createdAt: window.__ts() })
+        );
+        docId = ref.id;
         document.getElementById('confirm-screen').classList.remove('active');
         document.getElementById('complete-screen').classList.add('active');
         document.getElementById('app-id-box').textContent = '受付番号：' + docId;
