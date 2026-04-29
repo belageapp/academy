@@ -6,49 +6,86 @@
 <title>お申し込み完了 | ホリスケアアカデミー</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans JP', sans-serif; background: #f0f9fb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-  .complete-box {
-    background: white; border-radius: 16px; border: 1px solid #C8EAF0;
-    padding: 60px 32px; text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    max-width: 560px; width: 100%;
-  }
-  .complete-icon {
-    width: 88px; height: 88px; border-radius: 50%;
-    background: linear-gradient(135deg, #2BBCD4 0%, #1A9AB0 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 44px; margin: 0 auto 24px;
-    box-shadow: 0 8px 28px rgba(43,188,212,0.35);
-    color: white; font-weight: 900;
-  }
-  h2 { font-size: 24px; font-weight: 700; color: #1A9AB0; margin-bottom: 16px; }
-  p { font-size: 14px; line-height: 2; color: #666; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f0f9fb; min-height: 100vh; display: flex; flex-direction: column; }
+  /* ヘッダー */
+  .site-header { background: white; border-bottom: 1px solid #e0f0f5; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .site-header img { height: 48px; }
+  .site-header .tel { font-size: 18px; font-weight: 700; color: #1A9AB0; text-decoration: none; }
+  /* ヒーロー */
+  .hero { background: linear-gradient(135deg, #2BBCD4, #1A9AB0); padding: 48px 20px; text-align: center; color: white; }
+  .hero h1 { font-size: 28px; font-weight: 700; line-height: 1.5; }
+  /* ステップ */
+  .steps { display: flex; justify-content: center; align-items: center; gap: 0; padding: 24px 20px; background: white; border-bottom: 1px solid #e0f0f5; }
+  .step-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #aaa; }
+  .step-item.done .step-num { background: #2BBCD4; color: white; }
+  .step-item.done { color: #2BBCD4; }
+  .step-item.active .step-num { background: #2BBCD4; color: white; }
+  .step-item.active { color: #2BBCD4; font-weight: 700; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: #ddd; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .step-line { width: 60px; height: 2px; background: #ddd; margin: 0 8px; }
+  .step-line.done { background: #2BBCD4; }
+  /* メイン */
+  main { flex: 1; padding: 40px 20px; display: flex; justify-content: center; }
+  .complete-box { background: white; border-radius: 16px; border: 1px solid #C8EAF0; padding: 60px 32px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 700px; width: 100%; }
+  .complete-icon { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #2BBCD4, #1A9AB0); display: flex; align-items: center; justify-content: center; font-size: 44px; margin: 0 auto 24px; box-shadow: 0 8px 28px rgba(43,188,212,0.35); color: white; font-weight: 900; }
+  .complete-box h2 { font-size: 24px; font-weight: 700; color: #1A9AB0; margin-bottom: 16px; }
+  .complete-box p { font-size: 14px; line-height: 2; color: #666; }
   .btn-wrap { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
   .btn-primary { background: #2BBCD4; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; }
   .btn-secondary { background: #f0f9fb; color: #2BBCD4; border: 1px solid #2BBCD4; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; }
-  .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa; text-align: center; line-height: 1.8; }
+  /* フッター */
+  .site-footer { background: #1A9AB0; color: white; text-align: center; padding: 32px 20px; font-size: 13px; line-height: 2; margin-top: auto; }
+  .site-footer a { color: white; }
 </style>
 </head>
 <body>
-  <div class="complete-box">
-    <div class="complete-icon">✓</div>
-    <h2>お申し込みが完了しました！</h2>
-    <p>
-      ご決済ありがとうございます。<br>
-      ご登録のメールアドレスへ確認メールをお送りしました。<br>
-      メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
-      ご不明な点は <strong style="color:#1A9AB0;">082-545-2402</strong> までお問い合わせください。
-    </p>
-    <div class="btn-wrap">
-      <a href="https://belageapp.github.io/holiscare-academy/mypage_login.html" class="btn-primary">マイページへ →</a>
-      <a href="https://academy.holiscare.or.jp" class="btn-secondary">トップページへ</a>
-    </div>
-    <div class="footer">
-      <p>特定非営利活動法人Social Care Good　ホリスケアアカデミー</p>
-      <p>広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F</p>
-      <p>TEL：082-545-2402　／　info@holiscare.or.jp</p>
-    </div>
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <a href="https://academy.holiscare.or.jp">
+      <img src="images/logo.png" alt="ホリスケアアカデミー">
+    </a>
+    <a href="tel:0825452402" class="tel">📞 082-545-2402</a>
+  </header>
+
+  <!-- ヒーロー -->
+  <div class="hero">
+    <h1>オンライン初任者研修<br>お申し込みフォーム</h1>
   </div>
+
+  <!-- ステップ -->
+  <div class="steps">
+    <div class="step-item done"><div class="step-num">1</div>情報を入力</div>
+    <div class="step-line done"></div>
+    <div class="step-item done"><div class="step-num">2</div>内容を確認</div>
+    <div class="step-line done"></div>
+    <div class="step-item active"><div class="step-num">3</div>申し込み完了</div>
+  </div>
+
+  <!-- メイン -->
+  <main>
+    <div class="complete-box">
+      <div class="complete-icon">✓</div>
+      <h2>お申し込みが完了しました！</h2>
+      <p>
+        ご決済ありがとうございます。<br>
+        ご登録のメールアドレスへ確認メールをお送りしました。<br>
+        メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
+        ご不明な点は <strong style="color:#1A9AB0;">082-545-2402</strong> までお問い合わせください。
+      </p>
+      <div class="btn-wrap">
+        <a href="https://belageapp.github.io/holiscare-academy/mypage_login.html" class="btn-primary">マイページへ →</a>
+        <a href="https://academy.holiscare.or.jp" class="btn-secondary">トップページへ</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <strong>特定非営利活動法人Social Care Good　ホリスケアアカデミー</strong><br>
+    〒730-0051 広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F<br>
+    TEL：082-545-2402　／　info@holiscare.or.jp<br>
+    <a href="tokutei.html">特定商取引法に基づく表記</a>
+  </footer>
 </body>
 </html>
