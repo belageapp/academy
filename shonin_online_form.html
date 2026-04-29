@@ -478,16 +478,22 @@
             </div>
             <input type="hidden" name="birthdate" id="birthdate">
             <!-- ピッカーモーダル -->
-            <div id="bdpicker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
-              <div style="background:#fff; width:100%; max-width:480px; border-radius:16px 16px 0 0; padding-bottom:env(safe-area-inset-bottom);">
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px 8px;">
-                  <button type="button" onclick="closeBdPicker(false)" style="background:none; border:none; font-size:15px; color:#888; cursor:pointer;">キャンセル</button>
-                  <span style="font-weight:600; font-size:15px;">生年月日</span>
-                  <button type="button" onclick="closeBdPicker(true)" style="background:none; border:none; font-size:15px; color:var(--teal); font-weight:600; cursor:pointer;">完了</button>
+<div id="bdpicker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+              <div style="background:#fff; width:90%; max-width:400px; border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <!-- ヘッダー -->
+                <div style="background:linear-gradient(135deg, #2BBCD4, #1A9AB0); padding:20px 24px 16px;">
+                  <p style="color:rgba(255,255,255,0.8); font-size:12px; margin:0 0 4px; letter-spacing:1px;">SELECT DATE</p>
+                  <p style="color:white; font-size:20px; font-weight:700; margin:0;" id="bdpicker-preview">生年月日を選択</p>
                 </div>
-                <div style="display:flex; justify-content:center; gap:0; height:200px; overflow:hidden; position:relative;">
+                <!-- ボタン行 -->
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px 4px;">
+                  <button type="button" onclick="closeBdPicker(false)" style="background:none; border:none; font-size:14px; color:#aaa; cursor:pointer; padding:4px 8px;">キャンセル</button>
+                  <button type="button" onclick="closeBdPicker(true)" style="background:var(--teal); border:none; font-size:14px; color:white; font-weight:600; cursor:pointer; padding:8px 20px; border-radius:20px;">決定</button>
+                </div>
+                <!-- ピッカー本体 -->
+                <div style="display:flex; justify-content:center; gap:0; height:200px; overflow:hidden; position:relative; padding:0 16px 16px;">
                   <!-- 選択中ハイライト -->
-                  <div style="position:absolute; top:50%; left:0; right:0; height:40px; transform:translateY(-50%); background:rgba(43,188,212,0.08); border-top:1px solid var(--teal); border-bottom:1px solid var(--teal); pointer-events:none; z-index:1;"></div>
+                  <div style="position:absolute; top:50%; left:16px; right:16px; height:40px; transform:translateY(-50%); background:rgba(43,188,212,0.1); border-top:2px solid var(--teal); border-bottom:2px solid var(--teal); border-radius:8px; pointer-events:none; z-index:1;"></div>
                   <div id="bdp-year" class="bdp-col" style="flex:2; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
                   <div id="bdp-month" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
                   <div id="bdp-day" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
@@ -769,6 +775,8 @@
     buildDayCol(cy, cm, cd);
     document.getElementById('bdp-year').addEventListener('scroll', onYearMonthScroll, {passive:true});
     document.getElementById('bdp-month').addEventListener('scroll', onYearMonthScroll, {passive:true});
+    document.getElementById('bdp-day').addEventListener('scroll', () => { clearTimeout(window._bdpTimer2); window._bdpTimer2 = setTimeout(updateBdPreview, 150); }, {passive:true});
+    updateBdPreview();
   }
   function buildCol(id, items, selected) {
     const el = document.getElementById(id);
@@ -790,6 +798,14 @@
     const items = el.querySelectorAll('.bdp-item:not(.pad)');
     return items[idx] ? +items[idx].dataset.v : null;
   }
+function updateBdPreview() {
+    const y = getColVal('bdp-year');
+    const m = getColVal('bdp-month');
+    const d = getColVal('bdp-day');
+    if (y && m && d) {
+      document.getElementById('bdpicker-preview').textContent = `${y}年${m}月${d}日`;
+    }
+  }
   function onYearMonthScroll() {
     clearTimeout(window._bdpTimer);
     window._bdpTimer = setTimeout(() => {
@@ -797,6 +813,7 @@
       const m = getColVal('bdp-month');
       const d = getColVal('bdp-day');
       if (y && m) buildDayCol(y, m, d || 1);
+      updateBdPreview();
     }, 150);
   }
   function closeBdPicker(save) {
