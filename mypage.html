@@ -372,28 +372,59 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
       document.getElementById('course-list').innerHTML = '<div class="no-course">データの取得に失敗しました: ' + e.message + '</div>';
     }
 
-    // お知らせ（固定 or Firestoreから取得）
+    // お知らせをFirestoreから取得
     const noticeList = document.getElementById('notice-list');
-    noticeList.innerHTML = `
-      <div class="notice-item unread">
-        <div class="notice-dot"></div>
-        <div>
-          <div class="notice-date">2026年4月26日</div>
-          <div class="notice-title">マイページをリニューアルしました</div>
-          <div class="notice-preview">講座ごとの詳細ページからコース状況・添削・動画・書類の確認ができるようになりました。</div>
-        </div>
-      </div>
-      <div class="notice-item">
-        <div class="notice-dot" style="background:var(--border);"></div>
-        <div>
-          <div class="notice-date">2026年4月18日</div>
-          <div class="notice-title">お申し込みありがとうございます</div>
-          <div class="notice-preview">ホリスケアアカデミーへのお申し込みを受け付けました。</div>
-        </div>
-      </div>
-    `;
-    document.getElementById('unread-count').textContent = '1';
-    document.getElementById('unread-count').style.display = 'inline';
+    const uid = user.uid;
+    const email = user.email;
+    try {
+      const { collection, query, where, orderBy, getDocs, or } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const q = query(
+        collection(db, 'notices'),
+        orderBy('createdAt', 'desc')
+      );
+      const snap = await getDocs(q);
+      const notices = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(n => {
+          if (n.target === 'all') return true;
+          if (n.target === 'specific' && n.emails && n.emails.includes(email)) return true;
+          if (n.target === 'selected' && n.targetUids && n.targetUids.includes(uid)) return true;
+          return false;
+        });
+
+      if (notices.length === 0) {
+        noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせはありません</div>';
+        return;
+      }
+
+      // 既読管理（localStorageで管理）
+      const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
+      let unreadCount = 0;
+
+      noticeList.innerHTML = notices.map(n => {
+        const isRead = readIds.includes(n.id);
+        if (!isRead) unreadCount++;
+        const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
+        return `
+          <div class="notice-item ${isRead ? '' : 'unread'}" onclick="markRead('${n.id}')" style="cursor:pointer;">
+            <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
+            <div>
+              <div class="notice-date">${dt}</div>
+              <div class="notice-title">${n.title}</div>
+              <div class="notice-preview">${n.body}</div>
+              ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+      if (unreadCount > 0) {
+        document.getElementById('unread-count').textContent = unreadCount;
+        document.getElementById('unread-count').style.display = 'inline';
+      }
+    } catch(e) {
+      noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
+    }
   });
 </script>
 
@@ -426,6 +457,18 @@ await window.__updatePassword(window.__auth.currentUser, pw1);
     }
   }
   window.changePassword = changePassword;
+
+  // お知らせ既読管理
+  window.markRead = function(id) {
+    const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
+    if (!readIds.includes(id)) {
+      readIds.push(id);
+      localStorage.setItem('readNotices', JSON.stringify(readIds));
+    }
+    const item = event.currentTarget;
+    item.classList.remove('unread');
+    item.querySelector('.notice-dot').style.background = 'var(--border)';
+  };
 </script>
 
 </body>
