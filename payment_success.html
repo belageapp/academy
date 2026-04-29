@@ -76,7 +76,13 @@
         メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
         ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
       </p>
-      <div class="app-id-box" id="app-id-box"></div>
+      <script>
+    const params = new URLSearchParams(window.location.search);
+    const docId = params.get('docId');
+    if (docId) {
+      document.getElementById('app-id-box').textContent = '受付番号：' + docId;
+    }
+  </script>
     </div>
   </div>
 
