@@ -662,13 +662,27 @@
         <span class="card-head-title">入力内容のご確認</span>
       </div>
       <div class="card-body" style="padding-bottom:24px;">
-        <p style="font-size:13px;color:var(--text-mid);margin:16px 0;">以下の内容でよろしければ「申し込みを確定する」ボタンを押してください。</p>
+        <p id="confirm-desc" style="font-size:13px;color:var(--text-mid);margin:16px 0;">以下の内容でよろしければボタンを押してください。</p>
         <table class="conf-table" id="conf-table"></table>
       </div>
     </div>
     <div class="conf-actions">
       <button class="back-btn" onclick="backToForm()">← 入力画面に戻る</button>
       <button class="final-btn" id="final-btn" onclick="finalSubmit()">申し込みを確定する ✓</button>
+      <script>
+        (function(){
+          const p = window.__formVals?.payment;
+          const btn = document.getElementById('final-btn');
+          const desc = document.getElementById('confirm-desc');
+          if (p === 'クレジットカード') {
+            btn.textContent = 'クレジット決済へ →';
+            desc.textContent = '以下の内容でよろしければ決済画面へ進んでください。決済が完了した時点で申し込みが確定されます。';
+          } else {
+            btn.textContent = '申し込みを確定する ✓';
+            desc.textContent = '以下の内容でよろしければ「申し込みを確定する」ボタンを押してください。';
+          }
+        })();
+      </script>
     </div>
   </div>
 
