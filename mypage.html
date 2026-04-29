@@ -411,7 +411,14 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
     if (pw1.length < 8) { msg.style.display='block'; msg.style.color='#E05050'; msg.textContent='8文字以上で入力してください'; return; }
     if (pw1 !== pw2)    { msg.style.display='block'; msg.style.color='#E05050'; msg.textContent='パスワードが一致しません'; return; }
     try {
-      await window.__updatePassword(window.__auth.currentUser, pw1);
+await window.__updatePassword(window.__auth.currentUser, pw1);
+      // パスワード変更通知メール送信
+      const user = window.__auth.currentUser;
+      fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendPasswordChangedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, name: user.displayName || '' })
+      });
       msg.style.display='block'; msg.style.color='#4CAF72'; msg.textContent='パスワードを変更しました！';
       document.getElementById('new-pw').value=''; document.getElementById('new-pw2').value='';
     } catch(e) {
