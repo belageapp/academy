@@ -202,6 +202,7 @@
     .flow-item.done { background: #E8F5E9; color: #2E7D32; }
     .flow-item.active { background: #FFF8E1; color: #F57C00; }
     .flow-item.locked { background: var(--bg); color: var(--text-light); }
+    .flow-item.rejected { background: #FFF3F3; color: #c0392b; }
     .flow-icon { font-size: 16px; min-width: 20px; text-align: center; }
     .flow-divider { border: none; border-top: 1px dashed var(--border); margin: 16px 0; }
     .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -781,57 +782,20 @@ const data = snap.data();
   };
 
   // 講座の流れチェックリスト
-  function renderCourseFlow(data) {
-    const el = document.getElementById('course-flow-card');
-    if (!el) return;
-    const status = data.status || '';
-    const docStatus = data.documentStatus || {};
-    const photoOk = docStatus.photo === 'approved';
-    const photoPending = docStatus.photo === 'pending';
-    const idOk = docStatus.idDocument === 'approved';
-    const idPending = docStatus.idDocument === 'pending';
-    const pledgeOk = data.pledgeSigned === true;
-    const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
-    const isActive = ['active', 'completed'].includes(status);
-    const isCompleted = status === 'completed';
-    const test1Ok = data.test1Passed === true;
-    const test2Ok = data.test2Passed === true;
-    const ojtOk = data.ojtPassed === true;
+const photoRejected = docStatus.photo === 'rejected';
+    const idRejected = docStatus.idDocument === 'rejected';
+    const photoRejectReason = docStatus.photoRejectReason || '';
+    const idRejectReason = docStatus.idDocumentRejectReason || '';
 
-    function item(icon, label, done, active, locked) {
-      const cls = done ? 'done' : (locked ? 'locked' : 'active');
-      const ic = done ? '✅' : (locked ? '🔒' : '🔄');
-      return `<div class="flow-item ${cls}"><span class="flow-icon">${ic}</span>${label}</div>`;
-    }
-
-    let html = '';
-
-    // STEP0
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟦 STEP 0｜受講確定</div>`;
-    html += item('', '受講料のお支払い', isConfirmed, !isConfirmed, false);
-    html += `</div><hr class="flow-divider">`;
-
-    // STEP1
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
-    const photoBtn = isConfirmed && !photoOk && !photoPending ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
-    const idBtn = isConfirmed && !idOk && !idPending ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    const photoBtn = isConfirmed && !photoOk && !photoPending && !photoRejected ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    const idBtn = isConfirmed && !idOk && !idPending && !idRejected ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
     const photoPendingBadge = photoPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
     const idPendingBadge = idPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
-    html += `<div class="flow-item ${photoOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${photoOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}${photoPendingBadge}</div>`;
-    html += `<div class="flow-item ${idOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${idOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}${idPendingBadge}</div>`;
-    html += `<div class="flow-item ${pledgeOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${pledgeOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>誓約書への同意${isConfirmed && !pledgeOk ? `<button onclick="openPledge()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確認・同意する</button>` : ''}</div>`;
-    html += `</div><hr class="flow-divider">`;
+    const photoRejectedBadge = photoRejected ? `<span style="margin-left:auto;font-size:11px;background:#FFF3F3;color:#c0392b;padding:3px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('photo')" style="margin-left:8px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">再提出する</button>${photoRejectReason ? `<div style="width:100%;font-size:11px;color:#c0392b;margin-top:4px;">理由：${photoRejectReason}</div>` : ''}` : '';
+    const idRejectedBadge = idRejected ? `<span style="margin-left:auto;font-size:11px;background:#FFF3F3;color:#c0392b;padding:3px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('id')" style="margin-left:8px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">再提出する</button>${idRejectReason ? `<div style="width:100%;font-size:11px;color:#c0392b;margin-top:4px;">理由：${idRejectReason}</div>` : ''}` : '';
 
-    // STEP2
-    const step1Done = photoOk && idOk && pledgeOk;
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟩 STEP 2｜受講中 ${!step1Done ? '<span style="font-size:11px;color:var(--text-light);">（受講準備完了後に解放）</span>' : ''}</div>`;
-    html += item('', '添削課題の提出', data.taskAllDone === true, step1Done && !data.taskAllDone, !step1Done);
-    html += item('', '動画視聴（自社）', data.videoAllDone === true, step1Done && !data.videoAllDone, !step1Done);
-    html += item('', '動画視聴（外部）', data.externalVideoDone === true, step1Done && !data.externalVideoDone, !step1Done);
-    html += `</div><hr class="flow-divider">`;
+    html += `<div class="flow-item ${photoOk ? 'done' : photoRejected ? 'rejected' : (isConfirmed ? 'active' : 'locked')}" style="flex-wrap:wrap;"><span class="flow-icon">${photoOk ? '✅' : photoRejected ? '⚠️' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}${photoPendingBadge}${photoRejectedBadge}</div>`;
+    html += `<div class="flow-item ${idOk ? 'done' : idRejected ? 'rejected' : (isConfirmed ? 'active' : 'locked')}" style="flex-wrap:wrap;"><span class="flow-icon">${idOk ? '✅' : idRejected ? '⚠️' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}${idPendingBadge}${idRejectedBadge}</div>`;
 
     // STEP3
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
