@@ -465,12 +465,12 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       console.error(e);
     }
 
-    // お知らせをFirestoreから取得
+// お知らせをFirestoreから取得
     const noticeList = document.getElementById('notice-list');
     const uid = user.uid;
     const email = user.email;
     try {
-      const { collection, query, orderBy, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { collection, query, orderBy, getDocs, getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = getFirestore();
       const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
@@ -486,21 +486,45 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       if (notices.length === 0) {
         noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせはありません</div>';
       } else {
-        const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
-        noticeList.innerHTML = notices.map(n => {
-          const isRead = readIds.includes(n.id);
-          const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
-          return `
-            <div class="notice-item ${isRead ? '' : 'unread'}" onclick="markRead('${n.id}', this)" style="cursor:pointer;">
-              <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
-              <div>
-                <div class="notice-date">${dt}</div>
-                <div class="notice-title">${n.title}</div>
-                <div class="notice-preview">${n.body}</div>
-                ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
-              </div>
-            </div>`;
-        }).join('');
+        const PER_PAGE = 5;
+        let currentPage = 1;
+        const totalPages = Math.ceil(notices.length / PER_PAGE);
+
+        function renderNotices() {
+          const start = (currentPage - 1) * PER_PAGE;
+          const pageItems = notices.slice(start, start + PER_PAGE);
+          const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
+          noticeList.innerHTML = pageItems.map(n => {
+            const isRead = readIds.includes(n.id);
+            const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
+            return `
+              <div class="notice-item ${isRead ? '' : 'unread'}" onclick="markRead('${n.id}', this)" style="cursor:pointer;">
+                <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
+                <div>
+                  <div class="notice-date">${dt}</div>
+                  <div class="notice-title">${n.title}</div>
+                  <div class="notice-preview">${n.body}</div>
+                  ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
+                </div>
+              </div>`;
+          }).join('');
+          if (totalPages > 1) {
+            let pg = '<div style="display:flex;justify-content:center;align-items:center;gap:8px;padding:12px 0;">';
+            pg += `<button onclick="changePageS(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="padding:4px 12px;border:1px solid #ddd;border-radius:4px;background:${currentPage === 1 ? '#f5f5f5' : '#fff'};cursor:${currentPage === 1 ? 'default' : 'pointer'};color:#555;">‹ 前へ</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+              pg += `<button onclick="changePageS(${i})" style="padding:4px 10px;border:1px solid ${i === currentPage ? 'var(--teal)' : '#ddd'};border-radius:4px;background:${i === currentPage ? 'var(--teal)' : '#fff'};color:${i === currentPage ? '#fff' : '#555'};cursor:pointer;">${i}</button>`;
+            }
+            pg += `<button onclick="changePageS(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="padding:4px 12px;border:1px solid #ddd;border-radius:4px;background:${currentPage === totalPages ? '#f5f5f5' : '#fff'};cursor:${currentPage === totalPages ? 'default' : 'pointer'};color:#555;">次へ ›</button>`;
+            pg += '</div>';
+            noticeList.innerHTML += pg;
+          }
+        }
+        window.changePageS = function(page) {
+          if (page < 1 || page > totalPages) return;
+          currentPage = page;
+          renderNotices();
+        };
+        renderNotices();
       }
     } catch(e) {
       noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
