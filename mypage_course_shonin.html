@@ -782,7 +782,17 @@ const data = snap.data();
   };
 
   // 講座の流れチェックリスト
-const photoRejected = docStatus.photo === 'rejected';
+  
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟦 STEP 0｜受講確定</div>`;
+    html += item('', '受講料のお支払い', isConfirmed, !isConfirmed, false);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP1
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
+
+    const photoRejected = docStatus.photo === 'rejected';
     const idRejected = docStatus.idDocument === 'rejected';
     const photoRejectReason = docStatus.photoRejectReason || '';
     const idRejectReason = docStatus.idDocumentRejectReason || '';
