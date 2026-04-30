@@ -631,7 +631,7 @@
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       document.getElementById('t-user').textContent = user.email;
-      setTimeout(() => window.loadData(), 100);
+      setTimeout(() => { if (typeof window.loadData === 'function') window.loadData(); }, 500);
     } else {
       document.getElementById('login-wrap').style.display = 'flex';
       document.getElementById('app').classList.remove('show');
