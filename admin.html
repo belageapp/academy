@@ -364,9 +364,9 @@
       <span class="sb-tag">ADMIN</span>
     </div>
     <div class="sb-section">メニュー</div>
-    <div class="sb-item active" id="menu-applications" onclick="window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
-    <div class="sb-item" id="menu-notices" onclick="window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
-    <div class="sb-item" id="menu-documents" onclick="window.showSection('documents')"><span class="ico">🪪</span>書類確認</div>
+    <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
+    <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
+    <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -631,7 +631,7 @@
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       document.getElementById('t-user').textContent = user.email;
-      window.loadData();
+      setTimeout(() => window.loadData(), 100);
     } else {
       document.getElementById('login-wrap').style.display = 'flex';
       document.getElementById('app').classList.remove('show');
