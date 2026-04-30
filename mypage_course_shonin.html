@@ -178,6 +178,14 @@
 
     /* 書類発行 */
     .doc-section { margin-bottom: 28px; }
+    .flow-step { margin-bottom: 20px; }
+    .flow-step-title { font-weight: bold; font-size: 14px; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .flow-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; background: var(--bg); }
+    .flow-item.done { background: #E8F5E9; color: #2E7D32; }
+    .flow-item.active { background: #FFF8E1; color: #F57C00; }
+    .flow-item.locked { background: var(--bg); color: var(--text-light); }
+    .flow-icon { font-size: 16px; min-width: 20px; text-align: center; }
+    .flow-divider { border: none; border-top: 1px dashed var(--border); margin: 16px 0; }
     .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .doc-btn {
       background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px;
@@ -246,6 +254,14 @@
   </div>
 
   <!-- 受講内容・添削 -->
+  <!-- 講座の流れ -->
+  <div class="doc-section" id="course-flow-section">
+    <div class="section-title">📌 講座の流れ</div>
+    <div class="card" id="course-flow-card">
+      <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
+    </div>
+  </div>
+
   <div class="grid-2">
     <div class="card">
       <div class="card-title">
@@ -386,8 +402,9 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
       const snap = await getDoc(doc(db, 'applications', docId));
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
 
-      const data = snap.data();
+const data = snap.data();
       const status = data.status || 'pending';
+      renderCourseFlow(data);
       const statusText = statusLabel[status] || status;
 
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
@@ -532,6 +549,70 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
   });
 
   window.__appData = {};
+
+  // 講座の流れチェックリスト
+  function renderCourseFlow(data) {
+    const el = document.getElementById('course-flow-card');
+    if (!el) return;
+    const status = data.status || '';
+    const docStatus = data.documentStatus || {};
+    const photoOk = docStatus.photo === 'approved';
+    const idOk = docStatus.idDocument === 'approved';
+    const pledgeOk = data.pledgeSigned === true;
+    const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
+    const isActive = ['active', 'completed'].includes(status);
+    const isCompleted = status === 'completed';
+    const test1Ok = data.test1Passed === true;
+    const test2Ok = data.test2Passed === true;
+    const ojtOk = data.ojtPassed === true;
+
+    function item(icon, label, done, active, locked) {
+      const cls = done ? 'done' : (locked ? 'locked' : 'active');
+      const ic = done ? '✅' : (locked ? '🔒' : '🔄');
+      return `<div class="flow-item ${cls}"><span class="flow-icon">${ic}</span>${label}</div>`;
+    }
+
+    let html = '';
+
+    // STEP0
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟦 STEP 0｜受講確定</div>`;
+    html += item('', '受講料のお支払い', isConfirmed, !isConfirmed, false);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP1
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
+    html += item('', '顔写真の提出', photoOk, isConfirmed && !photoOk, !isConfirmed);
+    html += item('', '本人確認書類の提出', idOk, isConfirmed && !idOk, !isConfirmed);
+    html += item('', '誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, !isConfirmed);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP2
+    const step1Done = photoOk && idOk && pledgeOk;
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟩 STEP 2｜受講中 ${!step1Done ? '<span style="font-size:11px;color:var(--text-light);">（受講準備完了後に解放）</span>' : ''}</div>`;
+    html += item('', '添削課題の提出', data.taskAllDone === true, step1Done && !data.taskAllDone, !step1Done);
+    html += item('', '動画視聴（自社）', data.videoAllDone === true, step1Done && !data.videoAllDone, !step1Done);
+    html += item('', '動画視聴（外部）', data.externalVideoDone === true, step1Done && !data.externalVideoDone, !step1Done);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP3
+    const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟧 STEP 3｜テスト ${!step2Done ? '<span style="font-size:11px;color:var(--text-light);">（受講完了後に解放）</span>' : ''}</div>`;
+    html += item('', 'テスト１', test1Ok, step2Done && !test1Ok, !step2Done);
+    html += item('', 'テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok && !test2Ok, !step2Done || !test1Ok);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP4
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟥 STEP 4｜修了 ${!test2Ok ? '<span style="font-size:11px;color:var(--text-light);">（テスト２合格後に解放）</span>' : ''}</div>`;
+    html += item('', 'OJT完了（本修了証発行・郵送）', ojtOk, test2Ok && !ojtOk, !test2Ok);
+    html += `</div>`;
+
+    el.innerHTML = html;
+  }
 </script>
 
 <script>
