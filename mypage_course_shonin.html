@@ -471,7 +471,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
     const email = user.email;
     try {
       const { collection, query, orderBy, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = window.__db;
+      const db = getFirestore();
       const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
       const notices = snap.docs
