@@ -425,14 +425,14 @@
       <canvas id="camera-canvas" style="display:none;"></canvas>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button onclick="capturePhoto()" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">📸 撮影する</button>
-        <button onclick="closeCamera()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">キャンセル</button>
+        <button onclick="closeCamera()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">撮影をやめる</button>
       </div>
     </div>
 
     <div id="upload-progress" style="display:none;font-size:13px;color:var(--teal);text-align:center;margin-bottom:12px;">アップロード中...</div>
 
     <div style="display:flex;gap:10px;">
-      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">キャンセル</button>
+      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">提出をキャンセル</button>
       <button onclick="submitUpload()" id="upload-submit-btn" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold;">提出する</button>
     </div>
   </div>
@@ -705,7 +705,15 @@ const data = snap.data();
 
   window.triggerCamera = async function(side) {
     currentCameraSide = side;
-    document.getElementById('camera-label').textContent = side === 'front' ? '📷 カメラ撮影（表面）' : '📷 カメラ撮影（裏面）';
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // スマホはネイティブカメラを使用
+      const inputId = `upload-input-${side}-camera`;
+      document.getElementById(inputId).click();
+      return;
+    }
+    const label = currentUploadType === 'photo' ? '📷 カメラ撮影' : side === 'front' ? '📷 カメラ撮影（表面）' : '📷 カメラ撮影（裏面）';
+    document.getElementById('camera-label').textContent = label;
     document.getElementById('camera-section').style.display = 'block';
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
