@@ -336,6 +336,45 @@
 </div>
 
 <!-- 課題モーダル -->
+<!-- 書類アップロードモーダル -->
+<div class="modal-overlay" id="upload-modal" style="display:none;" onclick="if(event.target===this)closeUpload()">
+  <div class="modal">
+    <div class="modal-title" id="upload-modal-title">書類のアップロード</div>
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;" id="upload-modal-desc"></div>
+
+    <!-- 本人確認書類の種類選択 -->
+    <div id="id-type-section" style="display:none;margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">書類の種類を選択してください</label>
+      <select id="id-doc-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;">
+        <option value="">選択してください</option>
+        <option value="運転免許証">運転免許証</option>
+        <option value="パスポート">パスポート</option>
+        <option value="在留カード">在留カード</option>
+        <option value="学生証（顔写真付き）">学生証（顔写真付き）</option>
+        <option value="健康保険証＋住民票">健康保険証＋住民票</option>
+      </select>
+    </div>
+
+    <div id="upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer;margin-bottom:16px;" onclick="document.getElementById('upload-input').click()">
+      <div style="font-size:32px;margin-bottom:8px;">📁</div>
+      <div style="font-size:13px;color:var(--text-mid);">タップしてファイルを選択<br>またはカメラで撮影</div>
+      <input type="file" id="upload-input" accept="image/*,application/pdf" capture="environment" style="display:none;" onchange="previewFile(event)">
+    </div>
+
+    <div id="upload-preview" style="display:none;margin-bottom:16px;text-align:center;">
+      <img id="preview-img" style="max-width:100%;max-height:200px;border-radius:8px;margin-bottom:8px;" src="">
+      <div id="preview-name" style="font-size:12px;color:var(--text-mid);"></div>
+    </div>
+
+    <div id="upload-progress" style="display:none;font-size:13px;color:var(--teal);text-align:center;margin-bottom:12px;">アップロード中...</div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">キャンセル</button>
+      <button onclick="submitUpload()" id="upload-submit-btn" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold;">提出する</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="task-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeTask()">✕</button>
@@ -347,7 +386,8 @@
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFirestore, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
   const cfg = {
 apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
@@ -550,6 +590,100 @@ const data = snap.data();
 
   window.__appData = {};
 
+  // アップロード機能
+  let currentUploadType = '';
+
+  window.openUpload = function(type) {
+    currentUploadType = type;
+    const modal = document.getElementById('upload-modal');
+    const title = document.getElementById('upload-modal-title');
+    const desc = document.getElementById('upload-modal-desc');
+    const idSection = document.getElementById('id-type-section');
+    document.getElementById('upload-preview').style.display = 'none';
+    document.getElementById('upload-input').value = '';
+    document.getElementById('upload-progress').style.display = 'none';
+    if (type === 'photo') {
+      title.textContent = '顔写真のアップロード';
+      desc.textContent = '正面を向いた顔写真をアップロードしてください。スマホのカメラで撮影することもできます。';
+      idSection.style.display = 'none';
+    } else {
+      title.textContent = '本人確認書類のアップロード';
+      desc.textContent = '運転免許証・パスポート・在留カード・学生証（顔写真付き）・健康保険証＋住民票のいずれかをアップロードしてください。';
+      idSection.style.display = 'block';
+      document.getElementById('id-doc-type').value = '';
+    }
+    modal.style.display = 'flex';
+  };
+
+  window.closeUpload = function() {
+    document.getElementById('upload-modal').style.display = 'none';
+  };
+
+  window.previewFile = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('upload-preview');
+    const img = document.getElementById('preview-img');
+    const name = document.getElementById('preview-name');
+    preview.style.display = 'block';
+    name.textContent = file.name;
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => { img.src = e.target.result; img.style.display = 'block'; };
+      reader.readAsDataURL(file);
+    } else {
+      img.style.display = 'none';
+    }
+  };
+
+  window.submitUpload = async function() {
+    const file = document.getElementById('upload-input').files[0];
+    if (!file) { alert('ファイルを選択してください'); return; }
+    if (currentUploadType === 'id') {
+      const idType = document.getElementById('id-doc-type').value;
+      if (!idType) { alert('書類の種類を選択してください'); return; }
+    }
+
+    const btn = document.getElementById('upload-submit-btn');
+    const progress = document.getElementById('upload-progress');
+    btn.disabled = true;
+    progress.style.display = 'block';
+
+    try {
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
+      const { getFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const storage = getStorage();
+      const user = auth.currentUser;
+      const ext = file.name.split('.').pop();
+      const path = `documents/${user.uid}/${currentUploadType}_${Date.now()}.${ext}`;
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+
+      const db = getFirestore();
+      const updateData = {};
+      if (currentUploadType === 'photo') {
+        updateData['documentStatus.photo'] = 'pending';
+        updateData['documentStatus.photoUrl'] = url;
+      } else {
+        const idType = document.getElementById('id-doc-type').value;
+        updateData['documentStatus.idDocument'] = 'pending';
+        updateData['documentStatus.idDocumentUrl'] = url;
+        updateData['documentStatus.idDocumentType'] = idType;
+      }
+      await updateDoc(doc(db, 'applications', docId), updateData);
+
+      progress.style.display = 'none';
+      closeUpload();
+      alert('提出しました！確認後に承認されます。');
+      location.reload();
+    } catch(e) {
+      progress.style.display = 'none';
+      btn.disabled = false;
+      alert('アップロードに失敗しました：' + e.message);
+    }
+  };
+
   // 講座の流れチェックリスト
   function renderCourseFlow(data) {
     const el = document.getElementById('course-flow-card');
@@ -583,9 +717,11 @@ const data = snap.data();
     // STEP1
     html += `<div class="flow-step">`;
     html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
-    html += item('', '顔写真の提出', photoOk, isConfirmed && !photoOk, !isConfirmed);
-    html += item('', '本人確認書類の提出', idOk, isConfirmed && !idOk, !isConfirmed);
-    html += item('', '誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, !isConfirmed);
+    const photoBtn = isConfirmed && !photoOk ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    const idBtn = isConfirmed && !idOk ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    html += `<div class="flow-item ${photoOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${photoOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}</div>`;
+    html += `<div class="flow-item ${idOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${idOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}</div>`;
+    html += `<div class="flow-item ${pledgeOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${pledgeOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>誓約書への同意${isConfirmed && !pledgeOk ? `<button onclick="openPledge()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確認・同意する</button>` : ''}</div>`;
     html += `</div><hr class="flow-divider">`;
 
     // STEP2
