@@ -366,7 +366,7 @@
     <div class="sb-section">メニュー</div>
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
-    <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認</div>
+    <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -677,6 +677,7 @@
       const snap = await window.__getDocs(q);
       all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       updateStats(); doFilter();
+      if (typeof loadDocuments === 'function') loadDocuments();
     } catch(e) {
       document.getElementById('tbody').innerHTML = `<tr class="empty-row"><td colspan="8">読み込みエラー：${e.message}</td></tr>`;
     }
@@ -764,7 +765,8 @@ document.getElementById('m-status').value = a.status || 'pending';
       await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
-      updateStats(); doFilter(); closeModal();
+      updateStats(); doFilter();
+      if (typeof loadDocuments === 'function') loadDocuments(); closeModal();
     } catch(e) { alert('更新に失敗しました：'+e.message); }
   }
   window.saveStatus = saveStatus;
@@ -782,6 +784,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       document.getElementById('m-status').value = 'confirmed';
       document.getElementById('bank-confirm-area').style.display = 'none';
       updateStats(); doFilter();
+      if (typeof loadDocuments === 'function') loadDocuments();
       alert('受講確定にしました！');
     } catch(e) { alert('更新に失敗しました：' + e.message); }
   }
@@ -1016,7 +1019,7 @@ document.getElementById('m-status').value = a.status || 'pending';
             ${docStatus.photoUrl ? `
               <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
                 <div style="font-size:12px;font-weight:700;margin-bottom:8px;">📷 顔写真</div>
-                <img src="${docStatus.photoUrl}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
+                <img src="${docStatus.photoUrl}" onclick="openImageModal('${docStatus.photoUrl}')" style="width:100%;max-height:200px;object-fit:contain;border-radius:6px;margin-bottom:8px;cursor:zoom-in;background:#f5f5f5;">
                 <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
                   ステータス：<span style="color:${photoApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${photoApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
                 </div>
@@ -1029,7 +1032,7 @@ document.getElementById('m-status').value = a.status || 'pending';
             ${docStatus.idDocumentUrl ? `
               <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
                 <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🪪 本人確認書類${docStatus.idDocumentType ? `（${docStatus.idDocumentType}）` : ''}</div>
-                <img src="${docStatus.idDocumentUrl}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
+                <img src="${docStatus.idDocumentUrl}" onclick="openImageModal('${docStatus.idDocumentUrl}')" style="width:100%;max-height:200px;object-fit:contain;border-radius:6px;margin-bottom:8px;cursor:zoom-in;background:#f5f5f5;">
                 <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
                   ステータス：<span style="color:${idApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${idApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
                 </div>
@@ -1045,6 +1048,13 @@ document.getElementById('m-status').value = a.status || 'pending';
 
     document.getElementById('doc-st-pending').textContent = pendingCount;
     document.getElementById('doc-st-approved').textContent = approvedCount;
+    const badge = document.getElementById('doc-badge');
+    if (pendingCount > 0) {
+      badge.textContent = pendingCount;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
     listEl.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;padding:20px;text-align:center;">該当する書類はありません</div>';
   }
   window.loadDocuments = loadDocuments;
@@ -1071,7 +1081,27 @@ document.getElementById('m-status').value = a.status || 'pending';
     loadDocuments();
   }
   window.rejectDoc = rejectDoc;
+
+  // 画像拡大モーダル
+  function openImageModal(url) {
+    document.getElementById('image-modal-img').src = url;
+    document.getElementById('image-modal').style.display = 'flex';
+  }
+  window.openImageModal = openImageModal;
+
+  function closeImageModal() {
+    document.getElementById('image-modal').style.display = 'none';
+  }
+  window.closeImageModal = closeImageModal;
 </script>
+
+<!-- 画像拡大モーダル -->
+<div id="image-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;justify-content:center;align-items:center;" onclick="closeImageModal()">
+  <div style="position:relative;max-width:90vw;max-height:90vh;">
+    <img id="image-modal-img" src="" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;">
+    <button onclick="closeImageModal()" style="position:absolute;top:-16px;right:-16px;background:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:32px;text-align:center;">✕</button>
+  </div>
+</div>
 
 </body>
 </html>
