@@ -692,7 +692,9 @@ const data = snap.data();
     const status = data.status || '';
     const docStatus = data.documentStatus || {};
     const photoOk = docStatus.photo === 'approved';
+    const photoPending = docStatus.photo === 'pending';
     const idOk = docStatus.idDocument === 'approved';
+    const idPending = docStatus.idDocument === 'pending';
     const pledgeOk = data.pledgeSigned === true;
     const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
     const isActive = ['active', 'completed'].includes(status);
@@ -718,10 +720,12 @@ const data = snap.data();
     // STEP1
     html += `<div class="flow-step">`;
     html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
-    const photoBtn = isConfirmed && !photoOk ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
-    const idBtn = isConfirmed && !idOk ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
-    html += `<div class="flow-item ${photoOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${photoOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}</div>`;
-    html += `<div class="flow-item ${idOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${idOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}</div>`;
+    const photoBtn = isConfirmed && !photoOk && !photoPending ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    const idBtn = isConfirmed && !idOk && !idPending ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
+    const photoPendingBadge = photoPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
+    const idPendingBadge = idPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
+    html += `<div class="flow-item ${photoOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${photoOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}${photoPendingBadge}</div>`;
+    html += `<div class="flow-item ${idOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${idOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}${idPendingBadge}</div>`;
     html += `<div class="flow-item ${pledgeOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${pledgeOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>誓約書への同意${isConfirmed && !pledgeOk ? `<button onclick="openPledge()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">確認・同意する</button>` : ''}</div>`;
     html += `</div><hr class="flow-divider">`;
 
