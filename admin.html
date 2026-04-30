@@ -1047,7 +1047,31 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('doc-st-approved').textContent = approvedCount;
     listEl.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;padding:20px;text-align:center;">該当する書類はありません</div>';
   }
-  window.loadDocuments = loadDocument
+  window.loadDocuments = loadDocuments;
+
+  async function approveDoc(docId, type) {
+    if (!confirm('承認しますか？')) return;
+    const field = type === 'photo' ? 'documentStatus.photo' : 'documentStatus.idDocument';
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { [field]: 'approved' });
+    alert('承認しました');
+    loadDocuments();
+  }
+  window.approveDoc = approveDoc;
+
+  async function rejectDoc(docId, type) {
+    const reason = prompt('差し戻し理由を入力してください：');
+    if (reason === null) return;
+    const field = type === 'photo' ? 'documentStatus.photo' : 'documentStatus.idDocument';
+    const reasonField = type === 'photo' ? 'documentStatus.photoRejectReason' : 'documentStatus.idDocumentRejectReason';
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
+      [field]: 'rejected',
+      [reasonField]: reason
+    });
+    alert('差し戻しました');
+    loadDocuments();
+  }
+  window.rejectDoc = rejectDoc;
+</script>
 
 </body>
 </html>
