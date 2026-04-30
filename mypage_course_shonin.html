@@ -410,7 +410,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
 
   const statusLabel = {
     pending: '入金待ち', awaiting_payment: '入金待ち',
-    paid: '受講確定', confirmed: '受講確定', video_done: '動画教材完了',
+    pending: '入金待ち', confirmed: '受講確定', active: '受講中', completed: '修了',
     task_done: '添削課題完了', ojt_done: 'OJT完了',
     completed: '修了', cancelled: 'キャンセル',
   };
@@ -461,18 +461,19 @@ const data = snap.data();
       statusEl.className = 'status-badge status-' + statusText;
 
       // ステータスによる表示制御
-      const isConfirmed = ['paid','confirmed','video_done','task_done','ojt_done','completed'].includes(status);
-      const isVideoDone = ['video_done','task_done','ojt_done','completed'].includes(status);
-      const isTaskDone = ['task_done','ojt_done','completed'].includes(status);
+      const isConfirmed = ['confirmed','active','completed'].includes(status);
+      const isVideoDone = ['active','completed'].includes(status);
+      const isTaskDone = ['active','completed'].includes(status);
+      const isActive = ['active','completed'].includes(status);
       const canReceipt = isConfirmed;
 
       // 添削課題・動画教材のロック表示
-      if (!isConfirmed) {
+      if (!isActive) {
         document.querySelector('.grid-2').insertAdjacentHTML('afterend', `
           <div style="background:#fff8e1; border:1px solid #ffe082; border-radius:12px; padding:20px; text-align:center; margin-bottom:28px;">
             <div style="font-size:24px; margin-bottom:8px;">🔒</div>
-            <div style="font-weight:700; color:#B8860B; margin-bottom:4px;">入金確認後に利用できます</div>
-            <div style="font-size:13px; color:#888;">動画教材・添削課題は受講確定後にご利用いただけます</div>
+            <div style="font-weight:700; color:#B8860B; margin-bottom:4px;">${isConfirmed ? '受講準備完了後に利用できます' : '受講確定後に利用できます'}</div>
+            <div style="font-size:13px; color:#888;">動画教材・添削課題は受講開始後にご利用いただけます</div>
           </div>
         `);
         document.querySelector('.video-section').style.display = 'none';
