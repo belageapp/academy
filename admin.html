@@ -366,6 +366,7 @@
     <div class="sb-section">メニュー</div>
     <div class="sb-item active" id="menu-applications" onclick="showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
+    <div class="sb-item" id="menu-documents" onclick="showSection('documents')"><span class="ico">🪪</span>書類確認</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -521,6 +522,34 @@
         </div>
 
       </div><!-- /section-notices -->
+
+      <div id="section-documents" style="display:none;">
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-lbl">確認待ち</div>
+            <div class="stat-val" id="doc-st-pending" style="color:var(--yellow-warn)">—</div>
+          </div>
+          <div class="stat">
+            <div class="stat-lbl">承認済み</div>
+            <div class="stat-val" id="doc-st-approved" style="color:var(--teal)">—</div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">書類確認一覧</div>
+            <div class="thead-acts">
+              <select id="doc-filter" onchange="loadDocuments()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                <option value="pending">確認待ち</option>
+                <option value="all">すべて</option>
+                <option value="approved">承認済み</option>
+              </select>
+            </div>
+          </div>
+          <div id="doc-list" style="padding:16px;">
+            <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+          </div>
+        </div>
+      </div><!-- /section-documents -->
 
     </div>
   </div>
@@ -772,6 +801,8 @@ document.getElementById('m-status').value = a.status || 'pending';
   function showSection(section) {
     document.getElementById('section-applications').style.display = section === 'applications' ? 'block' : 'none';
     document.getElementById('section-notices').style.display      = section === 'notices'      ? 'block' : 'none';
+    document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
+    if (section === 'documents') loadDocuments();
     document.getElementById('topbar-title').textContent = section === 'applications' ? '📋 申し込み管理' : '📢 お知らせ管理';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
@@ -935,7 +966,80 @@ document.getElementById('m-status').value = a.status || 'pending';
     } catch(e) { alert('削除に失敗しました：' + e.message); }
   }
   window.deleteNotice = deleteNotice;
-</script>
+
+  // 書類確認
+  async function loadDocuments() {
+    const filter = document.getElementById('doc-filter').value;
+    const listEl = document.getElementById('doc-list');
+    listEl.innerHTML = '<div style="color:var(--text-light);font-size:13px;">読み込み中...</div>';
+
+    const q = window.__query(window.__col(window.__db, 'applications'), window.__orderBy('createdAt', 'desc'));
+    const snap = await window.__getDocs(q);
+
+    let pendingCount = 0;
+    let approvedCount = 0;
+    let html = '';
+
+    snap.docs.forEach(d => {
+      const data = d.data();
+      const docStatus = data.documentStatus || {};
+      const photoPending = docStatus.photo === 'pending';
+      const photoApproved = docStatus.photo === 'approved';
+      const idPending = docStatus.idDocument === 'pending';
+      const idApproved = docStatus.idDocument === 'approved';
+
+      if (photoPending || idPending) pendingCount++;
+      if (photoApproved && idApproved) approvedCount++;
+
+      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl;
+      if (!hasDocs) return;
+      if (filter === 'pending' && !photoPending && !idPending) return;
+      if (filter === 'approved' && !photoApproved && !idApproved) return;
+
+      html += `
+        <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+              <div style="font-weight:700;font-size:14px;">${data.name || '—'}</div>
+              <div style="font-size:12px;color:var(--text-light);">受講番号：${data.studentNo || '—'} ／ ${data.email || '—'}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            ${docStatus.photoUrl ? `
+              <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="font-size:12px;font-weight:700;margin-bottom:8px;">📷 顔写真</div>
+                <img src="${docStatus.photoUrl}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
+                  ステータス：<span style="color:${photoApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${photoApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
+                </div>
+                ${!photoApproved ? `
+                  <div style="display:flex;gap:6px;">
+                    <button onclick="approveDoc('${d.id}','photo')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
+                    <button onclick="rejectDoc('${d.id}','photo')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
+                  </div>` : ''}
+              </div>` : '<div></div>'}
+            ${docStatus.idDocumentUrl ? `
+              <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🪪 本人確認書類${docStatus.idDocumentType ? `（${docStatus.idDocumentType}）` : ''}</div>
+                <img src="${docStatus.idDocumentUrl}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
+                  ステータス：<span style="color:${idApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${idApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
+                </div>
+                ${!idApproved ? `
+                  <div style="display:flex;gap:6px;">
+                    <button onclick="approveDoc('${d.id}','id')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
+                    <button onclick="rejectDoc('${d.id}','id')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
+                  </div>` : ''}
+              </div>` : '<div></div>'}
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('doc-st-pending').textContent = pendingCount;
+    document.getElementById('doc-st-approved').textContent = approvedCount;
+    listEl.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;padding:20px;text-align:center;">該当する書類はありません</div>';
+  }
+  window.loadDocuments = loadDocument
 
 </body>
 </html>
