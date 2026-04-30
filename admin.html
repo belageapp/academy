@@ -1026,10 +1026,10 @@ document.getElementById('m-status').value = a.status || 'pending';
                 </div>
                 <div style="display:flex;gap:6px;">
                   ${!photoApproved ? `
-                    <button onclick="approveDoc('${d.id}','photo')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
-                    <button onclick="rejectDoc('${d.id}','photo')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
+                    <button onclick="approveDoc('${d.id}','photo')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
+                    <button onclick="rejectDoc('${d.id}','photo')" style="flex:1;padding:6px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
                   ` : `
-                    <button onclick="cancelApprove('${d.id}','photo')" style="flex:1;padding:6px;background:#888;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認取り消し</button>
+                    <button onclick="cancelApprove('${d.id}','photo')" style="flex:1;padding:6px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
                   `}
                 </div>
               </div>` : '<div></div>'}
@@ -1042,10 +1042,10 @@ document.getElementById('m-status').value = a.status || 'pending';
                 </div>
                 <div style="display:flex;gap:6px;">
                   ${!idApproved ? `
-                    <button onclick="approveDoc('${d.id}','id')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
-                    <button onclick="rejectDoc('${d.id}','id')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
+                    <button onclick="approveDoc('${d.id}','id')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
+                    <button onclick="rejectDoc('${d.id}','id')" style="flex:1;padding:6px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
                   ` : `
-                    <button onclick="cancelApprove('${d.id}','id')" style="flex:1;padding:6px;background:#888;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認取り消し</button>
+                    <button onclick="cancelApprove('${d.id}','id')" style="flex:1;padding:6px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
                   `}
                 </div>
               </div>` : '<div></div>'}
@@ -1059,6 +1059,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     if (pendingCount > 0) {
       badge.textContent = pendingCount;
       badge.style.display = 'inline';
+      badge.style.background = '#F57C00';
     } else {
       badge.style.display = 'none';
     }
