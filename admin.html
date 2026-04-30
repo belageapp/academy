@@ -1023,11 +1023,14 @@ document.getElementById('m-status').value = a.status || 'pending';
                 <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
                   ステータス：<span style="color:${photoApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${photoApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
                 </div>
-                ${!photoApproved ? `
-                  <div style="display:flex;gap:6px;">
+                <div style="display:flex;gap:6px;">
+                  ${!photoApproved ? `
                     <button onclick="approveDoc('${d.id}','photo')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
                     <button onclick="rejectDoc('${d.id}','photo')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
-                  </div>` : ''}
+                  ` : `
+                    <button onclick="cancelApprove('${d.id}','photo')" style="flex:1;padding:6px;background:#888;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認取り消し</button>
+                  `}
+                </div>
               </div>` : '<div></div>'}
             ${docStatus.idDocumentUrl ? `
               <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
@@ -1036,11 +1039,14 @@ document.getElementById('m-status').value = a.status || 'pending';
                 <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
                   ステータス：<span style="color:${idApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${idApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
                 </div>
-                ${!idApproved ? `
-                  <div style="display:flex;gap:6px;">
+                <div style="display:flex;gap:6px;">
+                  ${!idApproved ? `
                     <button onclick="approveDoc('${d.id}','id')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認</button>
                     <button onclick="rejectDoc('${d.id}','id')" style="flex:1;padding:6px;background:#f44336;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">差し戻し</button>
-                  </div>` : ''}
+                  ` : `
+                    <button onclick="cancelApprove('${d.id}','id')" style="flex:1;padding:6px;background:#888;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">承認取り消し</button>
+                  `}
+                </div>
               </div>` : '<div></div>'}
           </div>
         </div>`;
@@ -1081,6 +1087,15 @@ document.getElementById('m-status').value = a.status || 'pending';
     loadDocuments();
   }
   window.rejectDoc = rejectDoc;
+
+  async function cancelApprove(docId, type) {
+    if (!confirm('承認を取り消しますか？')) return;
+    const field = type === 'photo' ? 'documentStatus.photo' : 'documentStatus.idDocument';
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { [field]: 'pending' });
+    alert('承認を取り消しました');
+    loadDocuments();
+  }
+  window.cancelApprove = cancelApprove;
 
   // 画像拡大モーダル
   function openImageModal(url) {
