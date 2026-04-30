@@ -589,7 +589,7 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -613,6 +613,7 @@
   window.__login     = (e,p) => signInWithEmailAndPassword(auth,e,p);
   window.__logout    = () => signOut(auth);
   window.__getDocs   = getDocs;
+  window.__getDoc    = getDoc;
   window.__col       = collection;
   window.__query     = query;
   window.__orderBy   = orderBy;
@@ -1065,10 +1066,36 @@ document.getElementById('m-status').value = a.status || 'pending';
   }
   window.loadDocuments = loadDocuments;
 
+  async function sendNotice(appData, title, body) {
+    await window.__addDoc(window.__col(window.__db, 'notices'), {
+      title,
+      body,
+      target: 'specific',
+      emails: [appData.email],
+      createdAt: window.__serverTs(),
+      createdBy: 'info@holiscare.or.jp',
+    });
+  }
+
   async function approveDoc(docId, type) {
     if (!confirm('承認しますか？')) return;
     const field = type === 'photo' ? 'documentStatus.photo' : 'documentStatus.idDocument';
     await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { [field]: 'approved' });
+
+    const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+    const appData = appSnap.data();
+    const label = type === 'photo' ? '顔写真' : '本人確認書類';
+    await sendNotice(appData, `${label}が承認されました`, `提出いただいた${label}が承認されました。マイページで受講準備の状況をご確認ください。`);
+
+    const docStatus = appData.documentStatus || {};
+    const photoOk = type === 'photo' ? true : docStatus.photo === 'approved';
+    const idOk = type === 'id' ? true : docStatus.idDocument === 'approved';
+    const pledgeOk = appData.pledgeSigned === true;
+    if (photoOk && idOk && pledgeOk) {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active' });
+      await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！');
+    }
+
     alert('承認しました');
     loadDocuments();
   }
@@ -1083,6 +1110,11 @@ document.getElementById('m-status').value = a.status || 'pending';
       [field]: 'rejected',
       [reasonField]: reason
     });
+
+    const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+    const appData = appSnap.data();
+    const label = type === 'photo' ? '顔写真' : '本人確認書類';
+    await sendNotice(appData, `${label}が差し戻されました`, `提出いただいた${label}を確認しましたが、再提出が必要です。\n理由：${reason}\nマイページから再提出してください。`);
     alert('差し戻しました');
     loadDocuments();
   }
