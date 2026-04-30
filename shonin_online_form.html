@@ -673,7 +673,7 @@
         メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
         ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
       </p>
-      document.getElementById('app-id-box').textContent = '受付番号：' + docId;
+      
     </div>
   </div>
 
@@ -1075,7 +1075,7 @@ const payment = window.__formVals.payment;
         docId = ref.id;
         document.getElementById('confirm-screen').classList.remove('active');
         document.getElementById('complete-screen').classList.add('active');
-        document.getElementById('app-id-box').textContent = '受付番号：' + docId;
+        
         document.getElementById('s2').classList.replace('active', 'done');
         document.getElementById('line2').classList.add('done');
         document.getElementById('s3').classList.add('active');
