@@ -838,6 +838,23 @@ const data = snap.data();
     html += item('', '動画視聴（自社）', data.videoAllDone === true, step1Done && !data.videoAllDone, !step1Done);
     html += item('', '動画視聴（外部）', data.externalVideoDone === true, step1Done && !data.externalVideoDone, !step1Done);
     html += `</div><hr class="flow-divider">`;
+
+    // STEP3
+    const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟧 STEP 3｜テスト ${!step2Done ? '<span style="font-size:11px;color:var(--text-light);">（受講完了後に解放）</span>' : ''}</div>`;
+    html += item('', 'テスト１', test1Ok, step2Done && !test1Ok, !step2Done);
+    html += item('', 'テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok && !test2Ok, !step2Done || !test1Ok);
+    html += `</div><hr class="flow-divider">`;
+
+    // STEP4
+    html += `<div class="flow-step">`;
+    html += `<div class="flow-step-title">🟥 STEP 4｜修了 ${!test2Ok ? '<span style="font-size:11px;color:var(--text-light);">（テスト２合格後に解放）</span>' : ''}</div>`;
+    html += item('', 'OJT完了（本修了証発行・郵送）', ojtOk, test2Ok && !ojtOk, !test2Ok);
+    html += `</div>`;
+
+    el.innerHTML = html;
+  }
 </script>
 
 <script>
