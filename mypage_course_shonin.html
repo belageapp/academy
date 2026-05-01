@@ -664,6 +664,11 @@ const data = snap.data();
           return false;
         });
 
+      // Firestoreから既読リストを取得
+      const { getDocs: getDocs2, collection: col2, doc: doc2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const readSnap = await getDocs2(col2(db, 'users', uid, 'readNotices'));
+      const readIds = readSnap.docs.map(d => d.id);
+
       if (notices.length === 0) {
         noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせはありません</div>';
       } else {
@@ -674,7 +679,6 @@ const data = snap.data();
         function renderNotices() {
           const start = (currentPage - 1) * PER_PAGE;
           const pageItems = notices.slice(start, start + PER_PAGE);
-          const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
           const unreadCount = notices.filter(n => !readIds.includes(n.id)).length;
           const badge = document.getElementById('unread-count');
           if (badge) {
@@ -1012,14 +1016,26 @@ const data = snap.data();
   }
   window.closeTask = closeTask;
 
-  window.markRead = function(id, el) {
-    const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
-    if (!readIds.includes(id)) {
-      readIds.push(id);
-      localStorage.setItem('readNotices', JSON.stringify(readIds));
+  window.markRead = async function(id, el) {
+    try {
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = auth.currentUser;
+      if (user) {
+        await setDoc(doc(db, 'users', user.uid, 'readNotices', id), { readAt: new Date() });
+      }
+    } catch(e) {
+      console.error('既読保存エラー:', e);
     }
     el.classList.remove('unread');
     el.querySelector('.notice-dot').style.background = 'var(--border)';
+    // バッジ更新
+    const badge = document.getElementById('unread-count');
+    if (badge && parseInt(badge.textContent) > 0) {
+      const count = parseInt(badge.textContent) - 1;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline' : 'none';
+    }
   };
 
   function generateDoc(type) {
