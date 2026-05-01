@@ -224,13 +224,119 @@
     }
     .modal-overlay.open { display: flex; }
     .modal {
-      background: white; border-radius: 16px; width: 100%; max-width: 480px;
-      max-height: 80vh; overflow-y: auto; padding: 24px;
+      background: white; border-radius: 16px; width: 100%; max-width: 520px;
+      max-height: 88vh; overflow-y: auto; padding: 24px;
     }
     .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
     .modal-close {
       float: right; background: none; border: none; font-size: 20px;
       cursor: pointer; color: var(--text-light); margin-top: -4px;
+    }
+
+    /* 問題進捗バー */
+    .quiz-progress-wrap {
+      margin-bottom: 16px;
+    }
+    .quiz-progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-light); margin-bottom: 6px;
+    }
+    .quiz-progress-bar {
+      height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .quiz-progress-fill {
+      height: 100%; background: var(--teal); border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .quiz-progress-dots {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+    }
+    .quiz-dot {
+      width: 18px; height: 18px; border-radius: 50%; font-size: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; flex-shrink: 0;
+      cursor: default;
+    }
+    .quiz-dot.answered-correct { background: var(--teal); color: white; }
+    .quiz-dot.answered-wrong { background: #F44336; color: white; }
+    .quiz-dot.current { background: var(--teal-light); color: var(--teal-dark); border: 2px solid var(--teal); }
+    .quiz-dot.unanswered { background: var(--bg); color: var(--text-light); border: 1px solid var(--border); }
+
+    /* 問題エリア */
+    .quiz-context {
+      background: #F8F9FA; border-left: 3px solid var(--teal);
+      border-radius: 0 8px 8px 0; padding: 12px 14px;
+      font-size: 12px; color: var(--text-mid); line-height: 1.8;
+      margin-bottom: 14px; white-space: pre-wrap;
+    }
+    .quiz-question {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      line-height: 1.6; margin-bottom: 14px;
+    }
+    .quiz-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .quiz-choice {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; border: 1.5px solid var(--border);
+      border-radius: 10px; cursor: pointer; transition: all 0.15s;
+      font-size: 13px; color: var(--text); line-height: 1.5;
+    }
+    .quiz-choice:hover { border-color: var(--teal); background: var(--teal-pale); }
+    .quiz-choice.selected { border-color: var(--teal); background: var(--teal-pale); }
+    .quiz-choice.correct { border-color: #4CAF50; background: #E8F5E9; color: #2E7D32; }
+    .quiz-choice.wrong { border-color: #F44336; background: #FFEBEE; color: #C62828; }
+    .quiz-choice.show-correct { border-color: #4CAF50; background: #E8F5E9; color: #2E7D32; }
+    .quiz-choice-num {
+      min-width: 20px; height: 20px; border-radius: 50%;
+      background: var(--border); color: var(--text-light);
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .quiz-choice.correct .quiz-choice-num,
+    .quiz-choice.show-correct .quiz-choice-num { background: #4CAF50; color: white; }
+    .quiz-choice.wrong .quiz-choice-num { background: #F44336; color: white; }
+    .quiz-choice.selected:not(.correct):not(.wrong) .quiz-choice-num { background: var(--teal); color: white; }
+
+    /* フィードバック */
+    .quiz-feedback {
+      padding: 10px 14px; border-radius: 8px; font-size: 13px;
+      font-weight: 600; margin-bottom: 14px; display: none;
+    }
+    .quiz-feedback.correct { background: #E8F5E9; color: #2E7D32; }
+    .quiz-feedback.wrong { background: #FFEBEE; color: #C62828; }
+
+    /* ボタン */
+    .quiz-btn {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+    }
+    .quiz-btn-primary { background: var(--teal); color: white; }
+    .quiz-btn-primary:hover { background: var(--teal-dark); }
+    .quiz-btn-primary:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; }
+
+    /* 結果画面 */
+    .quiz-result {
+      text-align: center; padding: 8px 0;
+    }
+    .quiz-result-score {
+      font-size: 48px; font-weight: 900; line-height: 1;
+      margin-bottom: 8px;
+    }
+    .quiz-result-score.pass { color: var(--teal); }
+    .quiz-result-score.fail { color: #F44336; }
+    .quiz-result-label {
+      font-size: 18px; font-weight: 700; margin-bottom: 16px;
+    }
+    .quiz-result-label.pass { color: var(--teal); }
+    .quiz-result-label.fail { color: #F44336; }
+    .quiz-result-detail {
+      font-size: 13px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.8;
+    }
+    .quiz-result-wrong-list {
+      text-align: left; background: #FFF8E1; border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 20px;
+      font-size: 12px; color: var(--text-mid); line-height: 1.8;
     }
 
     @media (max-width: 600px) {
@@ -504,6 +610,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
   // URLパラメータからdocId取得
   const docId = new URLSearchParams(location.search).get('id');
   if (!docId) window.location.href = 'mypage.html';
+  window.__currentDocId = docId;
 
   const statusLabel = {
     pending: '入金待ち', awaiting_payment: '入金待ち',
@@ -615,19 +722,37 @@ const data = snap.data();
         });
       }
 
-      // 添削課題
+      // 添削課題（合格状態・解放状態を管理）
+      const taskDone = data.taskDone || {};
       const taskList = document.getElementById('task-list');
-      taskList.innerHTML = tasks.map(t => `
-        <div class="task-item">
-          <div class="task-num">${t.num}</div>
-          <div style="flex:1;">
-            <div class="task-name">${t.name}</div>
-            <div class="task-count">${t.count}</div>
-          </div>
-          <span class="task-status ${isTaskDone ? 'task-合格' : 'task-未提出'}">${isTaskDone ? '完了' : '未提出'}</span>
-          ${isTaskDone ? '<span style="color:var(--green); font-size:12px;">✅</span>' : `<button class="task-btn" onclick="openTask(${t.num})">回答する</button>`}
-        </div>
-      `).join('');
+      taskList.innerHTML = tasks.map((t, idx) => {
+        const isPassed = taskDone[`round${t.num}`] === true;
+        // 1問目は常に解放、2問目以降は前の課題が合格で解放
+        const isUnlocked = t.num === 1 || taskDone[`round${t.num - 1}`] === true;
+        const locked = !isUnlocked;
+
+        let statusClass = 'task-未提出';
+        let statusLabel = '未提出';
+        if (isPassed) { statusClass = 'task-合格'; statusLabel = '合格'; }
+        else if (!isUnlocked) { statusClass = 'task-未提出'; statusLabel = '🔒 未解放'; }
+
+        return `
+          <div class="task-item" style="${locked ? 'opacity:0.5;' : ''}">
+            <div class="task-num" style="${isPassed ? 'background:var(--green-light);color:#2E7D47;' : ''}">${isPassed ? '✓' : t.num}</div>
+            <div style="flex:1;">
+              <div class="task-name">${t.name}</div>
+              <div class="task-count">${t.count}</div>
+              ${locked ? `<div style="font-size:11px;color:#F57C00;margin-top:2px;">第${t.num - 1}回に合格すると解放されます</div>` : ''}
+            </div>
+            <span class="task-status ${statusClass}">${statusLabel}</span>
+            ${isPassed
+              ? '<span style="color:var(--green); font-size:14px;">✅</span>'
+              : locked
+                ? '<span style="font-size:18px;">🔒</span>'
+                : `<button class="task-btn" onclick="openTask(${t.num})">回答する</button>`
+            }
+          </div>`;
+      }).join('');
 
       // 動画教材
       const videoList = document.getElementById('video-list');
@@ -1004,12 +1129,337 @@ const data = snap.data();
   }
   window.doLogout = doLogout;
 
-  function openTask(num) {
-    document.getElementById('modal-title').textContent = '添削課題 ' + num;
-    document.getElementById('modal-content').innerHTML = '<p style="color:var(--text-mid); font-size:13px;">課題システムは準備中です。</p>';
-    document.getElementById('task-modal').classList.add('open');
+  // ===== 添削問題システム =====
+  const QUIZ_BASE_URL = 'https://belageapp.github.io/holiscare-academy/quiz/';
+
+  // 問題データキャッシュ
+  const quizCache = {};
+
+  // 問題データ読み込み
+  async function loadQuizData(round) {
+    if (quizCache[round]) return quizCache[round];
+    const url = `${QUIZ_BASE_URL}questions_r${round}_final.json`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('問題データの読み込みに失敗しました');
+    const data = await res.json();
+    quizCache[round] = data;
+    return data;
+  }
+
+  // 現在の問題状態
+  let quizState = {
+    round: 0,
+    questions: [],
+    currentIndex: 0,
+    answers: [],      // null=未回答, 番号=選択済み
+    results: [],      // null=未採点, true=正解, false=不正解
+    answered: false,  // 現在の問題に回答済みか
+  };
+
+  async function openTask(num) {
+    const modal = document.getElementById('task-modal');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+
+    title.textContent = '添削課題 ' + num;
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
+    modal.classList.add('open');
+
+    try {
+      const data = await loadQuizData(num);
+      const questions = data.questions;
+
+      // 状態初期化
+      quizState = {
+        round: num,
+        questions: questions,
+        currentIndex: 0,
+        answers: new Array(questions.length).fill(null),
+        results: new Array(questions.length).fill(null),
+        answered: false,
+      };
+
+      // Firestoreから保存済み回答を復元
+      try {
+        const user = window.__auth?.currentUser;
+        if (user) {
+          const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          const db = getFirestore();
+          const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', `round${num}`));
+          if (snap.exists()) {
+            const saved = snap.data();
+            if (saved.answers) quizState.answers = saved.answers;
+            if (saved.results) quizState.results = saved.results;
+            // 最後に回答した問題の次から再開
+            const lastAnswered = quizState.results.lastIndexOf(true) !== -1 || quizState.results.lastIndexOf(false) !== -1
+              ? quizState.results.reduce((acc, r, i) => r !== null ? i : acc, -1)
+              : -1;
+            quizState.currentIndex = Math.min(lastAnswered + 1, questions.length - 1);
+            // すでに全問回答済みなら結果画面へ
+            if (quizState.results.every(r => r !== null)) {
+              renderQuizResult(content);
+              return;
+            }
+          }
+        }
+      } catch(e) { /* 保存なければ最初から */ }
+
+      renderQuizQuestion(content);
+
+    } catch(e) {
+      content.innerHTML = `<p style="color:#c0392b;font-size:13px;">❌ ${e.message}</p>`;
+    }
   }
   window.openTask = openTask;
+
+  // 進捗ドット描画
+  function renderProgressDots(questions, answers, results, currentIndex) {
+    return questions.map((_, i) => {
+      let cls = 'unanswered';
+      if (i === currentIndex) cls = 'current';
+      else if (results[i] === true) cls = 'answered-correct';
+      else if (results[i] === false) cls = 'answered-wrong';
+      return `<div class="quiz-dot ${cls}">${i + 1}</div>`;
+    }).join('');
+  }
+
+  // 問題画面描画
+  function renderQuizQuestion(content) {
+    const { questions, currentIndex, answers, results, answered } = quizState;
+    const q = questions[currentIndex];
+    const total = questions.length;
+    const answeredCount = results.filter(r => r !== null).length;
+    const progressPct = Math.round((answeredCount / total) * 100);
+
+    const isAnswered = results[currentIndex] !== null;
+    const selectedAnswer = answers[currentIndex];
+
+    // 選択肢HTML
+    const choicesHtml = q.choices.map((c, i) => {
+      let cls = '';
+      if (isAnswered) {
+        if (i + 1 === q.answer) cls = 'show-correct';
+        if (i + 1 === selectedAnswer && selectedAnswer !== q.answer) cls = 'wrong';
+        if (i + 1 === selectedAnswer && selectedAnswer === q.answer) cls = 'correct';
+      } else if (i + 1 === selectedAnswer) {
+        cls = 'selected';
+      }
+      return `
+        <div class="quiz-choice ${cls}" onclick="selectChoice(${i + 1})" id="choice-${i+1}">
+          <div class="quiz-choice-num">${i + 1}</div>
+          <div>${c}</div>
+        </div>`;
+    }).join('');
+
+    // フィードバック
+    let feedbackHtml = '';
+    if (isAnswered) {
+      const isCorrect = results[currentIndex];
+      feedbackHtml = `<div class="quiz-feedback ${isCorrect ? 'correct' : 'wrong'}" style="display:block;">
+        ${isCorrect ? '✅ 正解です！' : `❌ 不正解です。正解は「${q.choices[q.answer - 1]}」です。`}
+      </div>`;
+    }
+
+    // 次へボタン or 提出ボタン
+    const isLast = currentIndex === total - 1;
+    const btnLabel = isLast ? '結果を見る' : '次の問題へ';
+    const btnDisabled = (!isAnswered) ? 'disabled' : '';
+
+    content.innerHTML = `
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-label">
+          <span>問題 ${currentIndex + 1} / ${total}</span>
+          <span>${answeredCount} 問回答済み（${progressPct}%）</span>
+        </div>
+        <div class="quiz-progress-bar">
+          <div class="quiz-progress-fill" style="width:${progressPct}%"></div>
+        </div>
+        <div class="quiz-progress-dots">
+          ${renderProgressDots(questions, answers, results, currentIndex)}
+        </div>
+      </div>
+
+      ${q.context ? `<div class="quiz-context">${q.context}</div>` : ''}
+
+      <div class="quiz-question">Q${currentIndex + 1}. ${q.question}</div>
+      <div class="quiz-choices">${choicesHtml}</div>
+      ${feedbackHtml}
+      <button class="quiz-btn quiz-btn-primary" id="quiz-next-btn" onclick="nextQuestion()" ${btnDisabled}>
+        ${isAnswered ? btnLabel : '選択してください'}
+      </button>
+    `;
+
+    // モーダルを先頭にスクロール
+    document.getElementById('task-modal').querySelector('.modal').scrollTop = 0;
+  }
+
+  // 選択肢をクリック
+  window.selectChoice = function(num) {
+    if (quizState.results[quizState.currentIndex] !== null) return; // 回答済みなら無効
+    quizState.answers[quizState.currentIndex] = num;
+
+    // 選択状態を更新
+    quizState.questions[quizState.currentIndex].choices.forEach((_, i) => {
+      const el = document.getElementById(`choice-${i+1}`);
+      if (el) el.classList.toggle('selected', i + 1 === num);
+    });
+
+    // 採点してフィードバック表示
+    const q = quizState.questions[quizState.currentIndex];
+    const isCorrect = num === q.answer;
+    quizState.results[quizState.currentIndex] = isCorrect;
+
+    // 選択肢に正解・不正解クラスを付与
+    q.choices.forEach((_, i) => {
+      const el = document.getElementById(`choice-${i+1}`);
+      if (!el) return;
+      el.classList.remove('selected');
+      if (i + 1 === q.answer) el.classList.add('show-correct');
+      if (i + 1 === num && !isCorrect) el.classList.add('wrong');
+      if (i + 1 === num && isCorrect) el.classList.add('correct');
+    });
+
+    // フィードバック表示
+    const isLast = quizState.currentIndex === quizState.questions.length - 1;
+    const feedback = document.querySelector('.quiz-feedback') || document.createElement('div');
+    if (!feedback.classList.contains('quiz-feedback')) {
+      feedback.className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+      document.querySelector('.quiz-choices').after(feedback);
+    }
+    feedback.className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+    feedback.style.display = 'block';
+    feedback.innerHTML = isCorrect ? '✅ 正解です！' : `❌ 不正解です。正解は「${q.choices[q.answer - 1]}」です。`;
+
+    // 次へボタン有効化
+    const btn = document.getElementById('quiz-next-btn');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = isLast ? '結果を見る' : '次の問題へ';
+    }
+
+    // 進捗ドット更新
+    const dotsWrap = document.querySelector('.quiz-progress-dots');
+    if (dotsWrap) {
+      dotsWrap.innerHTML = renderProgressDots(quizState.questions, quizState.answers, quizState.results, quizState.currentIndex);
+    }
+
+    // 進捗バー更新
+    const answeredCount = quizState.results.filter(r => r !== null).length;
+    const progressPct = Math.round((answeredCount / quizState.questions.length) * 100);
+    const fill = document.querySelector('.quiz-progress-fill');
+    const label = document.querySelector('.quiz-progress-label span:last-child');
+    if (fill) fill.style.width = progressPct + '%';
+    if (label) label.textContent = `${answeredCount} 問回答済み（${progressPct}%）`;
+
+    // Firestoreに保存
+    saveQuizProgress();
+  };
+
+  // 次の問題へ
+  window.nextQuestion = function() {
+    const { currentIndex, questions } = quizState;
+    if (quizState.results[currentIndex] === null) return;
+
+    if (currentIndex >= questions.length - 1) {
+      // 全問終了→結果画面
+      renderQuizResult(document.getElementById('modal-content'));
+    } else {
+      quizState.currentIndex++;
+      renderQuizQuestion(document.getElementById('modal-content'));
+    }
+  };
+
+  // 結果画面描画
+  async function renderQuizResult(content) {
+    const { questions, results, round } = quizState;
+    const total = questions.length;
+    const correct = results.filter(r => r === true).length;
+    const pct = Math.round((correct / total) * 100);
+    const isPassed = pct >= 70;
+
+    // 不正解リスト
+    const wrongList = questions
+      .map((q, i) => ({ q, i, r: results[i] }))
+      .filter(x => x.r === false)
+      .map(x => `<div>・Q${x.i + 1} ${x.q.question.substring(0, 30)}…</div>`)
+      .join('');
+
+    content.innerHTML = `
+      <div class="quiz-result">
+        <div class="quiz-result-score ${isPassed ? 'pass' : 'fail'}">${pct}%</div>
+        <div class="quiz-result-label ${isPassed ? 'pass' : 'fail'}">${isPassed ? '🎉 合格！' : '😢 不合格'}</div>
+        <div class="quiz-result-detail">
+          全${total}問中 <strong>${correct}問</strong> 正解<br>
+          合格基準：70%以上
+        </div>
+        ${!isPassed && wrongList ? `
+          <div class="quiz-result-wrong-list">
+            <div style="font-weight:700;margin-bottom:6px;">⚠️ 不正解だった問題</div>
+            ${wrongList}
+          </div>` : ''}
+        ${isPassed ? `
+          <button class="quiz-btn quiz-btn-primary" onclick="closeTask();location.reload();">
+            ✅ 完了してマイページに戻る
+          </button>` : `
+          <button class="quiz-btn quiz-btn-primary" onclick="retryQuiz()">
+            🔄 もう一度挑戦する
+          </button>`}
+      </div>
+    `;
+
+    // 合格した場合Firestoreに記録
+    if (isPassed) {
+      try {
+        const user = window.__auth?.currentUser;
+        if (user) {
+          const { getFirestore, doc, updateDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          const db = getFirestore();
+          const docId = window.__currentDocId;
+          if (docId) {
+            const appRef = doc(db, 'applications', docId);
+            const snap = await getDoc(appRef);
+            const taskDone = snap.data()?.taskDone || {};
+            taskDone[`round${round}`] = true;
+            const allDone = [1,2,3,4,5].every(r => taskDone[`round${r}`]);
+            await updateDoc(appRef, {
+              [`taskDone.round${round}`]: true,
+              ...(allDone ? { taskAllDone: true } : {})
+            });
+          }
+          // 進捗をクリア
+          const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          await setDoc(doc(db, 'users', user.uid, 'quizProgress', `round${round}`), {
+            passed: true, score: pct, completedAt: new Date()
+          });
+        }
+      } catch(e) { console.error('合格記録エラー:', e); }
+    }
+  }
+
+  // もう一度挑戦
+  window.retryQuiz = function() {
+    const { round, questions } = quizState;
+    quizState.currentIndex = 0;
+    quizState.answers = new Array(questions.length).fill(null);
+    quizState.results = new Array(questions.length).fill(null);
+    renderQuizQuestion(document.getElementById('modal-content'));
+  };
+
+  // Firestoreに進捗保存
+  async function saveQuizProgress() {
+    try {
+      const user = window.__auth?.currentUser;
+      if (!user) return;
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      await setDoc(doc(db, 'users', user.uid, 'quizProgress', `round${quizState.round}`), {
+        answers: quizState.answers,
+        results: quizState.results,
+        currentIndex: quizState.currentIndex,
+        updatedAt: new Date()
+      });
+    } catch(e) { /* 保存エラーは無視 */ }
+  }
 
   function closeTask() {
     document.getElementById('task-modal').classList.remove('open');
