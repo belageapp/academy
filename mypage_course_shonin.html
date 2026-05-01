@@ -302,6 +302,9 @@
       <div id="app-detail">
         <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
         <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
+        <div class="app-row"><span class="app-label">受講開始日</span><span class="app-value" id="app-start">—</span></div>
+        <div class="app-row"><span class="app-label">仮修了期限</span><span class="app-value" id="app-temp-limit">—</span></div>
+        <div class="app-row"><span class="app-label">正式修了期限</span><span class="app-value" id="app-full-limit">—</span></div>
         <div class="app-row"><span class="app-label">修了日</span><span class="app-value" id="app-completed">—</span></div>
         <div class="app-row"><span class="app-label">受講料</span><span class="app-value" id="app-fee">—</span></div>
         <div class="app-row"><span class="app-label">支払方法</span><span class="app-value" id="app-payment">—</span></div>
@@ -330,6 +333,37 @@
     <div class="card">
       <div id="video-list">
         <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 届出書類 -->
+  <div class="doc-section" id="todoke-section" style="display:none;">
+    <div class="section-title">📝 届出書類</div>
+    <div class="card">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">以下の場合は、該当する届出書をご提出ください。</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div>
+            <div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div>
+          </div>
+          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">休講届</div>
+            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により休講を希望するとき</div>
+          </div>
+          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div>
+            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div>
+          </div>
+          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
+        </div>
       </div>
     </div>
   </div>
@@ -515,6 +549,28 @@ const data = snap.data();
       document.getElementById('app-course').textContent = data.course || 'オンライン初任者研修';
         document.getElementById('app-applied').textContent = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—';
         document.getElementById('app-completed').textContent = data.completedAt ? new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
+
+        // 受講開始日・期限表示
+        if (data.activeAt) {
+          const startDate = new Date(data.activeAt.toMillis());
+          const today = new Date();
+          today.setHours(0,0,0,0);
+          document.getElementById('app-start').textContent = startDate.toLocaleDateString('ja-JP');
+
+          const tempLimit = new Date(startDate);
+          tempLimit.setMonth(tempLimit.getMonth() + 3);
+          const fullLimit = new Date(startDate);
+          fullLimit.setMonth(fullLimit.getMonth() + 8);
+
+          const tempDays = Math.ceil((tempLimit - today) / (1000 * 60 * 60 * 24));
+          const fullDays = Math.ceil((fullLimit - today) / (1000 * 60 * 60 * 24));
+
+          const tempColor = tempDays <= 7 ? '#e53935' : tempDays <= 30 ? '#F57C00' : 'inherit';
+          const fullColor = fullDays <= 7 ? '#e53935' : fullDays <= 30 ? '#F57C00' : 'inherit';
+
+          document.getElementById('app-temp-limit').innerHTML = `<span style="color:${tempColor};">${tempLimit.toLocaleDateString('ja-JP')}（残 ${tempDays}日）</span>`;
+          document.getElementById('app-full-limit').innerHTML = `<span style="color:${fullColor};">${fullLimit.toLocaleDateString('ja-JP')}（残 ${fullDays}日）</span>`;
+        }
       document.getElementById('app-fee').textContent = data.fee || '33,000円（税込）';
       document.getElementById('app-payment').textContent = data.payment || '—';
       document.getElementById('app-textbook').textContent =
@@ -528,6 +584,10 @@ const data = snap.data();
       const isVideoDone = status === 'completed';
       const isTaskDone = status === 'completed';
       const isActive = ['active','completed'].includes(status);
+      if (isActive) {
+        const todoke = document.getElementById('todoke-section');
+        if (todoke) todoke.style.display = 'block';
+      }
       const canReceipt = isConfirmed;
 
       // 添削課題・動画教材のロック表示

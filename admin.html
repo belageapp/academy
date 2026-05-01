@@ -1093,7 +1093,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const idOk = type === 'id' ? true : docStatus.idDocument === 'approved';
     const pledgeOk = appData.pledgeSigned === true;
     if (photoOk && idOk && pledgeOk) {
-      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active' });
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active', activeAt: window.__serverTs() });
       await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！');
     }
 
