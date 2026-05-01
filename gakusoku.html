@@ -441,11 +441,23 @@
       const docId = window.__docId;
       const user = auth.currentUser;
 
-      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { doc, updateDoc, serverTimestamp, getDoc, addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(db, 'applications', docId), {
         pledgeSigned: true,
         pledgeSignedAt: serverTimestamp(),
         pledgeSignedBy: user.email,
+      });
+
+      // お知らせ送信
+      const appSnap = await getDoc(doc(db, 'applications', docId));
+      const appData = appSnap.data();
+      await addDoc(collection(db, 'notices'), {
+        title: '誓約書への同意が完了しました',
+        body: '受講誓約書への同意が確認されました。顔写真・本人確認書類の承認が完了次第、受講を開始できます。マイページで状況をご確認ください。',
+        target: 'specific',
+        emails: [appData.email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
       });
 
       btn.textContent = '同意完了 ✅';

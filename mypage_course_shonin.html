@@ -525,8 +525,8 @@ const data = snap.data();
 
       // ステータスによる表示制御
       const isConfirmed = ['confirmed','active','completed'].includes(status);
-      const isVideoDone = ['active','completed'].includes(status);
-      const isTaskDone = ['active','completed'].includes(status);
+      const isVideoDone = status === 'completed';
+      const isTaskDone = status === 'completed';
       const isActive = ['active','completed'].includes(status);
       const canReceipt = isConfirmed;
 
