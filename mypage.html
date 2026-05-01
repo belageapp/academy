@@ -406,11 +406,12 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
         return;
       }
 
-      // 既読管理（localStorageで管理）
-      const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
-      let unreadCount = 0;
-      notices.forEach(n => { if (!readIds.includes(n.id)) unreadCount++; });
+      // Firestoreから既読リストを取得
+      const { getDocs: getDocs2, collection: col2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const readSnap = await getDocs2(col2(db, 'users', uid, 'readNotices'));
+      const readIds = readSnap.docs.map(d => d.id);
 
+      let unreadCount = notices.filter(n => !readIds.includes(n.id)).length;
       if (unreadCount > 0) {
         document.getElementById('unread-count').textContent = unreadCount;
         document.getElementById('unread-count').style.display = 'inline';
@@ -424,7 +425,6 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
       function renderNotices() {
         const start = (currentPage - 1) * PER_PAGE;
         const pageItems = notices.slice(start, start + PER_PAGE);
-        const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
 
         noticeList.innerHTML = pageItems.map(n => {
           const isRead = readIds.includes(n.id);
@@ -498,15 +498,26 @@ await window.__updatePassword(window.__auth.currentUser, pw1);
   window.changePassword = changePassword;
 
   // お知らせ既読管理
-  window.markRead = function(id) {
-    const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
-    if (!readIds.includes(id)) {
-      readIds.push(id);
-      localStorage.setItem('readNotices', JSON.stringify(readIds));
+  window.markRead = async function(id) {
+    try {
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = window.__auth?.currentUser;
+      if (user) {
+        await setDoc(doc(db, 'users', user.uid, 'readNotices', id), { readAt: new Date() });
+      }
+    } catch(e) {
+      console.error('既読保存エラー:', e);
     }
     const item = event.currentTarget;
     item.classList.remove('unread');
     item.querySelector('.notice-dot').style.background = 'var(--border)';
+    const badge = document.getElementById('unread-count');
+    if (badge && parseInt(badge.textContent) > 0) {
+      const count = parseInt(badge.textContent) - 1;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline' : 'none';
+    }
   };
 </script>
 
