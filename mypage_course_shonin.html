@@ -675,6 +675,12 @@ const data = snap.data();
           const start = (currentPage - 1) * PER_PAGE;
           const pageItems = notices.slice(start, start + PER_PAGE);
           const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
+          const unreadCount = notices.filter(n => !readIds.includes(n.id)).length;
+          const badge = document.getElementById('unread-count');
+          if (badge) {
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'inline' : 'none';
+          }
           noticeList.innerHTML = pageItems.map(n => {
             const isRead = readIds.includes(n.id);
             const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
