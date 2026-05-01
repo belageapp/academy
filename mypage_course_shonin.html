@@ -424,9 +424,10 @@
 
     <div class="card">
       <div class="card-title">
-        <div class="card-icon icon-orange">📝</div>
-        添削課題の進捗
+        <div class="card-icon icon-orange">📚</div>
+        eラーニング
       </div>
+      <div style="font-size:11px;color:var(--text-light);margin-bottom:10px;line-height:1.6;">テキストで学習後、各回の確認問題に答えてください。前の回に合格すると次の回が解放されます。</div>
       <div id="task-list">
         <div class="task-item"><span style="color:var(--text-light); font-size:13px;">読み込み中...</span></div>
       </div>
@@ -722,35 +723,34 @@ const data = snap.data();
         });
       }
 
-      // 添削課題（合格状態・解放状態を管理）
+      // eラーニング（合格状態・解放状態を管理）
       const taskDone = data.taskDone || {};
       const taskList = document.getElementById('task-list');
-      taskList.innerHTML = tasks.map((t, idx) => {
+      taskList.innerHTML = tasks.map((t) => {
         const isPassed = taskDone[`round${t.num}`] === true;
-        // 1問目は常に解放、2問目以降は前の課題が合格で解放
         const isUnlocked = t.num === 1 || taskDone[`round${t.num - 1}`] === true;
         const locked = !isUnlocked;
 
         let statusClass = 'task-未提出';
-        let statusLabel = '未提出';
-        if (isPassed) { statusClass = 'task-合格'; statusLabel = '合格'; }
-        else if (!isUnlocked) { statusClass = 'task-未提出'; statusLabel = '🔒 未解放'; }
+        let statusLabel = '未学習';
+        if (isPassed) { statusClass = 'task-合格'; statusLabel = '合格✓'; }
 
         return `
-          <div class="task-item" style="${locked ? 'opacity:0.5;' : ''}">
+          <div class="task-item" style="${locked ? 'opacity:0.45;' : ''}">
             <div class="task-num" style="${isPassed ? 'background:var(--green-light);color:#2E7D47;' : ''}">${isPassed ? '✓' : t.num}</div>
             <div style="flex:1;">
-              <div class="task-name">${t.name}</div>
+              <div class="task-name">第${t.num}回 ${t.name}</div>
               <div class="task-count">${t.count}</div>
-              ${locked ? `<div style="font-size:11px;color:#F57C00;margin-top:2px;">第${t.num - 1}回に合格すると解放されます</div>` : ''}
+              ${locked ? `<div style="font-size:11px;color:#F57C00;margin-top:2px;">🔒 第${t.num - 1}回に合格すると解放</div>` : ''}
             </div>
             <span class="task-status ${statusClass}">${statusLabel}</span>
-            ${isPassed
-              ? '<span style="color:var(--green); font-size:14px;">✅</span>'
-              : locked
-                ? '<span style="font-size:18px;">🔒</span>'
-                : `<button class="task-btn" onclick="openTask(${t.num})">回答する</button>`
-            }
+            ${isPassed ? `
+              <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+                <button class="task-btn" style="background:#6c8ebf;" onclick="openTask(${t.num}, 'review')">復習する</button>
+                <button class="task-btn" style="background:#888;" onclick="openTask(${t.num}, 'retry')">再挑戦</button>
+              </div>`
+            : locked ? '<span style="font-size:18px;flex-shrink:0;">🔒</span>'
+            : `<button class="task-btn" onclick="openTask(${t.num})">学習する</button>`}
           </div>`;
       }).join('');
 
@@ -1156,12 +1156,13 @@ const data = snap.data();
     answered: false,  // 現在の問題に回答済みか
   };
 
-  async function openTask(num) {
+  async function openTask(num, mode) {
     const modal = document.getElementById('task-modal');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
 
-    title.textContent = '添削課題 ' + num;
+    const modeLabel = mode === 'review' ? '📖 復習モード' : mode === 'retry' ? '🔄 再挑戦' : '';
+    title.textContent = `eラーニング 第${num}回 ${modeLabel}`;
     content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
     modal.classList.add('open');
 
@@ -1169,17 +1170,33 @@ const data = snap.data();
       const data = await loadQuizData(num);
       const questions = data.questions;
 
-      // 状態初期化
+      // 復習モード（全問正解を一覧表示）
+      if (mode === 'review') {
+        renderReviewMode(content, questions, num);
+        return;
+      }
+
+      // 再挑戦モード（最初からリセット・Firestoreは上書き）
+      if (mode === 'retry') {
+        quizState = {
+          round: num, questions,
+          currentIndex: 0,
+          answers: new Array(questions.length).fill(null),
+          results: new Array(questions.length).fill(null),
+        };
+        renderQuizQuestion(content);
+        return;
+      }
+
+      // 通常モード：状態初期化
       quizState = {
-        round: num,
-        questions: questions,
+        round: num, questions,
         currentIndex: 0,
         answers: new Array(questions.length).fill(null),
         results: new Array(questions.length).fill(null),
-        answered: false,
       };
 
-      // Firestoreから保存済み回答を復元
+      // Firestoreから保存済み回答を復元（途中再開）
       try {
         const user = window.__auth?.currentUser;
         if (user) {
@@ -1188,14 +1205,18 @@ const data = snap.data();
           const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', `round${num}`));
           if (snap.exists()) {
             const saved = snap.data();
+            if (saved.passed) {
+              // 合格済みなら結果画面へ
+              quizState.results = new Array(questions.length).fill(true);
+              if (saved.answers) quizState.answers = saved.answers;
+              if (saved.results) quizState.results = saved.results;
+              renderQuizResult(content);
+              return;
+            }
             if (saved.answers) quizState.answers = saved.answers;
             if (saved.results) quizState.results = saved.results;
-            // 最後に回答した問題の次から再開
-            const lastAnswered = quizState.results.lastIndexOf(true) !== -1 || quizState.results.lastIndexOf(false) !== -1
-              ? quizState.results.reduce((acc, r, i) => r !== null ? i : acc, -1)
-              : -1;
+            const lastAnswered = quizState.results.reduce((acc, r, i) => r !== null ? i : acc, -1);
             quizState.currentIndex = Math.min(lastAnswered + 1, questions.length - 1);
-            // すでに全問回答済みなら結果画面へ
             if (quizState.results.every(r => r !== null)) {
               renderQuizResult(content);
               return;
@@ -1211,6 +1232,30 @@ const data = snap.data();
     }
   }
   window.openTask = openTask;
+
+  // 復習モード描画（全問一覧で正解を表示）
+  function renderReviewMode(content, questions, num) {
+    const listHtml = questions.map((q, i) => {
+      const correctText = q.choices[q.answer - 1];
+      return `
+        <div style="margin-bottom:16px;padding:12px;background:#F8F9FA;border-radius:10px;border-left:3px solid var(--teal);">
+          ${q.context ? `<div style="font-size:11px;color:var(--text-light);margin-bottom:6px;white-space:pre-wrap;line-height:1.6;">${q.context}</div>` : ''}
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.6;">Q${i+1}. ${q.question}</div>
+          <div style="font-size:12px;color:#2E7D32;background:#E8F5E9;padding:6px 10px;border-radius:6px;">
+            ✅ 正解：${q.answer}. ${correctText}
+          </div>
+          ${q.reference ? `<div style="font-size:11px;color:var(--text-light);margin-top:6px;">📖 参照：${q.reference}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    content.innerHTML = `
+      <div style="font-size:12px;color:var(--text-mid);margin-bottom:14px;padding:10px 12px;background:#EEF6FF;border-radius:8px;line-height:1.6;">
+        📖 全${questions.length}問の正解を確認できます。テキストと照らし合わせて復習しましょう。
+      </div>
+      <div style="max-height:55vh;overflow-y:auto;">${listHtml}</div>
+      <button class="quiz-btn quiz-btn-primary" style="margin-top:14px;" onclick="closeTask()">閉じる</button>
+    `;
+  }
 
   // 進捗ドット描画
   function renderProgressDots(questions, answers, results, currentIndex) {
@@ -1269,7 +1314,7 @@ const data = snap.data();
       <div class="quiz-progress-wrap">
         <div class="quiz-progress-label">
           <span>問題 ${currentIndex + 1} / ${total}</span>
-          <span>${answeredCount} 問回答済み（${progressPct}%）</span>
+          <span style="color:var(--teal);font-size:11px;">✅ 自動保存されています</span>
         </div>
         <div class="quiz-progress-bar">
           <div class="quiz-progress-fill" style="width:${progressPct}%"></div>
@@ -1278,6 +1323,11 @@ const data = snap.data();
           ${renderProgressDots(questions, answers, results, currentIndex)}
         </div>
       </div>
+
+      ${q.reference ? `
+        <div style="background:#FFF8E1;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#795548;line-height:1.7;">
+          📖 <strong>テキスト ${q.reference} を学習してから、下の問題に答えてください。</strong>
+        </div>` : ''}
 
       ${q.context ? `<div class="quiz-context">${q.context}</div>` : ''}
 
@@ -1398,8 +1448,11 @@ const data = snap.data();
             ${wrongList}
           </div>` : ''}
         ${isPassed ? `
-          <button class="quiz-btn quiz-btn-primary" onclick="closeTask();location.reload();">
+          <button class="quiz-btn quiz-btn-primary" style="margin-bottom:8px;" onclick="closeTask();location.reload();">
             ✅ 完了してマイページに戻る
+          </button>
+          <button class="quiz-btn" style="background:#6c8ebf;color:white;margin-bottom:8px;" onclick="openTask(${round}, 'review')">
+            📖 復習する（正解を確認）
           </button>` : `
           <button class="quiz-btn quiz-btn-primary" onclick="retryQuiz()">
             🔄 もう一度挑戦する
