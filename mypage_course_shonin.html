@@ -846,23 +846,48 @@
         const unreadCount = notices.filter(n => !readIds.includes(n.id)).length;
         const badge = document.getElementById('unread-count');
         if (badge) { badge.textContent = unreadCount; badge.style.display = unreadCount > 0 ? 'inline' : 'none'; }
-        noticeList.innerHTML = notices.slice(0,5).map(n => {
-          const isRead = readIds.includes(n.id);
-          const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
-          const nid = 'nb-' + n.id;
-          return `<div class="notice-accordion ${isRead ? '' : 'unread'}" id="ni-${n.id}">
-            <button class="notice-accordion-header" onclick="toggleNotice('${n.id}');markRead('${n.id}', document.getElementById('ni-${n.id}'))">
-              <span class="notice-unread-bar"></span>
-              <span class="notice-acc-date">${dt}</span>
-              <span class="notice-acc-title">${n.title}</span>
-              <span class="notice-acc-arrow" id="na-${n.id}">▼</span>
-            </button>
-            <div class="notice-accordion-body" id="${nid}">
-              <div class="notice-preview">${n.body}</div>
-              ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
-            </div>
-          </div>`;
-        }).join('');
+
+        const PER_PAGE = 5;
+        let currentPage = 1;
+        const totalPages = Math.ceil(notices.length / PER_PAGE);
+
+        function renderNotices() {
+          const pageItems = notices.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+          let html = pageItems.map(n => {
+            const isRead = readIds.includes(n.id);
+            const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
+            const nid = 'nb-' + n.id;
+            return `<div class="notice-accordion ${isRead ? '' : 'unread'}" id="ni-${n.id}">
+              <button class="notice-accordion-header" onclick="toggleNotice('${n.id}');markRead('${n.id}', document.getElementById('ni-${n.id}'))">
+                <span class="notice-unread-bar"></span>
+                <span class="notice-acc-date">${dt}</span>
+                <span class="notice-acc-title">${n.title}</span>
+                <span class="notice-acc-arrow" id="na-${n.id}">▼</span>
+              </button>
+              <div class="notice-accordion-body" id="${nid}">
+                <div class="notice-preview">${n.body}</div>
+                ${n.fileUrl ? '<a href="' + n.fileUrl + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--teal-dark);">📎 ' + n.fileName + '</a>' : ''}
+              </div>
+            </div>`;
+          }).join('');
+
+          if (totalPages > 1) {
+            html += '<div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:12px 0 4px;">';
+            html += '<button onclick="window.changePageN(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + ' style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:' + (currentPage === 1 ? '#f5f5f5' : '#fff') + ';cursor:' + (currentPage === 1 ? 'default' : 'pointer') + ';font-size:12px;color:var(--text-mid);">‹ 前へ</button>';
+            for (let i = 1; i <= totalPages; i++) {
+              html += '<button onclick="window.changePageN(' + i + ')" style="padding:4px 10px;border:1px solid ' + (i === currentPage ? 'var(--teal)' : 'var(--border)') + ';border-radius:6px;background:' + (i === currentPage ? 'var(--teal)' : '#fff') + ';color:' + (i === currentPage ? '#fff' : 'var(--text-mid)') + ';cursor:pointer;font-size:12px;">' + i + '</button>';
+            }
+            html += '<button onclick="window.changePageN(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + ' style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:' + (currentPage === totalPages ? '#f5f5f5' : '#fff') + ';cursor:' + (currentPage === totalPages ? 'default' : 'pointer') + ';font-size:12px;color:var(--text-mid);">次へ ›</button>';
+            html += '</div>';
+          }
+          noticeList.innerHTML = html;
+        }
+        window.changePageN = function(page) {
+          if (page < 1 || page > totalPages) return;
+          currentPage = page;
+          renderNotices();
+        };
+        renderNotices();
       }
     } catch(e) {
       noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
