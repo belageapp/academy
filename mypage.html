@@ -424,10 +424,10 @@ const courseCode = data.courseCode || '4010';
               </div>
               <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
               ${startDate ? '<div class="course-meta">受講開始日：' + startDate.toLocaleDateString('ja-JP') + '</div>' : ''}
-              ${tempLimit ? '<div class="course-meta" style="color:' + tempColor + ';">仮修了期限：' + tempLimit.toLocaleDateString('ja-JP') + (tempDays !== null ? '（残' + tempDays + '日）' : '') + '</div>' : ''}
-              ${fullLimit ? '<div class="course-meta" style="color:' + fullColor + ';">正式修了期限：' + fullLimit.toLocaleDateString('ja-JP') + (fullDays !== null ? '（残' + fullDays + '日）' : '') + '</div>' : ''}
-              ${data.tempCompletedAt ? '<div class="course-meta">仮修了日：' + fmt(data.tempCompletedAt) + '</div>' : ''}
-              ${data.completedAt ? '<div class="course-meta">修了日：' + fmt(data.completedAt) + '</div>' : ''}
+              ${tempLimit ? '<div class="course-meta" style="color:' + (tempColor === 'inherit' ? 'var(--text-mid)' : tempColor) + ';">仮修了期限：' + tempLimit.toLocaleDateString('ja-JP') + (tempDays !== null ? '（残' + tempDays + '日）' : '') + '</div>' : ''}
+              ${fullLimit ? '<div class="course-meta" style="color:' + (fullColor === 'inherit' ? 'var(--text-mid)' : fullColor) + ';">正式修了期限：' + fullLimit.toLocaleDateString('ja-JP') + (fullDays !== null ? '（残' + fullDays + '日）' : '') + '</div>' : ''}
+              ${data.tempCompletedAt ? '<div class="course-meta" style="color:var(--text-mid);">仮修了日：' + fmt(data.tempCompletedAt) + '</div>' : ''}
+              ${data.completedAt ? '<div class="course-meta" style="color:var(--text-mid);">修了日：' + fmt(data.completedAt) + '</div>' : ''}
             </div>
             <div class="course-arrow">›</div>
           `;
@@ -469,8 +469,8 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
                   ${startH ? '<div class="course-meta">受講開始日：' + startH.toLocaleDateString('ja-JP') + '</div>' : ''}
                   ${tempLH ? '<div class="course-meta" style="color:' + tempCH + ';">仮修了期限：' + tempLH.toLocaleDateString('ja-JP') + (tempDH!==null?'（残'+tempDH+'日）':'') + '</div>' : ''}
                   ${fullLH ? '<div class="course-meta" style="color:' + fullCH + ';">正式修了期限：' + fullLH.toLocaleDateString('ja-JP') + (fullDH!==null?'（残'+fullDH+'日）':'') + '</div>' : ''}
-                  ${data.tempCompletedAt ? '<div class="course-meta">仮修了日：' + fmtH(data.tempCompletedAt) + '</div>' : ''}
-                  ${data.completedAt ? '<div class="course-meta">修了日：' + fmtH(data.completedAt) + '</div>' : ''}
+                  ${data.tempCompletedAt ? '<div class="course-meta" style="color:var(--text-mid);">仮修了日：' + fmtH(data.tempCompletedAt) + '</div>' : ''}
+                  ${data.completedAt ? '<div class="course-meta" style="color:var(--text-mid);">修了日：' + fmtH(data.completedAt) + '</div>' : ''}
                 </div>
                 <div class="course-arrow">›</div>
               `;
