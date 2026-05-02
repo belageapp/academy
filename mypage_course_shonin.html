@@ -943,7 +943,10 @@
         const displayQ = q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question;
         html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
           '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
-          (!ok ? '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' : '') +
+          (ok
+            ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
+            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>'
+          ) +
           '</div></div>';
       });
       return html;
