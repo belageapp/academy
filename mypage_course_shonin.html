@@ -790,7 +790,16 @@
     quizState = { themeNum, themeName: theme.name, questions, currentIndex: 0,
       answers: new Array(questions.length).fill(null), submitted: false };
 
-    if (mode === 'retry') { renderQuizQuestion(content); return; }
+    // retry・retryFromListはFirestoreを無視して完全リセットで開始
+    if (mode === 'retry') {
+      // Firestoreの途中保存をクリア
+      try {
+        const user = auth.currentUser;
+        if (user) await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum),
+          { answers: new Array(questions.length).fill(null), savedAt: new Date() }, { merge: true });
+      } catch(e) {}
+      renderQuizQuestion(content); return;
+    }
 
     try {
       const user = auth.currentUser;
@@ -804,6 +813,10 @@
             quizState.submitted = true;
             renderQuizResult(content); return;
           }
+          // 不合格の採点済みデータがある場合はリセット（最初から）
+          if (saved.results) {
+            renderQuizQuestion(content); return;
+          }
           if (saved.answers) {
             quizState.answers = saved.answers;
             const lastIdx = saved.answers.reduce((acc, a, i) => a !== null ? i : acc, -1);
@@ -813,6 +826,10 @@
       }
     } catch(e) {}
     renderQuizQuestion(content);
+  };
+
+  window.retryFromResult = function(themeNum) {
+    window.openTask(themeNum, 'retry');
   };
 
   window.closeTask = function() {
@@ -881,13 +898,7 @@
   window.pauseAndSave = async function() {
     await saveQuizProgressAuto();
     window.closeTask();
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
-        renderTaskList(true, snap.exists() ? snap.data() : {}, user.uid);
-      } catch(e) {}
-    }
+    location.reload();
   };
   window.submitQuiz = async function() {
     const { questions, answers, themeNum } = quizState;
@@ -966,7 +977,7 @@
         '<button class="quiz-result-btn primary" onclick="window.closeTask();location.reload();">✅ 講座ページに戻る</button>' +
         (isPassed
           ? '<button class="quiz-result-btn secondary" onclick="window.openTask(' + themeNum + ',\'review\')">📖 復習する（正解一覧）</button>'
-          : '<button class="quiz-result-btn tertiary" onclick="window.openTask(' + themeNum + ',\'retry\')">🔄 もう一度挑戦する</button>'
+          : '<button class="quiz-result-btn tertiary" onclick="window.retryFromResult(' + themeNum + ')">🔄 もう一度挑戦する</button>'
         ) +
       '</div>';
   }
