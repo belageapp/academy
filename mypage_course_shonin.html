@@ -543,12 +543,12 @@
     <button class="toggle-header" onclick="toggleSection('elearn-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📚</span>
-        <span class="toggle-header-title">eラーニング<span class="toggle-header-desc">テーマ別確認問題（全10テーマ）</span></span>
+        <span class="toggle-header-title">eラーニング<span class="toggle-header-desc">学習テーマに関連するテキストを読み、問題に回答します（全10テーマ）</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-elearn-body">›</span>
     </button>
     <div class="toggle-body" id="elearn-body">
-      <p style="font-size:12px;color:var(--text-mid);margin:0 0 12px;line-height:1.7;">学習テーマに関連する箇所のテキストを読み、問題に回答します（全10の学習テーマ）。前のテーマに合格すると次が解放されます。</p>
+      <p style="font-size:12px;color:var(--text-mid);margin:0 0 12px;line-height:1.7;">前のテーマに合格すると次が解放されます。</p>
       <div id="task-list">
         <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
       </div>
@@ -928,7 +928,7 @@
       const studyBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#2BBCD4,#1A9AB0);color:white;' + (canStudy ? '' : disabledStyle) + '" onclick="' + (canStudy ? 'window.openTask(' + t.num + ',&quot;normal&quot;)' : '') + '">📝 学習</button>';
       const retryBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#F2708A,#d45570);color:white;' + (canRetry ? '' : disabledStyle) + '" onclick="' + (canRetry ? 'window.openTask(' + t.num + ',&quot;retry&quot;)' : '') + '">🔄 再挑戦</button>';
       const reviewBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#F5A623,#E8823A);color:white;' + (canReview ? '' : disabledStyle) + '" onclick="' + (canReview ? 'window.openTask(' + t.num + ',&quot;review&quot;)' : '') + '">📖 復習</button>';
-      const resultBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#7C3AED,#5B21B6);color:white;' + (canResult ? '' : disabledStyle) + '" onclick="' + (canResult ? 'window.openTask(' + t.num + ',&quot;result&quot;)' : '') + '">📊 結果</button>';
+      const resultBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#A78BFA,#7C3AED);color:white;' + (canResult ? '' : disabledStyle) + '" onclick="' + (canResult ? 'window.openTask(' + t.num + ',&quot;result&quot;)' : '') + '">📊 結果</button>';
 
       return '<div class="task-item" style="' + (locked ? 'opacity:0.45;' : '') + 'flex-wrap:wrap;gap:6px;">' +
         '<div class="task-num" style="' + (isPassed ? 'background:var(--green-light);color:#2E7D47;' : isFailed ? 'background:#FEF2F2;color:#DC2626;' : '') + '">' + (isPassed ? '✓' : isFailed ? '✗' : t.num) + '</div>' +
@@ -938,7 +938,7 @@
         '</div>' +
         '<span class="task-status ' + statusCls + '">' + statusLabel + '</span>' +
         '<div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">' +
-          studyBtn + retryBtn + reviewBtn + resultBtn +
+          studyBtn + resultBtn + retryBtn + reviewBtn +
         '</div>' +
       '</div>';
     }).join('');
