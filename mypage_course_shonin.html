@@ -113,6 +113,11 @@
       padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
     }
     .app-row:last-child { border-bottom: none; }
+    .app-section-label {
+      font-size: 11px; font-weight: 700; color: var(--teal-dark);
+      background: var(--teal-light); border-radius: 6px;
+      padding: 4px 10px; margin: 12px 0 6px; display: inline-block;
+    }
     .app-label { color: var(--text-mid); }
     .app-value { color: var(--text); font-weight: 500; }
     .status-badge {
@@ -505,19 +510,34 @@
     </button>
     <div class="toggle-body" id="app-body">
       <div id="app-detail" style="margin-top:4px;">
+        <!-- ステータス装飾 -->
+        <div id="app-status-block" style="margin-bottom:14px;"></div>
+        <!-- フォーム入力項目 -->
+        <div class="app-section-label">📋 講座情報</div>
         <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
+        <div class="app-row"><span class="app-label">受講料</span><span class="app-value" id="app-fee">—</span></div>
+        <div class="app-row"><span class="app-label">テキスト</span><span class="app-value" id="app-textbook">—</span></div>
+        <div class="app-row"><span class="app-label">支払方法</span><span class="app-value" id="app-payment">—</span></div>
+        <div class="app-section-label">👤 お客様情報</div>
+        <div class="app-row"><span class="app-label">お名前</span><span class="app-value" id="app-name">—</span></div>
+        <div class="app-row"><span class="app-label">ふりがな</span><span class="app-value" id="app-kana">—</span></div>
+        <div class="app-row"><span class="app-label">性別</span><span class="app-value" id="app-gender">—</span></div>
+        <div class="app-row"><span class="app-label">生年月日</span><span class="app-value" id="app-birth">—</span></div>
+        <div class="app-row"><span class="app-label">電話番号</span><span class="app-value" id="app-phone">—</span></div>
+        <div class="app-row"><span class="app-label">メールアドレス</span><span class="app-value" id="app-email">—</span></div>
+        <div class="app-row"><span class="app-label">郵便番号</span><span class="app-value" id="app-zip">—</span></div>
+        <div class="app-row"><span class="app-label">住所</span><span class="app-value" id="app-address">—</span></div>
+        <div class="app-row" id="app-address2-row" style="display:none;"><span class="app-label">建物名等</span><span class="app-value" id="app-address2">—</span></div>
+        <div class="app-row" id="app-altaddr-row" style="display:none;"><span class="app-label">別途郵送先</span><span class="app-value" id="app-altaddr">—</span></div>
+        <div class="app-row" id="app-workplace-row" style="display:none;"><span class="app-label">お勤め先</span><span class="app-value" id="app-workplace">—</span></div>
+        <div class="app-row" id="app-message-row" style="display:none;"><span class="app-label">ご質問等</span><span class="app-value" id="app-message" style="font-size:12px;line-height:1.6;">—</span></div>
+        <div class="app-section-label">📅 受講日程</div>
         <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
         <div class="app-row"><span class="app-label">受講開始日</span><span class="app-value" id="app-start">—</span></div>
         <div class="app-row"><span class="app-label">仮修了期限</span><span class="app-value" id="app-temp-limit">—</span></div>
         <div class="app-row"><span class="app-label">正式修了期限</span><span class="app-value" id="app-full-limit">—</span></div>
+        <div class="app-row"><span class="app-label">仮修了日</span><span class="app-value" id="app-temp-completed">—</span></div>
         <div class="app-row"><span class="app-label">修了日</span><span class="app-value" id="app-completed">—</span></div>
-        <div class="app-row"><span class="app-label">受講料</span><span class="app-value" id="app-fee">—</span></div>
-        <div class="app-row"><span class="app-label">支払方法</span><span class="app-value" id="app-payment">—</span></div>
-        <div class="app-row"><span class="app-label">テキスト</span><span class="app-value" id="app-textbook">—</span></div>
-        <div class="app-row">
-          <span class="app-label">ステータス</span>
-          <span class="status-badge status-未対応" id="app-status">—</span>
-        </div>
       </div>
     </div>
   </div>
@@ -767,9 +787,60 @@
 
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
       document.getElementById('course-subtitle').textContent = '受講番号：' + (data.studentNo || '—');
+
+      // ステータス装飾ブロック
+      const statusColors = {
+        '入金待ち': { bg: '#FFF8E1', border: '#FDE68A', text: '#92400E', dot: '#F59E0B' },
+        '受講確定': { bg: '#E0F7FB', border: '#7ECFD9', text: '#1A9AB0', dot: '#2BBCD4' },
+        '受講中':   { bg: '#EBF7EF', border: '#86EFAC', text: '#166534', dot: '#4CAF72' },
+        '修了':     { bg: '#F3E8FF', border: '#C4B5FD', text: '#5B21B6', dot: '#7C3AED' },
+        'キャンセル': { bg: '#F5F5F5', border: '#D1D5DB', text: '#6B7280', dot: '#9CA3AF' },
+      };
+      const sc = statusColors[statusText] || { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280', dot: '#9CA3AF' };
+      document.getElementById('app-status-block').innerHTML =
+        '<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:' + sc.bg + ';border:1.5px solid ' + sc.border + ';border-radius:10px;">' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:' + sc.dot + ';flex-shrink:0;box-shadow:0 0 0 3px ' + sc.dot + '33;"></div>' +
+        '<div><div style="font-size:12px;color:' + sc.text + ';font-weight:700;">' + statusText + '</div>' +
+        '<div style="font-size:11px;color:' + sc.text + ';opacity:0.7;margin-top:1px;">受講番号：' + (data.studentNo || '—') + '</div></div></div>';
+
+      // 講座情報
       document.getElementById('app-course').textContent = data.course || 'オンライン初任者研修';
+      document.getElementById('app-fee').textContent = data.fee || '33,000円（税込）';
+      document.getElementById('app-textbook').textContent = (data.textbook === 'purchase' || data.textbook === '購入（6,600円）') ? '購入（6,600円）' : (data.textbook || '—');
+      document.getElementById('app-payment').textContent = data.payment || '—';
+
+      // お客様情報
+      const sei = data.sei || ''; const mei = data.mei || '';
+      document.getElementById('app-name').textContent = (sei || mei) ? (sei + '　' + mei) : (data.name || '—');
+      const seiK = data.sei_kana || ''; const meiK = data.mei_kana || '';
+      document.getElementById('app-kana').textContent = (seiK || meiK) ? (seiK + '　' + meiK) : (data.kana || '—');
+      document.getElementById('app-gender').textContent = data.gender || '—';
+      document.getElementById('app-birth').textContent = data.birthdate || '—';
+      document.getElementById('app-phone').textContent = data.phone || '—';
+      document.getElementById('app-email').textContent = data.email || '—';
+      document.getElementById('app-zip').textContent = data.zip || '—';
+      document.getElementById('app-address').textContent = data.address1 || '—';
+      if (data.address2) {
+        document.getElementById('app-address2-row').style.display = '';
+        document.getElementById('app-address2').textContent = data.address2;
+      }
+      if (data.alt_addr === '別の住所に送る' && (data.alt_addr1 || data.alt_zip)) {
+        document.getElementById('app-altaddr-row').style.display = '';
+        document.getElementById('app-altaddr').textContent = (data.alt_zip ? '〒' + data.alt_zip + '　' : '') + (data.alt_addr1 || '') + (data.alt_addr2 ? '　' + data.alt_addr2 : '');
+      }
+      if (data.workplace) {
+        document.getElementById('app-workplace-row').style.display = '';
+        document.getElementById('app-workplace').textContent = data.workplace;
+      }
+      if (data.message) {
+        document.getElementById('app-message-row').style.display = '';
+        document.getElementById('app-message').textContent = data.message;
+      }
+
+      // 受講日程
       document.getElementById('app-applied').textContent = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—';
       document.getElementById('app-completed').textContent = data.completedAt ? new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
+      document.getElementById('app-temp-completed').textContent = data.tempCompletedAt ? new Date(data.tempCompletedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
 
       if (data.activeAt) {
         const startDate = new Date(data.activeAt.toMillis());
@@ -781,15 +852,9 @@
         const fullDays = Math.ceil((fullLimit - today) / (1000*60*60*24));
         const tempColor = tempDays <= 7 ? '#e53935' : tempDays <= 30 ? '#F57C00' : 'inherit';
         const fullColor = fullDays <= 7 ? '#e53935' : fullDays <= 30 ? '#F57C00' : 'inherit';
-        document.getElementById('app-temp-limit').innerHTML = `<span style="color:${tempColor};">${tempLimit.toLocaleDateString('ja-JP')}（残 ${tempDays}日）</span>`;
-        document.getElementById('app-full-limit').innerHTML = `<span style="color:${fullColor};">${fullLimit.toLocaleDateString('ja-JP')}（残 ${fullDays}日）</span>`;
+        document.getElementById('app-temp-limit').innerHTML = '<span style="color:' + tempColor + ';">' + tempLimit.toLocaleDateString('ja-JP') + '（残 ' + tempDays + '日）</span>';
+        document.getElementById('app-full-limit').innerHTML = '<span style="color:' + fullColor + ';">' + fullLimit.toLocaleDateString('ja-JP') + '（残 ' + fullDays + '日）</span>';
       }
-      document.getElementById('app-fee').textContent = data.fee || '33,000円（税込）';
-      document.getElementById('app-payment').textContent = data.payment || '—';
-      document.getElementById('app-textbook').textContent = (data.textbook === 'purchase' || data.textbook === '購入（6,600円）') ? '購入（6,600円）' : (data.textbook || '—');
-      const statusEl = document.getElementById('app-status');
-      statusEl.textContent = statusText;
-      statusEl.className = 'status-badge status-' + statusText;
 
       const isConfirmed = ['confirmed','active','completed'].includes(status);
       const isActive = ['active','completed'].includes(status);
@@ -979,13 +1044,13 @@
 
     if (mode === 'review') { renderReviewMode(content, questions, themeNum); return; }
 
-    // resultモード: 最後の採点結果を表示
+    // resultモード: 合格した時の結果を表示
     if (mode === 'result') {
       try {
         const user = auth.currentUser;
         if (user) {
-          const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum));
-          if (snap.exists() && snap.data().results) {
+          const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum + '_best'));
+          if (snap.exists()) {
             const saved = snap.data();
             quizState = { themeNum, themeName: theme.name, questions,
               currentIndex: 0, answers: saved.answers || [], results: saved.results, submitted: true, viewOnly: true };
@@ -993,7 +1058,7 @@
           }
         }
       } catch(e) {}
-      content.innerHTML = '<p style="padding:20px;color:var(--text-mid);font-size:13px;">結果データが見つかりません。</p>';
+      content.innerHTML = '<div style="padding:30px;text-align:center;"><div style="font-size:32px;margin-bottom:10px;">📊</div><p style="color:var(--text-mid);font-size:13px;">まだ合格結果がありません。</p></div>';
       return;
     }
 
@@ -1127,10 +1192,20 @@
       if (user) {
         await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
-        if (isPassed) await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
-          { ['theme' + themeNum]: true }, { merge: true });
-        else await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
-          { ['theme' + themeNum + '_failed']: true }, { merge: true });
+        if (isPassed) {
+          // 合格結果は最高スコアのみ保存
+          const bestSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum + '_best'));
+          const bestScore = bestSnap.exists() ? (bestSnap.data().score || 0) : 0;
+          if (pct >= bestScore) {
+            await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum + '_best'),
+              { answers, results, score: pct, passedAt: new Date() });
+          }
+          await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
+            { ['theme' + themeNum]: true }, { merge: true });
+        } else {
+          await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
+            { ['theme' + themeNum + '_failed']: true }, { merge: true });
+        }
       }
     } catch(e) {}
     renderQuizResult(document.getElementById('modal-content'));
@@ -1182,6 +1257,7 @@
 
     content.innerHTML =
       '<div class="quiz-theme-label">学習' + themeNum + '：' + themeName + '</div>' +
+      (quizState.viewOnly ? '<div style="text-align:center;margin-bottom:8px;"><span style="background:linear-gradient(135deg,#A78BFA,#7C3AED);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;">🏆 ベストスコア</span></div>' : '') +
       '<div class="quiz-result-header"><div class="quiz-result-score ' + (isPassed ? 'pass' : 'fail') + '">' + pct + '%</div>' +
       '<div class="quiz-result-label">' + (isPassed ? '🎉 合格！' : '😢 不合格') + '</div>' +
       '<div class="quiz-result-detail">全' + total + '問中 <strong>' + correct + '問</strong> 正解（合格基準：70%以上）<br>' +
