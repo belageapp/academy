@@ -923,8 +923,11 @@
     const listHtml = questions.map((q, i) => {
       const ok = results[i];
       const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
+      const displayQ = q.context
+        ? q.context.split('\n')[0].replace('【','').replace('】','') + '　' + q.question
+        : (q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question);
       return '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-        '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + (q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question) + '</div>' +
+        '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
         (!ok ? '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' : '') +
         '</div></div>';
     }).join('');
