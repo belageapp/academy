@@ -506,12 +506,12 @@
         <span class="toggle-icon-wrap">📋</span>
         <span class="toggle-header-title">受講内容・ステータス<span class="toggle-header-desc">申込情報・受講状況の確認</span></span>
       </span>
+      <span id="status-inline" style="margin-left:auto;margin-right:8px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap;flex-shrink:0;"></span>
       <span class="toggle-arrow" id="arrow-app-body">›</span>
     </button>
     <div class="toggle-body" id="app-body">
       <div id="app-detail" style="margin-top:4px;">
-        <!-- ステータス装飾 -->
-        <div id="app-status-block" style="margin-bottom:14px;"></div>
+
         <!-- フォーム入力項目 -->
         <div class="app-section-label">📋 講座情報</div>
         <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
@@ -788,20 +788,22 @@
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
       document.getElementById('course-subtitle').textContent = '受講番号：' + (data.studentNo || '—');
 
-      // ステータス装飾ブロック
+      // ステータスインラインバッジ
       const statusColors = {
-        '入金待ち': { bg: '#FFF8E1', border: '#FDE68A', text: '#92400E', dot: '#F59E0B' },
-        '受講確定': { bg: '#E0F7FB', border: '#7ECFD9', text: '#1A9AB0', dot: '#2BBCD4' },
-        '受講中':   { bg: '#EBF7EF', border: '#86EFAC', text: '#166534', dot: '#4CAF72' },
-        '修了':     { bg: '#F3E8FF', border: '#C4B5FD', text: '#5B21B6', dot: '#7C3AED' },
-        'キャンセル': { bg: '#F5F5F5', border: '#D1D5DB', text: '#6B7280', dot: '#9CA3AF' },
+        '入金待ち': { bg: '#FFF8E1', border: '#FDE68A', text: '#92400E' },
+        '受講確定': { bg: '#E0F7FB', border: '#7ECFD9', text: '#1A9AB0' },
+        '受講中':   { bg: '#EBF7EF', border: '#86EFAC', text: '#166534' },
+        '修了':     { bg: '#F3E8FF', border: '#C4B5FD', text: '#5B21B6' },
+        'キャンセル': { bg: '#F5F5F5', border: '#D1D5DB', text: '#6B7280' },
       };
-      const sc = statusColors[statusText] || { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280', dot: '#9CA3AF' };
-      document.getElementById('app-status-block').innerHTML =
-        '<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:' + sc.bg + ';border:1.5px solid ' + sc.border + ';border-radius:10px;">' +
-        '<div style="width:10px;height:10px;border-radius:50%;background:' + sc.dot + ';flex-shrink:0;box-shadow:0 0 0 3px ' + sc.dot + '33;"></div>' +
-        '<div><div style="font-size:12px;color:' + sc.text + ';font-weight:700;">' + statusText + '</div>' +
-        '<div style="font-size:11px;color:' + sc.text + ';opacity:0.7;margin-top:1px;">受講番号：' + (data.studentNo || '—') + '</div></div></div>';
+      const sc = statusColors[statusText] || { bg: '#F3F4F6', border: '#D1D5DB', text: '#6B7280' };
+      const statusInline = document.getElementById('status-inline');
+      if (statusInline) {
+        statusInline.textContent = statusText;
+        statusInline.style.background = sc.bg;
+        statusInline.style.border = '1.5px solid ' + sc.border;
+        statusInline.style.color = sc.text;
+      }
 
       // 講座情報
       document.getElementById('app-course').textContent = data.course || 'オンライン初任者研修';
