@@ -467,8 +467,8 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
                   </div>
                   <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
                   ${startH ? '<div class="course-meta">受講開始日：' + startH.toLocaleDateString('ja-JP') + '</div>' : ''}
-                  ${tempLH ? '<div class="course-meta" style="color:' + tempCH + ';">仮修了期限：' + tempLH.toLocaleDateString('ja-JP') + (tempDH!==null?'（残'+tempDH+'日）':'') + '</div>' : ''}
-                  ${fullLH ? '<div class="course-meta" style="color:' + fullCH + ';">正式修了期限：' + fullLH.toLocaleDateString('ja-JP') + (fullDH!==null?'（残'+fullDH+'日）':'') + '</div>' : ''}
+                  ${tempLH ? '<div class="course-meta" style="color:' + (tempColor === 'inherit' ? 'var(--text-mid)' : tempColor) + ';">仮修了期限：' + tempLH.toLocaleDateString('ja-JP') + (tempDH!==null?'（残'+tempDH+'日）':'') + '</div>' : ''}
+                  ${fullLH ? '<div class="course-meta" style="color:' + (fullColor === 'inherit' ? 'var(--text-mid)' : fullColor) + ';">正式修了期限：' + fullLH.toLocaleDateString('ja-JP') + (fullDH!==null?'（残'+fullDH+'日）':'') + '</div>' : ''}
                   ${data.tempCompletedAt ? '<div class="course-meta" style="color:var(--text-mid);">仮修了日：' + fmtH(data.tempCompletedAt) + '</div>' : ''}
                   ${data.completedAt ? '<div class="course-meta" style="color:var(--text-mid);">修了日：' + fmtH(data.completedAt) + '</div>' : ''}
                 </div>
