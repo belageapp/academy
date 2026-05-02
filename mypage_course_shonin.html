@@ -384,13 +384,21 @@ window.doLogout = async function() {
 // ===== マイページ読み込み =====
 async function loadMyPage(user) {
   try {
-    const q = query(
-      collection(db, 'applications'),
-      where('email', '==', user.email),
-      orderBy('createdAt', 'desc'),
-      limit(1)
-    );
-    const snap = await getDocs(q);
+    const urlId = new URLSearchParams(window.location.search).get('id');
+    let snap;
+    if (urlId) {
+      const docRef = doc(db, 'applications', urlId);
+      const single = await getDoc(docRef);
+      snap = { empty: !single.exists(), docs: single.exists() ? [single] : [] };
+    } else {
+      const q = query(
+        collection(db, 'applications'),
+        where('email', '==', user.email),
+        orderBy('createdAt', 'desc'),
+        limit(1)
+      );
+      snap = await getDocs(q);
+    }
     if (snap.empty) {
       document.getElementById('app-content').innerHTML = '<p style="font-size:13px;color:var(--text-mid);">申込情報が見つかりません。</p>';
       return;
