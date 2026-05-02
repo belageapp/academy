@@ -267,7 +267,9 @@
     <button class="toggle-header" onclick="toggleSection('notice-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📢</span>
-        <span class="toggle-header-title">お知らせ・連絡
+<span class="toggle-header-title">お知らせ・連絡
+          <span class="toggle-header-desc">スクールからの連絡事項</span>
+          <span class="toggle-header-desc">スクールからの連絡事項</span>
           <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
         </span>
       </span>
@@ -280,23 +282,31 @@
     </div>
   </div>
 
-  <!-- 受講講座一覧 -->
-  <div class="courses-section">
-    <div class="section-title">📚 受講講座一覧</div>
-    <div id="course-list">
-      <div class="no-course">受講中の講座を読み込んでいます...</div>
+<!-- 受講講座一覧 -->
+  <div class="section-box">
+    <div class="section-box-header">
+      <span class="toggle-icon-wrap">📚</span>
+      <span style="font-size:14px;font-weight:700;color:var(--text);">受講講座一覧</span>
+    </div>
+    <div class="section-box-body">
+      <div id="course-list">
+        <div class="no-course">受講中の講座を読み込んでいます...</div>
+      </div>
     </div>
   </div>
 
   <!-- パスワード変更 -->
-  <div class="pw-section">
-    <div class="section-title">🔒 パスワード変更</div>
-    <div class="card">
-      <div class="card-title">
-        <div class="card-icon icon-pink">🔒</div>
-        パスワード変更
-      </div>
-      <p style="font-size:13px; color:var(--text-mid); margin-bottom:16px;">初期パスワードから変更することをお勧めします。</p>
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('pw-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
+        <span class="toggle-header-title">パスワード変更
+          <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
+        </span>
+      </span>
+      <span class="toggle-arrow" id="arrow-pw-body">›</span>
+    </button>
+    <div class="toggle-body" id="pw-body">
       <div class="pw-form">
         <input type="password" id="new-pw" placeholder="新しいパスワード（8文字以上）">
         <input type="password" id="new-pw2" placeholder="新しいパスワード（確認）">
