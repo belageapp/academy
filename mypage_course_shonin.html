@@ -1525,8 +1525,14 @@
       const user = window.__auth?.currentUser;
       if (user) await setDoc(doc(db, 'users', user.uid, 'readNotices', id), { readAt: new Date() });
     } catch(e) {}
+    if (!el) return;
     el.classList.remove('unread');
-    el.querySelector('.notice-dot').style.background = 'var(--border)';
+    // アコーディオン形式の未読バーを非表示
+    const bar = el.querySelector('.notice-unread-bar');
+    if (bar) bar.style.background = 'transparent';
+    // 旧形式のdot対応
+    const dot = el.querySelector('.notice-dot');
+    if (dot) dot.style.background = 'var(--border)';
     const badge = document.getElementById('unread-count');
     if (badge && parseInt(badge.textContent) > 0) {
       const count = parseInt(badge.textContent) - 1;
