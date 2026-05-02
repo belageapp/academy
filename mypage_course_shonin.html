@@ -145,6 +145,7 @@
     }
     .task-未提出 { background: #F5F5F5; color: #888; }
     .task-合格 { background: var(--green-light); color: #2E7D47; }
+    .task-不合格 { background: #FEF2F2; color: #DC2626; }
     .task-btn {
       background: var(--teal); color: white; border: none; border-radius: 6px;
       padding: 5px 10px; font-size: 11px; cursor: pointer;
@@ -301,7 +302,7 @@
     }
     .quiz-result-btn:hover { opacity: 0.85; }
     .quiz-result-btn.primary { background: var(--teal); color: white; }
-    .quiz-result-btn.secondary { background: linear-gradient(135deg, #2BBCD4, #1A9AB0); color: white; }
+    .quiz-result-btn.secondary { background: linear-gradient(135deg, #F5A623, #E8823A); color: white; }
     .quiz-result-btn.tertiary { background: linear-gradient(135deg, #F2708A, #d45570); color: white; }
 
     /* 復習モード */
@@ -727,6 +728,7 @@
     }
     taskList.innerHTML = LEARNING_THEMES.map(t => {
       const isPassed = progressData['theme' + t.num] === true;
+      const isFailed = progressData['theme' + t.num + '_failed'] === true;
       const isUnlocked = t.num === 1 || progressData['theme' + (t.num - 1)] === true;
       const locked = !isUnlocked;
       return `<div class="task-item" style="${locked ? 'opacity:0.4;' : ''}">
@@ -735,14 +737,14 @@
           <div class="task-name">学習${t.num}：${t.name}</div>
           ${locked ? '<div style="font-size:10px;color:#F57C00;margin-top:2px;">🔒 前のテーマに合格すると解放</div>' : ''}
         </div>
-        <span class="task-status ${isPassed ? 'task-合格' : 'task-未提出'}">${isPassed ? '合格✓' : '未学習'}</span>
+        <span class="task-status ${isPassed ? 'task-合格' : isFailed ? 'task-不合格' : 'task-未提出'}">${isPassed ? '合格✓' : isFailed ? '不合格' : '未学習'}</span>
         ${isPassed
           ? `<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-               <button class="task-btn" style="background:linear-gradient(135deg,#2BBCD4,#1A9AB0);font-size:10px;" onclick="window.openTask(${t.num},'review')">📖 復習</button>
+               <button class="task-btn" style="background:linear-gradient(135deg,#F5A623,#E8823A);font-size:10px;" onclick="window.openTask(${t.num},'review')">📖 復習</button>
                <button class="task-btn" style="background:linear-gradient(135deg,#F2708A,#d45570);font-size:10px;" onclick="window.openTask(${t.num},'retry')">🔄 再挑戦</button>
              </div>`
           : locked ? '<span style="font-size:16px;">🔒</span>'
-          : `<button class="task-btn" onclick="window.openTask(${t.num},'normal')">回答する</button>`
+          : `<button class="task-btn" style="background:linear-gradient(135deg,#2BBCD4,#1A9AB0);font-size:11px;padding:6px 12px;" onclick="window.openTask(${t.num},'normal')">📝 学習する</button>`
         }
       </div>`;
     }).join('');
@@ -899,6 +901,8 @@
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
         if (isPassed) await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
           { ['theme' + themeNum]: true }, { merge: true });
+        else await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
+          { ['theme' + themeNum + '_failed']: true }, { merge: true });
       }
     } catch(e) {}
     renderQuizResult(document.getElementById('modal-content'));
@@ -920,17 +924,30 @@
     const pct = Math.round((correct / total) * 100);
     const isPassed = pct >= 70;
 
-    const listHtml = questions.map((q, i) => {
-      const ok = results[i];
-      const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
-      const displayQ = q.context
-        ? q.context.split('\n')[0].replace('【','').replace('】','') + '　' + q.question
-        : (q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question);
-      return '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-        '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
-        (!ok ? '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' : '') +
-        '</div></div>';
-    }).join('');
+    const listHtml = (() => {
+      let html = '';
+      let lastContextKey = null;
+      questions.forEach((q, i) => {
+        const ok = results[i];
+        const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
+        // contextがある場合、同じ問題グループの最初にのみ本文を表示
+        if (q.context) {
+          const contextKey = q.context.split('\n')[0]; // 1行目をキーに
+          if (contextKey !== lastContextKey) {
+            lastContextKey = contextKey;
+            html += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
+          }
+        } else {
+          lastContextKey = null;
+        }
+        const displayQ = q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question;
+        html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
+          '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
+          (!ok ? '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' : '') +
+          '</div></div>';
+      });
+      return html;
+    })();
 
     content.innerHTML =
       '<div class="quiz-theme-label">学習' + themeNum + '：' + themeName + '</div>' +
