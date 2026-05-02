@@ -341,7 +341,8 @@
       width: 32px; height: 32px; border-radius: 8px; background: var(--teal-light);
       display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
     }
-    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); display:flex; flex-direction:column; gap:2px; }
+    .toggle-header-desc { font-size: 11px; font-weight: 400; color: var(--text-mid); }
     .toggle-arrow {
       font-size: 20px; color: var(--text-light); transition: transform 0.25s;
       display: inline-block; flex-shrink: 0;
@@ -480,7 +481,7 @@
     <button class="toggle-header" onclick="toggleSection('notice-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📢</span>
-        <span class="toggle-header-title">お知らせ・連絡
+        <span class="toggle-header-title">お知らせ・連絡<span class="toggle-header-desc">スクールからの連絡事項</span>
           <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
         </span>
       </span>
@@ -498,7 +499,7 @@
     <button class="toggle-header" onclick="toggleSection('app-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📋</span>
-        <span class="toggle-header-title">受講内容・ステータス</span>
+        <span class="toggle-header-title">受講内容・ステータス<span class="toggle-header-desc">申込情報・受講状況の確認</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-app-body">›</span>
     </button>
@@ -526,7 +527,7 @@
     <button class="toggle-header" onclick="toggleSection('flow-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📌</span>
-        <span class="toggle-header-title">講座の流れ・進行状況</span>
+        <span class="toggle-header-title">講座の流れ・進行状況<span class="toggle-header-desc">受講開始から修了までのステップ</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-flow-body">›</span>
     </button>
@@ -542,7 +543,7 @@
     <button class="toggle-header" onclick="toggleSection('elearn-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📚</span>
-        <span class="toggle-header-title">eラーニング</span>
+        <span class="toggle-header-title">eラーニング<span class="toggle-header-desc">テーマ別確認問題（全10テーマ）</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-elearn-body">›</span>
     </button>
@@ -559,7 +560,7 @@
     <button class="toggle-header" onclick="toggleSection('video-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">🎬</span>
-        <span class="toggle-header-title">動画教材</span>
+        <span class="toggle-header-title">動画教材<span class="toggle-header-desc">講座動画の視聴</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-video-body">›</span>
     </button>
@@ -575,12 +576,12 @@
     <button class="toggle-header" onclick="toggleSection('doc-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📄</span>
-        <span class="toggle-header-title">書類発行</span>
+        <span class="toggle-header-title">書類発行<span class="toggle-header-desc">見積書・請求書・領収書を発行できます</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-doc-body">›</span>
     </button>
     <div class="toggle-body" id="doc-body">
-      <p style="font-size:13px;color:var(--text-mid);margin:4px 0 14px;">見積書・請求書・領収書を発行できます。宛名は変更可能です。</p>
+      <p style="font-size:12px;color:var(--text-mid);margin:4px 0 14px;">宛名は変更できます。</p>
       <div style="margin-bottom:14px;">
         <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:5px;">宛名（デフォルト：お名前）</label>
         <input type="text" id="doc-name" placeholder="例）山田太郎　または　○○株式会社"
@@ -599,12 +600,12 @@
     <button class="toggle-header" onclick="toggleSection('todoke-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📝</span>
-        <span class="toggle-header-title">届出書</span>
+        <span class="toggle-header-title">届出書<span class="toggle-header-desc">変更届・休講届・退講届などを提出します</span></span>
       </span>
       <span class="toggle-arrow" id="arrow-todoke-body">›</span>
     </button>
     <div class="toggle-body" id="todoke-body">
-      <p style="font-size:13px;color:var(--text-mid);margin:4px 0 14px;">以下の場合は、該当する届出書をご提出ください。</p>
+      
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div><div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div></div>
@@ -1208,10 +1209,13 @@
     }
 
     function stepHeader(num, label, badgeCls) {
-      return '<div class="flow-step-header">' +
-        '<div class="flow-step-badge ' + badgeCls + '">' + num + '</div>' +
-        '<div class="flow-step-title-text">' + label + '</div>' +
-        '</div>';
+      const colors = {s0:'#2BBCD4',s1:'#F5A623',s2:'#4CAF72',s3:'#F2708A',s4:'#7C3AED'};
+      const c = colors[badgeCls] || '#888';
+      return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0 8px;">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;background:' + c + '1A;border:1.5px solid ' + c + ';border-radius:8px;padding:5px 12px;">' +
+        '<span style="font-size:10px;font-weight:700;color:' + c + ';letter-spacing:0.05em;">' + num + '</span>' +
+        '<span style="font-size:13px;font-weight:700;color:' + c + ';">' + label + '</span>' +
+        '</div></div>';
     }
 
     const photoExtra = photoPending
@@ -1230,28 +1234,28 @@
       ? '<a href="gakusoku.html?id=' + docId + '" class="action-btn" style="font-size:11px;padding:4px 10px;text-decoration:none;white-space:nowrap;">確認・同意する</a>' : '';
 
     let html = '';
-    html += stepHeader('S0', '受講確定', 's0');
+    html += stepHeader('Step 0', '受講確定', 's0');
     html += item('受講料のお支払い', isConfirmed, !isConfirmed, false);
     html += '<div class="flow-connector"></div>';
 
-    html += stepHeader('S1', '受講準備', 's1');
+    html += stepHeader('Step 1', '受講準備', 's1');
     html += item('顔写真の提出', photoOk, isConfirmed && !photoOk, !isConfirmed, photoExtra);
     html += item('本人確認書類の提出', idOk, isConfirmed && !idOk, !isConfirmed, idExtra);
     html += item('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, !isConfirmed, pledgeExtra);
     html += '<div class="flow-connector"></div>';
 
-    html += stepHeader('S2', '受講中', 's2');
+    html += stepHeader('Step 2', '受講中', 's2');
     html += item('eラーニング（全10テーマ）', data.taskAllDone === true, step1Done, !step1Done);
     html += item('動画視聴（自社）', data.videoAllDone === true, step1Done, !step1Done);
     html += item('動画視聴（外部）', data.externalVideoDone === true, step1Done, !step1Done);
     html += '<div class="flow-connector"></div>';
 
-    html += stepHeader('S3', 'テスト', 's3');
+    html += stepHeader('Step 3', 'テスト', 's3');
     html += item('テスト１', test1Ok, step2Done, !step2Done);
     html += item('テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok, !step2Done || !test1Ok);
     html += '<div class="flow-connector"></div>';
 
-    html += stepHeader('S4', '修了', 's4');
+    html += stepHeader('Step 4', '修了', 's4');
     html += item('OJT完了（本修了証発行・郵送）', ojtOk, test2Ok, !test2Ok);
 
     el.innerHTML = html;
