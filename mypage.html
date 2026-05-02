@@ -62,7 +62,7 @@
     .welcome-bar p { font-size: 13px; opacity: 0.85; }
 
     /* メインコンテンツ */
-    .page-wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; }
+    .page-wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
 
     /* セクションタイトル */
     .section-title {
@@ -269,8 +269,8 @@
         <span class="toggle-icon-wrap">📢</span>
 <span class="toggle-header-title">お知らせ・連絡
           <span class="toggle-header-desc">スクールからの連絡事項</span>
-          <span class="toggle-header-desc">スクールからの連絡事項</span>
-          <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
+        </span>
+        <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
         </span>
       </span>
       <span class="toggle-arrow open" id="arrow-notice-body">›</span>
@@ -283,16 +283,19 @@
   </div>
 
 <!-- 受講講座一覧 -->
-  <div class="section-box">
-    <div class="section-box-header">
-      <span class="toggle-icon-wrap">📚</span>
-      <span style="font-size:14px;font-weight:700;color:var(--text);">受講講座一覧</span>
+  <div class="toggle-section" style="cursor:default;">
+    <div class="toggle-header" style="cursor:default;">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📚</span>
+        <span class="toggle-header-title">受講講座一覧</span>
+      </span>
     </div>
-    <div class="section-box-body">
+    <div style="padding:14px 18px 18px;border-top:1px solid var(--border);">
       <div id="course-list">
         <div class="no-course">受講中の講座を読み込んでいます...</div>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- パスワード変更 -->
@@ -302,7 +305,6 @@
         <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
         <span class="toggle-header-title">パスワード変更
           <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
-        </span>
       </span>
       <span class="toggle-arrow" id="arrow-pw-body">›</span>
     </button>
@@ -341,13 +343,14 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
 
   const statusLabel = {
     pending: '入金待ち',
+    awaiting_payment: '入金待ち',
     confirmed: '受講確定',
-    video_done: '動画教材完了',
-    task_done: '添削課題完了',
-    ojt_done: 'OJT完了',
+    active: '受講中',
+    video_done: '受講中',
+    task_done: '受講中',
+    ojt_done: '受講中',
     completed: '修了',
     cancelled: 'キャンセル',
-    awaiting_payment: '入金待ち',
   };
 
   onAuthStateChanged(auth, async user => {
