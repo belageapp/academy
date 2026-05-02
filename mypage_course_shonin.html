@@ -591,6 +591,80 @@
 
 </div>
 
+
+<!-- eラーニング モーダル -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">eラーニング</div>
+      <button class="modal-close" onclick="closeTask()">✕</button>
+    </div>
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+</div>
+
+<!-- 書類アップロードモーダル -->
+<div class="modal-overlay-doc" id="upload-modal" onclick="if(event.target===this)closeUpload()">
+  <div class="modal-doc">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text);" id="upload-modal-title">書類のアップロード</div>
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;" id="upload-modal-desc"></div>
+    <div id="upload-modal-notes" style="display:none;background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--text-mid);line-height:1.8;"></div>
+    <div id="id-type-section" style="display:none;margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">書類の種類を選択してください</label>
+      <select id="id-doc-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;">
+        <option value="">選択してください</option>
+        <option value="運転免許証">運転免許証（表裏）</option>
+        <option value="パスポート">パスポート（顔写真ページ）</option>
+        <option value="在留カード">在留カード（表裏）</option>
+        <option value="マイナンバーカード">マイナンバーカード（表面のみ）</option>
+        <option value="学生証">学生証</option>
+        <option value="住民票">住民票（発行から3ヶ月以内）</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;" id="front-label">📄 表面</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="triggerFileInput('upload-input-front')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
+        <button onclick="triggerCamera('front')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
+      </div>
+      <input type="file" id="upload-input-front" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'front')">
+      <input type="file" id="upload-input-front-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'front')">
+      <div id="upload-preview-front" style="display:none;text-align:center;">
+        <img id="preview-img-front" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
+        <div id="preview-name-front" style="font-size:12px;color:var(--text-mid);"></div>
+      </div>
+    </div>
+    <div id="back-section" style="display:none;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">📄 裏面</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="triggerFileInput('upload-input-back')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
+        <button onclick="triggerCamera('back')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
+      </div>
+      <input type="file" id="upload-input-back" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'back')">
+      <input type="file" id="upload-input-back-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'back')">
+      <div id="upload-preview-back" style="display:none;text-align:center;">
+        <img id="preview-img-back" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
+        <div id="preview-name-back" style="font-size:12px;color:var(--text-mid);"></div>
+      </div>
+    </div>
+    <div id="camera-section" style="display:none;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;" id="camera-label">📷 カメラ撮影</div>
+      <video id="camera-preview" autoplay playsinline style="width:100%;border-radius:8px;background:#000;max-height:250px;"></video>
+      <canvas id="camera-canvas" style="display:none;"></canvas>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="capturePhoto()" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">📸 撮影する</button>
+        <button onclick="closeCamera()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">やめる</button>
+      </div>
+    </div>
+    <div id="upload-progress" style="display:none;font-size:13px;color:var(--teal);text-align:center;margin-bottom:12px;">アップロード中...</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">キャンセル</button>
+      <button onclick="submitUpload()" id="upload-submit-btn" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold;">提出する</button>
+    </div>
+  </div>
+</div>
+
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
