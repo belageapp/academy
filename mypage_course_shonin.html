@@ -834,6 +834,9 @@
 
   window.closeTask = function() {
     document.getElementById('task-modal').classList.remove('open');
+    if (quizState.submitted) {
+      location.reload();
+    }
   };
 
   function renderQuizQuestion(content) {
@@ -871,12 +874,14 @@
       '<div class="quiz-btn-row">' +
         '<button class="quiz-btn quiz-btn-prev" onclick="window.goToPrev()" ' + (currentIndex === 0 ? 'disabled' : '') + '>← 前の問題</button>' +
         '<button class="quiz-btn quiz-btn-pause" onclick="window.pauseAndSave()">💾 保存して中断</button>' +
-        (isLast
-          ? '<button class="quiz-btn quiz-btn-submit" onclick="window.submitQuiz()" ' + (allAnswered ? '' : 'disabled') + '>📊 採点する' + (allAnswered ? '' : '（残' + (total - answeredCount) + '問）') + '</button>'
-          : '<button class="quiz-btn quiz-btn-next" onclick="window.goToNext()" ' + (answers[currentIndex] === null ? 'disabled' : '') + '>次の問題 →</button>'
-        ) +
+        (!isLast ? '<button class="quiz-btn quiz-btn-next" onclick="window.goToNext()" ' + (answers[currentIndex] === null ? 'disabled' : '') + '>次の問題 →</button>' : '') +
       '</div>' +
-      (isLast && !allAnswered ? '<p style="font-size:11px;color:var(--text-mid);margin-top:8px;text-align:center;">⚠️ 未回答の問題は番号ボタンから確認できます</p>' : '');
+      '<div style="margin-top:8px;">' +
+        '<button class="quiz-btn quiz-btn-submit" style="width:100%;" onclick="window.submitQuiz()" ' + (allAnswered ? '' : 'disabled') + '>' +
+          '📊 採点する' + (allAnswered ? '' : '　（残り' + (total - answeredCount) + '問）') +
+        '</button>' +
+      '</div>' +
+      (!allAnswered ? '<p style="font-size:11px;color:var(--text-mid);margin-top:6px;text-align:center;">⚠️ 未回答の問題は上の番号ボタンから確認できます</p>' : '');
   }
 
   window.selectChoice = function(num) {
