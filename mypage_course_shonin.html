@@ -301,8 +301,8 @@
     }
     .quiz-result-btn:hover { opacity: 0.85; }
     .quiz-result-btn.primary { background: var(--teal); color: white; }
-    .quiz-result-btn.secondary { background: #6c8ebf; color: white; }
-    .quiz-result-btn.tertiary { background: #888; color: white; }
+    .quiz-result-btn.secondary { background: linear-gradient(135deg, #2BBCD4, #1A9AB0); color: white; }
+    .quiz-result-btn.tertiary { background: linear-gradient(135deg, #F2708A, #d45570); color: white; }
 
     /* 復習モード */
     .review-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
@@ -738,8 +738,8 @@
         <span class="task-status ${isPassed ? 'task-合格' : 'task-未提出'}">${isPassed ? '合格✓' : '未学習'}</span>
         ${isPassed
           ? `<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-               <button class="task-btn" style="background:#6c8ebf;font-size:10px;" onclick="window.openTask(${t.num},'review')">復習</button>
-               <button class="task-btn" style="background:#888;font-size:10px;" onclick="window.openTask(${t.num},'retry')">再挑戦</button>
+               <button class="task-btn" style="background:linear-gradient(135deg,#2BBCD4,#1A9AB0);font-size:10px;" onclick="window.openTask(${t.num},'review')">📖 復習</button>
+               <button class="task-btn" style="background:linear-gradient(135deg,#F2708A,#d45570);font-size:10px;" onclick="window.openTask(${t.num},'retry')">🔄 再挑戦</button>
              </div>`
           : locked ? '<span style="font-size:16px;">🔒</span>'
           : `<button class="task-btn" onclick="window.openTask(${t.num},'normal')">回答する</button>`
@@ -843,6 +843,7 @@
       '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
       (q.ref ? '<div class="quiz-ref-box">📖 <span>テキスト <strong>' + q.ref + '</strong> を学習してから答えてください</span></div>' : '') +
+      (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
       '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       '<div class="quiz-question-text">' + q.question + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
@@ -949,6 +950,7 @@
     const theme = LEARNING_THEMES[themeNum - 1];
     const itemsHtml = questions.map((q, i) =>
       '<div class="review-item"><div class="review-q">Q' + (i+1) + '. ' + q.question + '</div>' +
+      (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
       '<div class="review-ans">正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' +
       (q.ref ? '<div class="review-ref">📖 参照：テキスト ' + q.ref + '</div>' : '') + '</div>'
     ).join('');
