@@ -323,10 +323,93 @@
       max-height: 80vh; overflow-y: auto; padding: 24px;
     }
 
-    @media (max-width: 600px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .doc-grid { grid-template-columns: repeat(3, 1fr); }
-      .page-wrap { padding: 20px 12px 60px; }
+    /* トグルセクション */
+    .section-block { margin-bottom: 20px; }
+    .toggle-section {
+      background: white; border-radius: 12px; border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow); margin-bottom: 12px; overflow: hidden;
+    }
+    .toggle-header {
+      width: 100%; background: none; border: none; padding: 16px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; font-family: inherit; text-align: left;
+      transition: background 0.15s;
+    }
+    .toggle-header:hover { background: var(--teal-pale); }
+    .toggle-header-left { display: flex; align-items: center; gap: 10px; }
+    .toggle-icon-wrap {
+      width: 32px; height: 32px; border-radius: 8px; background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .toggle-arrow {
+      font-size: 20px; color: var(--text-light); transition: transform 0.25s;
+      display: inline-block; flex-shrink: 0;
+    }
+    .toggle-arrow.open { transform: rotate(90deg); }
+    .toggle-body {
+      display: none; padding: 0 18px 18px;
+      border-top: 1px solid var(--border);
+    }
+    .toggle-body.open { display: block; }
+
+    /* action-btn（学習するボタンと同デザイン） */
+    .action-btn {
+      background: linear-gradient(135deg, #2BBCD4, #1A9AB0); color: white;
+      border: none; border-radius: 8px; padding: 7px 14px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif; white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .action-btn:hover { opacity: 0.85; }
+
+    /* お知らせ */
+    .notice-card {
+      background: white; border-radius: 12px; border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow); overflow: hidden;
+    }
+
+    /* 講座の流れ - スタイリッシュ版 */
+    .flow-step { margin-bottom: 24px; }
+    .flow-step:last-child { margin-bottom: 0; }
+    .flow-step-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .flow-step-badge {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0; color: white;
+    }
+    .flow-step-badge.s0 { background: var(--teal); }
+    .flow-step-badge.s1 { background: #F5A623; }
+    .flow-step-badge.s2 { background: var(--green); }
+    .flow-step-badge.s3 { background: var(--pink); }
+    .flow-step-badge.s4 { background: #7C3AED; }
+    .flow-step-title-text { font-size: 13px; font-weight: 700; color: var(--text); }
+    .flow-connector {
+      width: 2px; height: 16px; background: var(--border);
+      margin: 0 13px 10px; border-radius: 1px;
+    }
+    .flow-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px; margin-bottom: 6px;
+      font-size: 13px; border: 1px solid transparent;
+    }
+    .flow-item.done { background: #F0FDF4; border-color: #86EFAC; color: #166534; }
+    .flow-item.active { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+    .flow-item.locked { background: #F9FAFB; border-color: var(--border); color: var(--text-light); }
+    .flow-item.rejected { background: #FFF1F2; border-color: #FECDD3; color: #9F1239; }
+    .flow-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .flow-item.done .flow-status-dot { background: #22C55E; }
+    .flow-item.active .flow-status-dot { background: #F59E0B; }
+    .flow-item.locked .flow-status-dot { background: #D1D5DB; }
+    .flow-item.rejected .flow-status-dot { background: #F43F5E; }
+
+    .page-wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+    @media (max-width: 480px) {
+      .page-wrap { padding: 16px 12px 60px; }
       .course-header { padding: 16px; }
     }
   </style>
@@ -363,32 +446,31 @@
 
 <div class="page-wrap">
 
-  <!-- お知らせ -->
-  <div class="notice-section">
-    <div class="section-title">📢 お知らせ・連絡<span id="unread-count" style="display:none;margin-left:8px;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;vertical-align:middle;"></span></div>
+  <!-- ① お知らせ・連絡 -->
+  <div class="section-block" style="margin-bottom:20px;">
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      <span>📢 お知らせ・連絡</span>
+      <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span>
+    </div>
     <div class="notice-card" id="notice-list">
       <div class="notice-item">
-        <div class="notice-dot" style="background:var(--border);"></div>
+        <div class="notice-dot"></div>
         <div><div class="notice-title" style="color:var(--text-light);">読み込み中...</div></div>
       </div>
     </div>
   </div>
 
-  <!-- 講座の流れ -->
-  <div class="doc-section" id="course-flow-section">
-    <div class="section-title">📌 講座の流れ</div>
-    <div class="card" id="course-flow-card">
-      <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">
-        <div class="card-icon icon-teal">📋</div>
-        受講内容・ステータス
-      </div>
-      <div id="app-detail">
+  <!-- ② 受講内容・ステータス -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('app-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📋</span>
+        <span class="toggle-header-title">受講内容・ステータス</span>
+      </span>
+      <span class="toggle-arrow" id="arrow-app-body">›</span>
+    </button>
+    <div class="toggle-body" id="app-body">
+      <div id="app-detail" style="margin-top:4px;">
         <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
         <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
         <div class="app-row"><span class="app-label">受講開始日</span><span class="app-value" id="app-start">—</span></div>
@@ -404,156 +486,109 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="card">
-      <div class="card-title">
-        <div class="card-icon icon-orange">📚</div>
-        eラーニング
+  <!-- ③ 講座の流れ・進行状況 -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('flow-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📌</span>
+        <span class="toggle-header-title">講座の流れ・進行状況</span>
+      </span>
+      <span class="toggle-arrow" id="arrow-flow-body">›</span>
+    </button>
+    <div class="toggle-body" id="flow-body">
+      <div id="course-flow-card" style="margin-top:4px;">
+        <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
       </div>
-      <div style="font-size:11px;color:var(--text-mid);margin-bottom:10px;line-height:1.6;">テキストで各テーマを学習後、確認問題に答えてください。</div>
+    </div>
+  </div>
+
+  <!-- ④ eラーニング（デフォルト開） -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('elearn-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📚</span>
+        <span class="toggle-header-title">eラーニング</span>
+      </span>
+      <span class="toggle-arrow open" id="arrow-elearn-body">›</span>
+    </button>
+    <div class="toggle-body open" id="elearn-body">
+      <p style="font-size:12px;color:var(--text-mid);margin:4px 0 12px;line-height:1.7;">テキストで各テーマを学習後、確認問題に答えてください。前のテーマに合格すると次が解放されます。</p>
       <div id="task-list">
-        <div class="task-item"><span style="color:var(--text-light); font-size:13px;">読み込み中...</span></div>
+        <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 動画教材 -->
-  <div class="video-section">
-    <div class="section-title">🎬 動画教材</div>
-    <div class="card">
-      <div id="video-list">
-        <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
+  <!-- ⑤ 動画教材 -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('video-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">🎬</span>
+        <span class="toggle-header-title">動画教材</span>
+      </span>
+      <span class="toggle-arrow" id="arrow-video-body">›</span>
+    </button>
+    <div class="toggle-body" id="video-body">
+      <div id="video-list" style="margin-top:4px;">
+        <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
       </div>
     </div>
   </div>
 
-  <!-- 届出書類 -->
-  <div class="doc-section" id="todoke-section" style="display:none;">
-    <div class="section-title">📝 届出書類</div>
-    <div class="card">
-      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">以下の場合は、該当する届出書をご提出ください。</p>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div>
-            <div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">休講届</div>
-            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により休講を希望するとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div>
-            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 書類の発行 -->
-  <div class="doc-section">
-    <div class="section-title">📄 書類の発行</div>
-    <div class="card">
-      <p style="font-size:13px; color:var(--text-mid); margin-bottom:16px;">見積書・請求書・領収書を発行できます。宛名は変更可能です。</p>
+  <!-- ⑥ 書類発行 -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('doc-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📄</span>
+        <span class="toggle-header-title">書類発行</span>
+      </span>
+      <span class="toggle-arrow" id="arrow-doc-body">›</span>
+    </button>
+    <div class="toggle-body" id="doc-body">
+      <p style="font-size:13px;color:var(--text-mid);margin:4px 0 14px;">見積書・請求書・領収書を発行できます。宛名は変更可能です。</p>
       <div style="margin-bottom:14px;">
-        <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:5px;">宛名（デフォルト：お名前）</label>
+        <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:5px;">宛名（デフォルト：お名前）</label>
         <input type="text" id="doc-name" placeholder="例）山田太郎　または　○○株式会社"
-          style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:13px; outline:none;">
+          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;">
       </div>
       <div class="doc-grid">
-        <button class="doc-btn" onclick="generateDoc('見積書')">
-          <span class="doc-icon">📋</span><span class="doc-label">見積書</span><span class="doc-sub">PDF発行</span>
-        </button>
-        <button class="doc-btn" onclick="generateDoc('請求書')">
-          <span class="doc-icon">📑</span><span class="doc-label">請求書</span><span class="doc-sub">PDF発行</span>
-        </button>
-        <button class="doc-btn" onclick="generateDoc('領収書')">
-          <span class="doc-icon">🧾</span><span class="doc-label">領収書</span><span class="doc-sub">PDF発行</span>
-        </button>
+        <button class="doc-btn" onclick="generateDoc('見積書')"><span class="doc-icon">📋</span><span class="doc-label">見積書</span><span class="doc-sub">PDF発行</span></button>
+        <button class="doc-btn" onclick="generateDoc('請求書')"><span class="doc-icon">📑</span><span class="doc-label">請求書</span><span class="doc-sub">PDF発行</span></button>
+        <button class="doc-btn" onclick="generateDoc('領収書')"><span class="doc-icon">🧾</span><span class="doc-label">領収書</span><span class="doc-sub">PDF発行</span></button>
       </div>
     </div>
   </div>
 
-</div>
-
-<!-- eラーニング モーダル -->
-<div class="modal-overlay" id="task-modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">eラーニング</div>
-      <button class="modal-close" onclick="closeTask()">✕</button>
-    </div>
-    <div class="modal-content" id="modal-content"></div>
-  </div>
-</div>
-
-<!-- 書類アップロードモーダル -->
-<div class="modal-overlay-doc" id="upload-modal" onclick="if(event.target===this)closeUpload()">
-  <div class="modal-doc">
-    <div style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text);" id="upload-modal-title">書類のアップロード</div>
-    <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;" id="upload-modal-desc"></div>
-    <div id="upload-modal-notes" style="display:none;background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--text-mid);line-height:1.8;"></div>
-    <div id="id-type-section" style="display:none;margin-bottom:16px;">
-      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">書類の種類を選択してください</label>
-      <select id="id-doc-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;">
-        <option value="">選択してください</option>
-        <option value="運転免許証">運転免許証（表裏）</option>
-        <option value="パスポート">パスポート（顔写真ページ）</option>
-        <option value="在留カード">在留カード（表裏）</option>
-        <option value="マイナンバーカード">マイナンバーカード（表面のみ）</option>
-        <option value="学生証">学生証</option>
-        <option value="住民票">住民票（発行から3ヶ月以内）</option>
-      </select>
-    </div>
-    <div style="margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;" id="front-label">📄 表面</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button onclick="triggerFileInput('upload-input-front')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
-        <button onclick="triggerCamera('front')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
+  <!-- ⑦ 届出書 -->
+  <div class="toggle-section" id="todoke-section" style="display:none;">
+    <button class="toggle-header" onclick="toggleSection('todoke-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📝</span>
+        <span class="toggle-header-title">届出書</span>
+      </span>
+      <span class="toggle-arrow" id="arrow-todoke-body">›</span>
+    </button>
+    <div class="toggle-body" id="todoke-body">
+      <p style="font-size:13px;color:var(--text-mid);margin:4px 0 14px;">以下の場合は、該当する届出書をご提出ください。</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div><div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div></div>
+          <button onclick="alert('近日公開予定です')" class="action-btn">提出する</button>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">休講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により休講を希望するとき</div></div>
+          <button onclick="alert('近日公開予定です')" class="action-btn">提出する</button>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div></div>
+          <button onclick="alert('近日公開予定です')" class="action-btn" style="background:linear-gradient(135deg,#e53935,#c62828);">提出する</button>
+        </div>
       </div>
-      <input type="file" id="upload-input-front" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'front')">
-      <input type="file" id="upload-input-front-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'front')">
-      <div id="upload-preview-front" style="display:none;text-align:center;">
-        <img id="preview-img-front" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
-        <div id="preview-name-front" style="font-size:12px;color:var(--text-mid);"></div>
-      </div>
-    </div>
-    <div id="back-section" style="display:none;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">📄 裏面</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button onclick="triggerFileInput('upload-input-back')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
-        <button onclick="triggerCamera('back')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
-      </div>
-      <input type="file" id="upload-input-back" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'back')">
-      <input type="file" id="upload-input-back-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'back')">
-      <div id="upload-preview-back" style="display:none;text-align:center;">
-        <img id="preview-img-back" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
-        <div id="preview-name-back" style="font-size:12px;color:var(--text-mid);"></div>
-      </div>
-    </div>
-    <div id="camera-section" style="display:none;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;" id="camera-label">📷 カメラ撮影</div>
-      <video id="camera-preview" autoplay playsinline style="width:100%;border-radius:8px;background:#000;max-height:250px;"></video>
-      <canvas id="camera-canvas" style="display:none;"></canvas>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="capturePhoto()" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">📸 撮影する</button>
-        <button onclick="closeCamera()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">やめる</button>
-      </div>
-    </div>
-    <div id="upload-progress" style="display:none;font-size:13px;color:var(--teal);text-align:center;margin-bottom:12px;">アップロード中...</div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">キャンセル</button>
-      <button onclick="submitUpload()" id="upload-submit-btn" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold;">提出する</button>
     </div>
   </div>
+
 </div>
 
 <script type="module">
@@ -1225,6 +1260,16 @@
     alert(type + 'の発行機能は準備中です。\n宛名：' + name);
   }
   window.generateDoc = generateDoc;
+
+  // トグル開閉
+  window.toggleSection = function(id) {
+    const body = document.getElementById(id);
+    const arrow = document.getElementById('arrow-' + id);
+    if (!body) return;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    if (arrow) arrow.classList.toggle('open', !isOpen);
+  };
 </script>
 </body>
 </html>
