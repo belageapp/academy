@@ -363,11 +363,40 @@
     }
     .action-btn:hover { opacity: 0.85; }
 
-    /* お知らせ */
-    .notice-card {
-      background: white; border-radius: 12px; border: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow); overflow: hidden;
+    /* お知らせアコーディオン */
+    .notice-accordion {
+      border-bottom: 1px solid var(--border);
     }
+    .notice-accordion:last-child { border-bottom: none; }
+    .notice-accordion-header {
+      width: 100%; background: none; border: none; padding: 12px 14px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-family: inherit; text-align: left;
+      transition: background 0.15s; position: relative; overflow: hidden;
+    }
+    .notice-accordion-header:hover { background: var(--teal-pale); }
+    .notice-unread-bar {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: transparent; border-radius: 2px;
+    }
+    .notice-accordion.unread .notice-unread-bar { background: #F59E0B; }
+    .notice-accordion.unread .notice-acc-title { font-weight: 700; }
+    .notice-acc-date {
+      font-size: 11px; color: var(--text-light); white-space: nowrap; flex-shrink: 0;
+    }
+    .notice-acc-title {
+      font-size: 13px; color: var(--text); flex: 1; font-weight: 500;
+    }
+    .notice-acc-arrow {
+      font-size: 10px; color: var(--text-light); flex-shrink: 0;
+      transition: transform 0.2s; display: inline-block;
+    }
+    .notice-acc-arrow.open { transform: rotate(180deg); }
+    .notice-accordion-body {
+      display: none; padding: 0 14px 14px 14px;
+      font-size: 13px; color: var(--text-mid); line-height: 1.7;
+    }
+    .notice-accordion-body.open { display: block; }
 
     /* 講座の流れ - スタイリッシュ版 */
     .flow-step { margin-bottom: 24px; }
@@ -447,15 +476,19 @@
 <div class="page-wrap">
 
   <!-- ① お知らせ・連絡 -->
-  <div class="section-block" style="margin-bottom:20px;">
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-      <span>📢 お知らせ・連絡</span>
-      <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span>
-    </div>
-    <div class="notice-card" id="notice-list">
-      <div class="notice-item">
-        <div class="notice-dot"></div>
-        <div><div class="notice-title" style="color:var(--text-light);">読み込み中...</div></div>
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('notice-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📢</span>
+        <span class="toggle-header-title">お知らせ・連絡
+          <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
+        </span>
+      </span>
+      <span class="toggle-arrow open" id="arrow-notice-body">›</span>
+    </button>
+    <div class="toggle-body open" id="notice-body">
+      <div id="notice-list">
+        <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
       </div>
     </div>
   </div>
@@ -511,9 +544,9 @@
         <span class="toggle-icon-wrap">📚</span>
         <span class="toggle-header-title">eラーニング</span>
       </span>
-      <span class="toggle-arrow open" id="arrow-elearn-body">›</span>
+      <span class="toggle-arrow" id="arrow-elearn-body">›</span>
     </button>
-    <div class="toggle-body open" id="elearn-body">
+    <div class="toggle-body" id="elearn-body">
       <p style="font-size:12px;color:var(--text-mid);margin:4px 0 12px;line-height:1.7;">テキストで各テーマを学習後、確認問題に答えてください。前のテーマに合格すると次が解放されます。</p>
       <div id="task-list">
         <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
@@ -817,16 +850,14 @@
           const isRead = readIds.includes(n.id);
           const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
           const nid = 'nb-' + n.id;
-          return `<div class="notice-item ${isRead ? '' : 'unread'}" id="ni-${n.id}">
-            <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="toggleNotice('${n.id}');markRead('${n.id}', document.getElementById('ni-${n.id}'))">
-              <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
-              <div style="flex:1;">
-                <div class="notice-date">${dt}</div>
-                <div class="notice-title">${n.title}</div>
-              </div>
-              <span id="na-${n.id}" style="font-size:16px;color:var(--text-light);transition:transform 0.2s;display:inline-block;">›</span>
-            </div>
-            <div id="${nid}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          return `<div class="notice-accordion ${isRead ? '' : 'unread'}" id="ni-${n.id}">
+            <button class="notice-accordion-header" onclick="toggleNotice('${n.id}');markRead('${n.id}', document.getElementById('ni-${n.id}'))">
+              <span class="notice-unread-bar"></span>
+              <span class="notice-acc-date">${dt}</span>
+              <span class="notice-acc-title">${n.title}</span>
+              <span class="notice-acc-arrow" id="na-${n.id}">▼</span>
+            </button>
+            <div class="notice-accordion-body" id="${nid}">
               <div class="notice-preview">${n.body}</div>
               ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
             </div>
