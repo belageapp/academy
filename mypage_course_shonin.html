@@ -988,7 +988,7 @@
           if (snap.exists() && snap.data().results) {
             const saved = snap.data();
             quizState = { themeNum, themeName: theme.name, questions,
-              currentIndex: 0, answers: saved.answers || [], results: saved.results, submitted: true };
+              currentIndex: 0, answers: saved.answers || [], results: saved.results, submitted: true, viewOnly: true };
             renderQuizResult(content); return;
           }
         }
@@ -1044,7 +1044,7 @@
 
   window.closeTask = function() {
     document.getElementById('task-modal').classList.remove('open');
-    if (quizState.submitted) {
+    if (quizState.submitted && !quizState.viewOnly) {
       location.reload();
     }
   };
@@ -1189,7 +1189,7 @@
       '</div></div>' +
       '<div class="quiz-result-list"><div class="quiz-result-list-title">📋 全問 回答結果一覧</div>' + listHtml + '</div>' +
       '<div class="quiz-result-btns">' +
-        '<button class="quiz-result-btn primary" onclick="window.closeTask();location.reload();">✅ 講座ページに戻る</button>' +
+        '<button class="quiz-result-btn primary" onclick="window.closeTask();' + (quizState.viewOnly ? '' : 'location.reload();') + '">✅ 講座ページに戻る</button>' +
         (isPassed
           ? '<button class="quiz-result-btn secondary" onclick="window.openTask(' + themeNum + ',\'review\')">📖 復習する（正解一覧）</button>'
           : '<button class="quiz-result-btn tertiary" onclick="window.retryFromResult(' + themeNum + ')">🔄 もう一度挑戦する</button>'
