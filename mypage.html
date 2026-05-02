@@ -213,7 +213,35 @@
       .header-name { font-size: 12px; }
       .logout-btn { padding: 5px 10px; font-size: 11px; }
     }
-  </style>
+/* トグルセクション */
+    .toggle-section {
+      background: white; border-radius: 12px; border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow); margin-bottom: 12px; overflow: hidden;
+    }
+    .toggle-header {
+      width: 100%; background: none; border: none; padding: 16px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; font-family: inherit; text-align: left;
+      transition: background 0.15s;
+    }
+    .toggle-header:hover { background: var(--teal-pale); }
+    .toggle-header-left { display: flex; align-items: center; gap: 10px; }
+    .toggle-icon-wrap {
+      width: 32px; height: 32px; border-radius: 8px; background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .toggle-arrow {
+      font-size: 20px; color: var(--text-light); transition: transform 0.25s;
+      display: inline-block; flex-shrink: 0;
+    }
+    .toggle-arrow.open { transform: rotate(90deg); }
+    .toggle-body {
+      display: none; padding: 14px 18px 18px;
+      border-top: 1px solid var(--border);
+    }
+    .toggle-body.open { display: block; }
+</style>
 </head>
 <body>
 
@@ -235,18 +263,19 @@
 <div class="page-wrap">
 
   <!-- お知らせ -->
-  <div class="notice-section">
-    <div class="section-title">
-      📢 お知らせ・連絡
-      <span class="badge-count" id="unread-count" style="display:none;"></span>
-    </div>
-    <div class="notice-card" id="notice-list">
-      <div class="notice-item">
-        <div class="notice-dot" style="background:var(--border);"></div>
-        <div>
-          <div class="notice-date">読み込み中...</div>
-          <div class="notice-title">お知らせを取得しています</div>
-        </div>
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('notice-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📢</span>
+        <span class="toggle-header-title">お知らせ・連絡
+          <span id="unread-count" style="display:none;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle;"></span>
+        </span>
+      </span>
+      <span class="toggle-arrow open" id="arrow-notice-body">›</span>
+    </button>
+    <div class="toggle-body open" id="notice-body" style="padding-top:0;">
+      <div id="notice-list">
+        <div style="padding:14px 16px;color:var(--text-light);font-size:13px;">読み込み中...</div>
       </div>
     </div>
   </div>
@@ -519,7 +548,14 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
           noticeList.innerHTML += pagination;
         }
       }
-
+window.toggleSection = function(id) {
+      const body = document.getElementById(id);
+      const arrow = document.getElementById('arrow-' + id);
+      if (!body) return;
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      if (arrow) arrow.classList.toggle('open', !isOpen);
+    };
       window.changePage = function(page) {
         if (page < 1 || page > totalPages) return;
         currentPage = page;
