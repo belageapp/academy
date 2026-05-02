@@ -230,7 +230,8 @@
       width: 32px; height: 32px; border-radius: 8px; background: var(--teal-light);
       display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
     }
-    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .toggle-header-title { font-size: 14px; font-weight: 700; color: var(--text); display:flex; flex-direction:column; gap:2px; }
+    .toggle-header-desc { font-size: 11px; font-weight: 400; color: var(--text-mid); }
     .toggle-arrow {
       font-size: 20px; color: var(--text-light); transition: transform 0.25s;
       display: inline-block; flex-shrink: 0;
@@ -305,7 +306,7 @@
         <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
         <span class="toggle-header-title">パスワード変更
           <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
-      </span>
+        </span>
       <span class="toggle-arrow" id="arrow-pw-body">›</span>
     </button>
     <div class="toggle-body" id="pw-body">
