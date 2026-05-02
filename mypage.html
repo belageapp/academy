@@ -95,6 +95,28 @@
     .notice-item:last-child { border-bottom: none; }
     .notice-item:hover { background: var(--teal-pale); }
     .notice-item.unread { background: #FFFBF0; }
+    /* アコーディオン */
+    .notice-accordion { border-bottom: 1px solid var(--border); }
+    .notice-accordion:last-child { border-bottom: none; }
+    .notice-accordion-header {
+      width: 100%; background: none; border: none; padding: 12px 14px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-family: inherit; text-align: left;
+      transition: background 0.15s; position: relative; overflow: hidden;
+    }
+    .notice-accordion-header:hover { background: var(--teal-pale); }
+    .notice-unread-bar {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: transparent; border-radius: 2px;
+    }
+    .notice-accordion.unread .notice-unread-bar { background: #F59E0B; }
+    .notice-accordion.unread .notice-acc-title { font-weight: 700; }
+    .notice-acc-date { font-size: 11px; color: var(--text-light); white-space: nowrap; flex-shrink: 0; }
+    .notice-acc-title { font-size: 13px; color: var(--text); flex: 1; font-weight: 500; }
+    .notice-acc-arrow { font-size: 10px; color: var(--text-light); flex-shrink: 0; transition: transform 0.2s; display: inline-block; }
+    .notice-acc-arrow.open { transform: rotate(180deg); }
+    .notice-accordion-body { display: none; padding: 0 14px 14px 14px; font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+    .notice-accordion-body.open { display: block; }
     .notice-dot {
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--yellow); flex-shrink: 0; margin-top: 5px;
@@ -333,13 +355,36 @@ const courseCode = data.courseCode || '4010';
         const master = courseMaster[courseCode];
         const courseFile = master?.pageFile || 'mypage_course_shonin.html';
         card.href = `${courseFile}?id=${doc.id}`;
+          const statusColors = {
+            '入金待ち': {bg:'#FFF8E1',border:'#FDE68A',text:'#92400E'},
+            '受講確定': {bg:'#E0F7FB',border:'#7ECFD9',text:'#1A9AB0'},
+            '受講中':   {bg:'#EBF7EF',border:'#86EFAC',text:'#166534'},
+            '修了':     {bg:'#F3E8FF',border:'#C4B5FD',text:'#5B21B6'},
+            'キャンセル':{bg:'#F5F5F5',border:'#D1D5DB',text:'#6B7280'},
+          };
+          const sc = statusColors[statusText] || {bg:'#F3F4F6',border:'#D1D5DB',text:'#6B7280'};
+          const startDate = data.activeAt ? new Date(data.activeAt.toMillis()) : null;
+          const today = new Date(); today.setHours(0,0,0,0);
+          const tempLimit = startDate ? new Date(new Date(startDate).setMonth(startDate.getMonth()+3)) : null;
+          const fullLimit = startDate ? new Date(new Date(startDate).setMonth(startDate.getMonth()+8)) : null;
+          const tempDays = tempLimit ? Math.ceil((tempLimit-today)/(1000*60*60*24)) : null;
+          const fullDays = fullLimit ? Math.ceil((fullLimit-today)/(1000*60*60*24)) : null;
+          const tempColor = tempDays !== null ? (tempDays<=7?'#e53935':tempDays<=30?'#F57C00':'inherit') : 'inherit';
+          const fullColor = fullDays !== null ? (fullDays<=7?'#e53935':fullDays<=30?'#F57C00':'inherit') : 'inherit';
+          const fmt = d => d ? new Date(d.toMillis()).toLocaleDateString('ja-JP') : '—';
           card.innerHTML = `
             <div class="course-icon">📋</div>
-            <div class="course-info">
-              <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
-<div class="course-meta">受講番号：${data.studentNo || '—'}</div>
-              <div class="course-meta">申込日：${data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—'}${data.completedAt ? '　修了日：' + new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : ''}</div>
-              <span class="status-badge status-${statusText}">${statusText}</span>
+            <div class="course-info" style="gap:6px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
+                <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${sc.bg};border:1.5px solid ${sc.border};color:${sc.text};white-space:nowrap;">${statusText}</span>
+              </div>
+              <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
+              ${startDate ? '<div class="course-meta">受講開始日：' + startDate.toLocaleDateString('ja-JP') + '</div>' : ''}
+              ${tempLimit ? '<div class="course-meta" style="color:' + tempColor + ';">仮修了期限：' + tempLimit.toLocaleDateString('ja-JP') + (tempDays !== null ? '（残' + tempDays + '日）' : '') + '</div>' : ''}
+              ${fullLimit ? '<div class="course-meta" style="color:' + fullColor + ';">正式修了期限：' + fullLimit.toLocaleDateString('ja-JP') + (fullDays !== null ? '（残' + fullDays + '日）' : '') + '</div>' : ''}
+              ${data.tempCompletedAt ? '<div class="course-meta">仮修了日：' + fmt(data.tempCompletedAt) + '</div>' : ''}
+              ${data.completedAt ? '<div class="course-meta">修了日：' + fmt(data.completedAt) + '</div>' : ''}
             </div>
             <div class="course-arrow">›</div>
           `;
@@ -360,12 +405,29 @@ courseList.appendChild(card);
               const courseCode = data.courseCode || '4010';
 const m = courseMaster[courseCode];
 card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
+              const scH = statusColors[statusText] || {bg:'#F3F4F6',border:'#D1D5DB',text:'#6B7280'};
+              const startH = data.activeAt ? new Date(data.activeAt.toMillis()) : null;
+              const todayH = new Date(); todayH.setHours(0,0,0,0);
+              const tempLH = startH ? new Date(new Date(startH).setMonth(startH.getMonth()+3)) : null;
+              const fullLH = startH ? new Date(new Date(startH).setMonth(startH.getMonth()+8)) : null;
+              const tempDH = tempLH ? Math.ceil((tempLH-todayH)/(1000*60*60*24)) : null;
+              const fullDH = fullLH ? Math.ceil((fullLH-todayH)/(1000*60*60*24)) : null;
+              const tempCH = tempDH!==null?(tempDH<=7?'#e53935':tempDH<=30?'#F57C00':'inherit'):'inherit';
+              const fullCH = fullDH!==null?(fullDH<=7?'#e53935':fullDH<=30?'#F57C00':'inherit'):'inherit';
+              const fmtH = d => d ? new Date(d.toMillis()).toLocaleDateString('ja-JP') : '—';
               card.innerHTML = `
                 <div class="course-icon">📋</div>
-                <div class="course-info">
-                  <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
+                <div class="course-info" style="gap:6px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                    <div class="course-name">${data.course || 'オンライン初任者研修'}</div>
+                    <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${scH.bg};border:1.5px solid ${scH.border};color:${scH.text};white-space:nowrap;">${statusText}</span>
+                  </div>
                   <div class="course-meta">受講番号：${data.studentNo || '—'}</div>
-                  <span class="status-badge status-${statusText}">${statusText}</span>
+                  ${startH ? '<div class="course-meta">受講開始日：' + startH.toLocaleDateString('ja-JP') + '</div>' : ''}
+                  ${tempLH ? '<div class="course-meta" style="color:' + tempCH + ';">仮修了期限：' + tempLH.toLocaleDateString('ja-JP') + (tempDH!==null?'（残'+tempDH+'日）':'') + '</div>' : ''}
+                  ${fullLH ? '<div class="course-meta" style="color:' + fullCH + ';">正式修了期限：' + fullLH.toLocaleDateString('ja-JP') + (fullDH!==null?'（残'+fullDH+'日）':'') + '</div>' : ''}
+                  ${data.tempCompletedAt ? '<div class="course-meta">仮修了日：' + fmtH(data.tempCompletedAt) + '</div>' : ''}
+                  ${data.completedAt ? '<div class="course-meta">修了日：' + fmtH(data.completedAt) + '</div>' : ''}
                 </div>
                 <div class="course-arrow">›</div>
               `;
@@ -430,16 +492,19 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
         noticeList.innerHTML = pageItems.map(n => {
           const isRead = readIds.includes(n.id);
           const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
-          return `
-            <div class="notice-item ${isRead ? '' : 'unread'}" onclick="markRead('${n.id}', this)" style="cursor:pointer;">
-              <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
-              <div>
-                <div class="notice-date">${dt}</div>
-                <div class="notice-title">${n.title}</div>
-                <div class="notice-preview">${n.body}</div>
-                ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
-              </div>
-            </div>`;
+          const nid = 'nb-' + n.id;
+          return `<div class="notice-accordion ${isRead ? '' : 'unread'}" id="ni-${n.id}">
+            <button class="notice-accordion-header" onclick="toggleNoticeM('${n.id}');markRead('${n.id}', document.getElementById('ni-${n.id}'))">
+              <span class="notice-unread-bar"></span>
+              <span class="notice-acc-date">${dt}</span>
+              <span class="notice-acc-title">${n.title}</span>
+              <span class="notice-acc-arrow" id="na-${n.id}">▼</span>
+            </button>
+            <div class="notice-accordion-body" id="${nid}">
+              <div>${n.body}</div>
+              ${n.fileUrl ? '<a href="' + n.fileUrl + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--teal-dark);">📎 ' + n.fileName + '</a>' : ''}
+            </div>
+          </div>`;
         }).join('');
 
         // ページネーションUI
@@ -499,6 +564,15 @@ await window.__updatePassword(window.__auth.currentUser, pw1);
   window.changePassword = changePassword;
 
   // お知らせ既読管理
+  window.toggleNoticeM = function(id) {
+    const body = document.getElementById('nb-' + id);
+    const arrow = document.getElementById('na-' + id);
+    if (!body) return;
+    const open = body.classList.contains('open');
+    body.classList.toggle('open', !open);
+    if (arrow) arrow.classList.toggle('open', !open);
+  };
+
   window.markRead = async function(id, el) {
     try {
       const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
