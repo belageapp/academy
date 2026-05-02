@@ -3,1550 +3,784 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>講座詳細 | ホリスケアアカデミー</title>
+  <title>マイページ | ホリスケアアカデミー</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --teal: #2BBCD4; --teal-dark: #1A9AB0; --teal-light: #E0F7FB; --teal-pale: #F0FBFD;
-      --pink: #F2708A; --pink-light: #FEF0F3;
-      --yellow: #FFD84D; --yellow-light: #FFFBEB;
-      --green: #4CAF72; --green-light: #EBF7EF;
-      --orange: #E8823A; --orange-light: #FEF3E8;
-      --white: #FFFFFF; --bg: #F2F8FA; --text: #1A3A40;
-      --text-mid: #4A7A85; --text-light: #8AB8C0;
-      --border: #C8EAF0; --red: #E05050;
-      --shadow: rgba(43,188,212,0.10);
+      --green: #3A7D44;
+      --green-dark: #2A5E32;
+      --green-mid: #5A9E64;
+      --green-light: #E8F5EA;
+      --green-pale: #F3FAF4;
+      --orange: #E8823A;
+      --orange-light: #FEF3E8;
+      --white: #FFFFFF;
+      --bg: #F2F5F2;
+      --text: #1E2820;
+      --text-mid: #5A6B5C;
+      --text-light: #9AAD9C;
+      --border: #D4E6D6;
+      --shadow: rgba(58,125,68,0.10);
+      --red: #D94040;
+      --blue: #3A7DB8;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+    /* ===== ヘッダー ===== */
     .header {
-      background: white; border-bottom: 3px solid var(--teal);
-      padding: 0 24px; height: 58px;
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+      color: white; padding: 0 20px; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 2px 10px var(--shadow);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .back-btn {
-      background: none; border: 1.5px solid var(--border); color: var(--text-mid);
-      border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+    .header-logo { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; }
+    .header-logo span { font-size: 11px; font-weight: 400; opacity: 0.8; margin-left: 8px; }
+    .header-user { font-size: 12px; opacity: 0.9; display: flex; align-items: center; gap: 10px; }
+    .header-user button {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+      font-family: inherit;
     }
-    .back-btn:hover { background: var(--teal-light); border-color: var(--teal); }
-    .header-logo img { height: 36px; width: auto; }
-    .header-right { display: flex; align-items: center; gap: 14px; }
-    .header-name { font-size: 13px; color: var(--text-mid); }
-    .logout-btn {
-      background: none; border: 1.5px solid var(--border); color: var(--text-mid);
-      border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
-    }
-    .logout-btn:hover { background: var(--teal-light); border-color: var(--teal); }
-    .header-logo-row { display: none; }
-    .header-main-row { display: none; }
-    .header-pc-logo { display: flex; }
-    .header-pc-right { display: flex; }
-    @media (max-width: 480px) {
-      .header-pc-logo { display: none !important; }
-      .header-pc-right { display: none !important; }
-    }
-    @media (max-width: 480px) {
-      .header { padding: 8px 12px; height: auto; flex-direction: column; align-items: stretch; gap: 6px; }
-      .header-logo-row { display: flex; justify-content: center; width: 100%; }
-      .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-      .header-left { gap: 8px; }
-      .header-right { gap: 8px; }
-      .header-name { font-size: 12px; }
-      .back-btn { padding: 5px 10px; font-size: 11px; }
-      .logout-btn { padding: 5px 10px; font-size: 11px; }
-    }
+    .header-user button:hover { background: rgba(255,255,255,0.3); }
 
-    .course-header {
-      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
-      padding: 20px 24px; color: white;
-    }
-    .course-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-    .course-header p { font-size: 13px; opacity: 0.85; }
+    /* ===== レイアウト ===== */
+    .container { max-width: 800px; margin: 0 auto; padding: 20px 16px 60px; }
 
-    .page-wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; }
-
-    .section-title {
-      font-size: 15px; font-weight: 700; color: var(--text);
-      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-    }
-    .section-title::before {
-      content: ''; display: block; width: 4px; height: 18px;
-      background: var(--teal); border-radius: 2px;
-    }
-    .badge-count {
-      background: var(--pink); color: white; font-size: 11px; font-weight: 700;
-      border-radius: 10px; padding: 1px 7px; margin-left: 4px;
-    }
-
-    /* お知らせ */
-    .notice-section { margin-bottom: 28px; }
-    .notice-card {
-      background: white; border-radius: 12px; border: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow); overflow: hidden;
-    }
-    .notice-item {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding: 14px 16px; border-bottom: 1px solid var(--border);
-      cursor: pointer; transition: background 0.15s;
-    }
-    .notice-item:last-child { border-bottom: none; }
-    .notice-item:hover { background: var(--teal-pale); }
-    .notice-item.unread { background: #FFFBF0; }
-    .notice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; margin-top: 5px; }
-    .notice-item:not(.unread) .notice-dot { background: var(--border); }
-    .notice-date { font-size: 11px; color: var(--text-light); margin-bottom: 2px; }
-    .notice-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-    .notice-preview { font-size: 12px; color: var(--text-mid); line-height: 1.5; }
-
-    /* グリッド */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-
-    /* カード */
+    /* ===== カード ===== */
     .card {
-      background: white; border-radius: 12px; border: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow); padding: 20px;
+      background: var(--white); border-radius: 12px; padding: 20px;
+      margin-bottom: 16px; box-shadow: 0 1px 6px var(--shadow);
+      border: 1px solid var(--border);
     }
     .card-title {
-      font-size: 14px; font-weight: 700; color: var(--text);
+      font-size: 14px; font-weight: 700; color: var(--green-dark);
       margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
     }
     .card-icon {
-      width: 30px; height: 30px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; font-size: 15px;
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
     }
-    .icon-teal { background: var(--teal-light); }
-    .icon-orange { background: var(--orange-light); }
     .icon-green { background: var(--green-light); }
+    .icon-orange { background: var(--orange-light); }
 
-    /* 受講内容 */
-    .app-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
-    }
-    .app-row:last-child { border-bottom: none; }
-    .app-label { color: var(--text-mid); }
-    .app-value { color: var(--text); font-weight: 500; }
+    /* ===== 申込情報 ===== */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-item { background: var(--green-pale); border-radius: 8px; padding: 10px 12px; }
+    .info-label { font-size: 10px; color: var(--text-mid); margin-bottom: 2px; }
+    .info-value { font-size: 13px; font-weight: 700; color: var(--text); }
+
+    /* ===== ステータスバッジ ===== */
     .status-badge {
-      display: inline-block; font-size: 11px; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
     }
-    .status-入金待ち, .status-pending, .status-awaiting_payment { background: var(--yellow-light); color: #B8860B; }
-    .status-受講確定, .status-confirmed { background: var(--teal-light); color: var(--teal-dark); }
-    .status-動画教材完了, .status-video_done { background: var(--orange-light); color: var(--orange); }
-    .status-添削課題完了, .status-task_done { background: var(--pink-light); color: var(--pink); }
-    .status-OJT完了, .status-ojt_done { background: #F3E8FF; color: #7C3AED; }
-    .status-修了, .status-completed { background: var(--green-light); color: #2E7D47; }
-    .status-キャンセル, .status-cancelled { background: #F5F5F5; color: #888; }
-    .status-未対応 { background: var(--yellow-light); color: #B8860B; }
+    .status-入金待ち { background: #FFF8E1; color: #F57C00; border: 1px solid #FFE082; }
+    .status-受講確定 { background: var(--green-light); color: var(--green-dark); border: 1px solid #A5D6A7; }
+    .status-未対応 { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
+    .status-キャンセル { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
 
-    /* 添削課題 */
+    /* ===== eラーニング リスト ===== */
     .task-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
     }
     .task-item:last-child { border-bottom: none; }
     .task-num {
-      width: 26px; height: 26px; border-radius: 50%; background: var(--teal-light);
-      color: var(--teal-dark); font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--border); color: var(--text-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
     }
-    .task-name { font-size: 12px; color: var(--text); line-height: 1.4; }
-    .task-count { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .task-name { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.4; }
     .task-status {
-      font-size: 11px; font-weight: 700; padding: 2px 8px;
-      border-radius: 10px; flex-shrink: 0; white-space: nowrap;
+      flex-shrink: 0; font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 10px;
     }
-    .task-未提出 { background: #F5F5F5; color: #888; }
-    .task-提出済 { background: var(--yellow-light); color: #B8860B; }
-    .task-合格 { background: var(--green-light); color: #2E7D47; }
+    .task-合格 { background: var(--green-light); color: var(--green-dark); }
+    .task-未提出 { background: #F3F4F6; color: #6B7280; }
     .task-btn {
-      background: var(--teal); color: white; border: none; border-radius: 6px;
-      padding: 5px 10px; font-size: 11px; cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif; white-space: nowrap; flex-shrink: 0;
+      flex-shrink: 0; padding: 5px 10px; border-radius: 6px;
+      border: none; color: white; font-size: 11px; font-weight: 700;
+      cursor: pointer; font-family: inherit; background: var(--green);
     }
-    .task-btn:hover { background: var(--teal-dark); }
+    .task-btn:hover { opacity: 0.85; }
 
-    /* 動画教材 */
-    .video-section { margin-bottom: 28px; }
-    .video-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
-    .video-item:last-child { border-bottom: none; }
-    .video-thumb {
-      width: 44px; height: 44px; border-radius: 8px; background: var(--teal-light);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--teal); font-size: 18px; flex-shrink: 0;
-    }
-    .video-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-    .video-duration { font-size: 11px; color: var(--text-light); }
-    .video-btn {
-      background: var(--teal); color: white; border: none; border-radius: 8px;
-      padding: 7px 14px; font-size: 12px; cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif; white-space: nowrap; flex-shrink: 0;
-      transition: background 0.2s;
-    }
-    .video-btn:hover { background: var(--teal-dark); }
-
-    /* 書類発行 */
-    .doc-section { margin-bottom: 28px; }
-    .flow-step { margin-bottom: 20px; }
-    .flow-step-title { font-weight: bold; font-size: 14px; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-    .flow-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; background: var(--bg); }
-    .flow-item.done { background: #E8F5E9; color: #2E7D32; }
-    .flow-item.active { background: #FFF8E1; color: #F57C00; }
-    .flow-item.locked { background: var(--bg); color: var(--text-light); }
-    .flow-item.rejected { background: #FFF3F3; color: #c0392b; }
-    .flow-icon { font-size: 16px; min-width: 20px; text-align: center; }
-    .flow-divider { border: none; border-top: 1px dashed var(--border); margin: 16px 0; }
-    .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .doc-btn {
-      background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 14px 8px; cursor: pointer; text-align: center;
-      font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-    }
-    .doc-btn:hover { border-color: var(--teal); background: var(--teal-pale); }
-    .doc-icon { font-size: 24px; }
-    .doc-label { font-size: 13px; font-weight: 700; color: var(--text); }
-    .doc-sub { font-size: 10px; color: var(--text-light); }
-
-    /* 課題モーダル */
+    /* ===== モーダル ===== */
     .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      z-index: 200; align-items: center; justify-content: center; padding: 20px;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: flex-start; justify-content: center;
+      z-index: 200; overflow-y: auto; padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
     }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: white; border-radius: 16px; width: 100%; max-width: 520px;
-      max-height: 88vh; overflow-y: auto; padding: 24px;
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: white; border-radius: 14px; width: 100%; max-width: 680px;
+      min-height: 300px; margin: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+      transform: translateY(20px); transition: transform 0.2s;
+      overflow: hidden;
     }
-    .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-header {
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+      color: white; padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-size: 13px; font-weight: 700; line-height: 1.4; }
     .modal-close {
-      float: right; background: none; border: none; font-size: 20px;
-      cursor: pointer; color: var(--text-light); margin-top: -4px;
+      background: rgba(255,255,255,0.2); border: none; color: white;
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      font-family: inherit; flex-shrink: 0; margin-left: 10px;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.35); }
+    .modal-content { padding: 18px 20px 24px; }
+
+    /* ===== クイズ UI ===== */
+    .quiz-theme-label {
+      display: inline-block; background: var(--green-light); color: var(--green-dark);
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;
+      margin-bottom: 14px;
     }
 
-    /* 問題進捗バー */
-    .quiz-progress-wrap {
-      margin-bottom: 16px;
+    /* プログレスバー */
+    .quiz-progress-bar-wrap { margin-bottom: 12px; }
+    .quiz-progress-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--text-mid); margin-bottom: 4px;
     }
-    .quiz-progress-label {
-      display: flex; justify-content: space-between;
-      font-size: 12px; color: var(--text-light); margin-bottom: 6px;
-    }
-    .quiz-progress-bar {
-      height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
-    }
-    .quiz-progress-fill {
-      height: 100%; background: var(--teal); border-radius: 3px;
-      transition: width 0.3s ease;
-    }
-    .quiz-progress-dots {
-      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
-    }
-    .quiz-dot {
-      width: 18px; height: 18px; border-radius: 50%; font-size: 9px;
+    .quiz-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .quiz-progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s; }
+
+    /* 問題番号ナビ */
+    .quiz-nav-wrap { margin-bottom: 14px; }
+    .quiz-nav-label { font-size: 11px; color: var(--text-mid); margin-bottom: 6px; }
+    .quiz-nav-dots { display: flex; flex-wrap: wrap; gap: 5px; }
+    .quiz-nav-dot {
+      width: 30px; height: 30px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; flex-shrink: 0;
-      cursor: default;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      border: 2px solid var(--border); background: white; color: var(--text-mid);
+      transition: all 0.15s;
     }
-    .quiz-dot.answered-correct { background: var(--teal); color: white; }
-    .quiz-dot.answered-wrong { background: #F44336; color: white; }
-    .quiz-dot.current { background: var(--teal-light); color: var(--teal-dark); border: 2px solid var(--teal); }
-    .quiz-dot.unanswered { background: var(--bg); color: var(--text-light); border: 1px solid var(--border); }
+    .quiz-nav-dot.current { border-color: var(--green); color: var(--green); background: var(--green-pale); }
+    .quiz-nav-dot.answered { background: #EEF2FF; border-color: #818CF8; color: #4F46E5; }
+    .quiz-nav-dot:hover:not(.current) { border-color: var(--green-mid); }
 
-    /* 問題エリア */
-    .quiz-context {
-      background: #F8F9FA; border-left: 3px solid var(--teal);
-      border-radius: 0 8px 8px 0; padding: 12px 14px;
-      font-size: 12px; color: var(--text-mid); line-height: 1.8;
-      margin-bottom: 14px; white-space: pre-wrap;
+    /* 参照ページ案内 */
+    .quiz-ref-box {
+      background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 12px;
+      font-size: 12px; color: #92400E; display: flex; gap: 6px; align-items: flex-start;
     }
-    .quiz-question {
-      font-size: 14px; font-weight: 600; color: var(--text);
-      line-height: 1.6; margin-bottom: 14px;
+
+    /* 問題 */
+    .quiz-question-num { font-size: 11px; color: var(--text-mid); margin-bottom: 4px; }
+    .quiz-question-text {
+      font-size: 14px; font-weight: 700; color: var(--text);
+      line-height: 1.7; margin-bottom: 14px;
     }
     .quiz-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
     .quiz-choice {
       display: flex; align-items: flex-start; gap: 10px;
-      padding: 10px 12px; border: 1.5px solid var(--border);
-      border-radius: 10px; cursor: pointer; transition: all 0.15s;
-      font-size: 13px; color: var(--text); line-height: 1.5;
+      padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.15s; font-size: 13px; line-height: 1.5;
     }
-    .quiz-choice:hover { border-color: var(--teal); background: var(--teal-pale); }
-    .quiz-choice.selected { border-color: var(--teal); background: var(--teal-pale); }
-    .quiz-choice.correct { border-color: #4CAF50; background: #E8F5E9; color: #2E7D32; }
-    .quiz-choice.wrong { border-color: #F44336; background: #FFEBEE; color: #C62828; }
-    .quiz-choice.show-correct { border-color: #4CAF50; background: #E8F5E9; color: #2E7D32; }
+    .quiz-choice:hover { border-color: var(--green-mid); background: var(--green-pale); }
+    .quiz-choice.selected { border-color: var(--green); background: var(--green-pale); }
     .quiz-choice-num {
-      min-width: 20px; height: 20px; border-radius: 50%;
-      background: var(--border); color: var(--text-light);
-      font-size: 11px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      margin-top: 1px;
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--border); color: var(--text-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; margin-top: 1px;
     }
-    .quiz-choice.correct .quiz-choice-num,
-    .quiz-choice.show-correct .quiz-choice-num { background: #4CAF50; color: white; }
-    .quiz-choice.wrong .quiz-choice-num { background: #F44336; color: white; }
-    .quiz-choice.selected:not(.correct):not(.wrong) .quiz-choice-num { background: var(--teal); color: white; }
+    .quiz-choice.selected .quiz-choice-num { background: var(--green); color: white; }
 
-    /* フィードバック */
-    .quiz-feedback {
-      padding: 10px 14px; border-radius: 8px; font-size: 13px;
-      font-weight: 600; margin-bottom: 14px; display: none;
+    /* ボタン行 */
+    .quiz-btn-row {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
     }
-    .quiz-feedback.correct { background: #E8F5E9; color: #2E7D32; }
-    .quiz-feedback.wrong { background: #FFEBEE; color: #C62828; }
-
-    /* ボタン */
     .quiz-btn {
-      width: 100%; padding: 12px; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+      padding: 10px 14px; border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s; white-space: nowrap;
     }
-    .quiz-btn-primary { background: var(--teal); color: white; }
-    .quiz-btn-primary:hover { background: var(--teal-dark); }
-    .quiz-btn-primary:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; }
+    .quiz-btn:hover:not(:disabled) { opacity: 0.85; }
+    .quiz-btn:disabled { opacity: 0.4; cursor: default; }
+    .quiz-btn-prev { background: #F3F4F6; color: #374151; }
+    .quiz-btn-pause { background: #FEF3E8; color: #92400E; border: 1px solid #FDE68A; }
+    .quiz-btn-next { background: var(--green); color: white; flex: 1; }
+    .quiz-btn-submit { background: var(--orange); color: white; flex: 1; }
 
     /* 結果画面 */
-    .quiz-result {
-      text-align: center; padding: 8px 0;
+    .quiz-result-header { text-align: center; padding: 10px 0 18px; }
+    .quiz-result-score { font-size: 52px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .quiz-result-score.pass { color: var(--green-dark); }
+    .quiz-result-score.fail { color: var(--red); }
+    .quiz-result-label { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .quiz-result-detail { font-size: 13px; color: var(--text-mid); line-height: 1.8; }
+
+    /* 採点一覧 */
+    .quiz-result-list { margin: 16px 0; }
+    .quiz-result-list-title {
+      font-size: 13px; font-weight: 700; margin-bottom: 8px;
+      padding-bottom: 6px; border-bottom: 2px solid var(--border);
     }
-    .quiz-result-score {
-      font-size: 48px; font-weight: 900; line-height: 1;
-      margin-bottom: 8px;
+    .quiz-result-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      font-size: 12px; line-height: 1.5;
     }
-    .quiz-result-score.pass { color: var(--teal); }
-    .quiz-result-score.fail { color: #F44336; }
-    .quiz-result-label {
-      font-size: 18px; font-weight: 700; margin-bottom: 16px;
+    .quiz-result-row:last-child { border-bottom: none; }
+    .quiz-result-row-icon { flex-shrink: 0; font-size: 14px; padding-top: 1px; }
+    .quiz-result-row-body { flex: 1; }
+    .quiz-result-row-qtext { color: var(--text); }
+    .quiz-result-row-wrong-info { color: var(--red); font-size: 11px; margin-top: 2px; }
+
+    .quiz-result-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .quiz-result-btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
     }
-    .quiz-result-label.pass { color: var(--teal); }
-    .quiz-result-label.fail { color: #F44336; }
-    .quiz-result-detail {
-      font-size: 13px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.8;
+    .quiz-result-btn:hover { opacity: 0.85; }
+    .quiz-result-btn.primary { background: var(--green); color: white; }
+    .quiz-result-btn.secondary { background: #6c8ebf; color: white; }
+    .quiz-result-btn.tertiary { background: #888; color: white; }
+
+    /* 復習モード */
+    .review-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .review-item:last-child { border-bottom: none; }
+    .review-q { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.6; }
+    .review-ans {
+      font-size: 12px; color: var(--green-dark); font-weight: 700;
+      background: var(--green-pale); border-radius: 6px; padding: 4px 10px;
+      display: inline-block;
     }
-    .quiz-result-wrong-list {
-      text-align: left; background: #FFF8E1; border-radius: 10px;
-      padding: 12px 14px; margin-bottom: 20px;
-      font-size: 12px; color: var(--text-mid); line-height: 1.8;
+    .review-ref { font-size: 11px; color: var(--text-mid); margin-top: 4px; }
+
+    /* ローディング */
+    #loading-overlay {
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300; font-size: 13px; color: var(--text-mid);
     }
 
-    @media (max-width: 600px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .doc-grid { grid-template-columns: repeat(3, 1fr); }
-      .page-wrap { padding: 20px 12px 60px; }
-      .course-header { padding: 16px; }
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .quiz-nav-dot { width: 26px; height: 26px; font-size: 10px; }
+      .quiz-btn-row { gap: 6px; }
     }
   </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-logo-row">
-    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:36px;" onerror="this.style.display='none'">
-  </div>
-  <div class="header-left header-pc-logo">
-    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:36px;" onerror="this.style.display='none'">
-    <button class="back-btn" onclick="window.location.href='mypage.html'">← 戻る</button>
-  </div>
-  <div class="header-main-row">
-    <div class="header-left">
-      <button class="back-btn" onclick="window.location.href='mypage.html'">← 戻る</button>
-    </div>
-    <div class="header-right">
-      <span class="header-name" id="header-name"></span>
-      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
-    </div>
-  </div>
-  <div class="header-right header-pc-right">
-    <span class="header-name" id="header-name-pc"></span>
-    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
-  </div>
-</header>
+<div id="loading-overlay">読み込み中...</div>
 
-<div class="course-header">
-  <h2 id="course-title">講座詳細</h2>
-  <p id="course-subtitle">受講番号：読み込み中...</p>
+<!-- ヘッダー -->
+<div class="header">
+  <div class="header-logo">ホリスケアアカデミー <span>マイページ</span></div>
+  <div class="header-user">
+    <span id="header-email"></span>
+    <button onclick="doLogout()">ログアウト</button>
+  </div>
 </div>
 
-<div class="page-wrap">
-
-  <!-- お知らせ -->
-  <div class="notice-section">
-    <div class="section-title">📢 お知らせ・連絡<span id="unread-count" style="display:none;margin-left:8px;background:#F57C00;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;vertical-align:middle;"></span></div>
-    <div class="notice-card" id="notice-list">
-      <div class="notice-item">
-        <div class="notice-dot" style="background:var(--border);"></div>
-        <div><div class="notice-title" style="color:var(--text-light);">読み込み中...</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 受講内容・添削 -->
-  <!-- 講座の流れ -->
-  <div class="doc-section" id="course-flow-section">
-    <div class="section-title">📌 講座の流れ</div>
-    <div class="card" id="course-flow-card">
-      <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">
-        <div class="card-icon icon-teal">📋</div>
-        受講内容・ステータス
-      </div>
-      <div id="app-detail">
-        <div class="app-row"><span class="app-label">講座名</span><span class="app-value" id="app-course">—</span></div>
-        <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
-        <div class="app-row"><span class="app-label">受講開始日</span><span class="app-value" id="app-start">—</span></div>
-        <div class="app-row"><span class="app-label">仮修了期限</span><span class="app-value" id="app-temp-limit">—</span></div>
-        <div class="app-row"><span class="app-label">正式修了期限</span><span class="app-value" id="app-full-limit">—</span></div>
-        <div class="app-row"><span class="app-label">修了日</span><span class="app-value" id="app-completed">—</span></div>
-        <div class="app-row"><span class="app-label">受講料</span><span class="app-value" id="app-fee">—</span></div>
-        <div class="app-row"><span class="app-label">支払方法</span><span class="app-value" id="app-payment">—</span></div>
-        <div class="app-row"><span class="app-label">テキスト</span><span class="app-value" id="app-textbook">—</span></div>
-        <div class="app-row">
-          <span class="app-label">ステータス</span>
-          <span class="status-badge status-未対応" id="app-status">—</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <div class="card-icon icon-orange">📚</div>
-        eラーニング
-      </div>
-      <div style="font-size:11px;color:var(--text-light);margin-bottom:10px;line-height:1.6;">テキストで学習後、各回の確認問題に答えてください。前の回に合格すると次の回が解放されます。</div>
-      <div id="task-list">
-        <div class="task-item"><span style="color:var(--text-light); font-size:13px;">読み込み中...</span></div>
-      </div>
-    </div>
+<div class="container" id="main-container" style="display:none;">
+  <!-- 申込情報 -->
+  <div class="card">
+    <div class="card-title"><div class="card-icon icon-green">📋</div>申込情報</div>
+    <div id="app-content">読み込み中...</div>
   </div>
 
   <!-- 動画教材 -->
-  <div class="video-section">
-    <div class="section-title">🎬 動画教材</div>
-    <div class="card">
-      <div id="video-list">
-        <div style="color:var(--text-light); font-size:13px;">読み込み中...</div>
-      </div>
-    </div>
+  <div class="card">
+    <div class="card-title"><div class="card-icon icon-green">🎬</div>動画教材</div>
+    <div id="video-content">読み込み中...</div>
   </div>
 
-  <!-- 届出書類 -->
-  <div class="doc-section" id="todoke-section" style="display:none;">
-    <div class="section-title">📝 届出書類</div>
-    <div class="card">
-      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">以下の場合は、該当する届出書をご提出ください。</p>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div>
-            <div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">休講届</div>
-            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により休講を希望するとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div>
-            <div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div>
-          </div>
-          <button onclick="alert('近日公開予定です')" style="padding:6px 14px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">提出する</button>
-        </div>
-      </div>
+  <!-- eラーニング -->
+  <div class="card">
+    <div class="card-title"><div class="card-icon icon-orange">📚</div>eラーニング</div>
+    <div style="font-size:11px;color:var(--text-light);margin-bottom:12px;line-height:1.7;">
+      テキストで各テーマを学習後、確認問題に答えてください。<br>前のテーマに合格（70%以上）すると次のテーマが解放されます。
     </div>
+    <div id="task-list"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
   </div>
 
-  <!-- 書類の発行 -->
-  <div class="doc-section">
-    <div class="section-title">📄 書類の発行</div>
-    <div class="card">
-      <p style="font-size:13px; color:var(--text-mid); margin-bottom:16px;">見積書・請求書・領収書を発行できます。宛名は変更可能です。</p>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:12px; color:var(--text-mid); display:block; margin-bottom:5px;">宛名（デフォルト：お名前）</label>
-        <input type="text" id="doc-name" placeholder="例）山田太郎　または　○○株式会社"
-          style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:13px; outline:none;">
-      </div>
-      <div class="doc-grid">
-        <button class="doc-btn" onclick="generateDoc('見積書')">
-          <span class="doc-icon">📋</span>
-          <span class="doc-label">見積書</span>
-          <span class="doc-sub">PDF発行</span>
-        </button>
-        <button class="doc-btn" onclick="generateDoc('請求書')">
-          <span class="doc-icon">📑</span>
-          <span class="doc-label">請求書</span>
-          <span class="doc-sub">PDF発行</span>
-        </button>
-        <button class="doc-btn" onclick="generateDoc('領収書')">
-          <span class="doc-icon">🧾</span>
-          <span class="doc-label">領収書</span>
-          <span class="doc-sub">PDF発行</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- 課題モーダル -->
-<!-- 書類アップロードモーダル -->
-<div class="modal-overlay" id="upload-modal" style="display:none;" onclick="if(event.target===this)closeUpload()">
-  <div class="modal">
-    <div class="modal-title" id="upload-modal-title">書類のアップロード</div>
-    <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;" id="upload-modal-desc"></div>
-    <div id="upload-modal-notes" style="display:none;background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--text-mid);line-height:1.8;"></div>
-
-    <!-- 本人確認書類の種類選択 -->
-    <div id="id-type-section" style="display:none;margin-bottom:16px;">
-      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">書類の種類を選択してください</label>
-      <select id="id-doc-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;">
-        <option value="">選択してください</option>
-        <option value="運転免許証">運転免許証（表裏）</option>
-        <option value="パスポート">パスポート（顔写真ページ）</option>
-        <option value="在留カード">在留カード（表裏）</option>
-        <option value="マイナンバーカード">マイナンバーカード（表面のみ）</option>
-        <option value="学生証">学生証</option>
-        <option value="住民票">住民票（発行から3ヶ月以内）</option>
-      </select>
-    </div>
-
-    <!-- 表面アップロード -->
-    <div style="margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:8px;" id="front-label">📄 表面</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button onclick="triggerFileInput('upload-input-front')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
-        <button onclick="triggerCamera('front')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
-      </div>
-      <input type="file" id="upload-input-front" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'front')">
-      <input type="file" id="upload-input-front-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'front')">
-      <div id="upload-preview-front" style="display:none;text-align:center;">
-        <img id="preview-img-front" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
-        <div id="preview-name-front" style="font-size:12px;color:var(--text-mid);"></div>
-      </div>
-    </div>
-
-    <!-- 裏面アップロード（必要な書類のみ表示） -->
-    <div id="back-section" style="display:none;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:8px;">📄 裏面</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button onclick="triggerFileInput('upload-input-back')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">📁 ファイルを選択</button>
-        <button onclick="triggerCamera('back')" style="flex:1;padding:10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:var(--teal);">📷 カメラで撮影</button>
-      </div>
-      <input type="file" id="upload-input-back" accept="image/*,application/pdf" style="display:none;" onchange="previewFile(event,'back')">
-      <input type="file" id="upload-input-back-camera" accept="image/*" capture="environment" style="display:none;" onchange="previewFile(event,'back')">
-      <div id="upload-preview-back" style="display:none;text-align:center;">
-        <img id="preview-img-back" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;background:#f5f5f5;">
-        <div id="preview-name-back" style="font-size:12px;color:var(--text-mid);"></div>
-      </div>
-    </div>
-
-    <!-- カメラプレビュー -->
-    <div id="camera-section" style="display:none;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:8px;" id="camera-label">📷 カメラ撮影</div>
-      <video id="camera-preview" autoplay playsinline style="width:100%;border-radius:8px;background:#000;max-height:250px;"></video>
-      <canvas id="camera-canvas" style="display:none;"></canvas>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="capturePhoto()" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">📸 撮影する</button>
-        <button onclick="closeCamera()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">撮影をやめる</button>
-      </div>
-    </div>
-
-    <div id="upload-progress" style="display:none;font-size:13px;color:var(--teal);text-align:center;margin-bottom:12px;">アップロード中...</div>
-
-    <div style="display:flex;gap:10px;">
-      <button onclick="closeUpload()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">提出をキャンセル</button>
-      <button onclick="submitUpload()" id="upload-submit-btn" style="flex:2;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold;">提出する</button>
-    </div>
+  <!-- 領収書 -->
+  <div class="card" id="receipt-card" style="display:none;">
+    <div class="card-title"><div class="card-icon icon-green">🧾</div>領収書</div>
+    <div id="receipt-content"></div>
   </div>
 </div>
 
+<!-- クイズモーダル -->
 <div class="modal-overlay" id="task-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeTask()">✕</button>
-    <div class="modal-title" id="modal-title">課題</div>
-    <div id="modal-content"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">eラーニング</div>
+      <button class="modal-close" onclick="closeTask()">✕</button>
+    </div>
+    <div class="modal-content" id="modal-content"></div>
   </div>
 </div>
 
+<!-- Firebase -->
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {
+  getFirestore, collection, query, where, getDocs, orderBy, limit,
+  doc, getDoc, setDoc
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  const cfg = {
-apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
-    authDomain: "holiscare-academy.firebaseapp.com",
-    projectId: "holiscare-academy",
-    storageBucket: "holiscare-academy.firebasestorage.app",
-    messagingSenderId: "698886904450",
-    appId: "1:698886904450:web:04b9202840ffd321da329b",
-  };
-  const app = initializeApp(cfg);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyCl48Fay9AbMLRXJ7npya4PJIgDQPvltxs",
+  authDomain: "holiscare-academy.firebaseapp.com",
+  projectId: "holiscare-academy",
+  storageBucket: "holiscare-academy.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
-  window.__auth = auth;
-  window.__signOut = signOut;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // URLパラメータからdocId取得
-  const docId = new URLSearchParams(location.search).get('id');
-  if (!docId) window.location.href = 'mypage.html';
-  window.__currentDocId = docId;
+window.__auth = auth;
+window.__db = db;
 
-  const statusLabel = {
-    pending: '入金待ち', awaiting_payment: '入金待ち',
-    pending: '入金待ち', confirmed: '受講確定', active: '受講中', completed: '修了',
-    task_done: '添削課題完了', ojt_done: 'OJT完了',
-    completed: '修了', cancelled: 'キャンセル',
-  };
+// ===== 学習テーマ定義 =====
+const LEARNING_THEMES = [
+  { num: 1,  name: '介護における尊厳の保持・自立支援',        pdfRound: 1 },
+  { num: 2,  name: '介護の基本',                               pdfRound: 1 },
+  { num: 3,  name: '老化の理解',                               pdfRound: 1 },
+  { num: 4,  name: '介護・福祉サービスの理解と医療との連携',    pdfRound: 2 },
+  { num: 5,  name: '認知症の理解',                             pdfRound: 2 },
+  { num: 6,  name: '障害の理解',                               pdfRound: 2 },
+  { num: 7,  name: '介護におけるコミュニケーション技術',        pdfRound: 3 },
+  { num: 8,  name: 'こころとからだのしくみと生活支援技術①',    pdfRound: 3 },
+  { num: 9,  name: 'こころとからだのしくみと生活支援技術②',    pdfRound: 4 },
+  { num: 10, name: 'こころとからだのしくみと生活支援技術③',    pdfRound: 5 },
+];
 
-  const tasks = [
-    { num: 1, name: '介護における尊厳の保持・自立支援', count: '26問' },
-    { num: 2, name: '介護・福祉サービスの理解と医療との連携', count: '27問' },
-    { num: 3, name: '介護におけるコミュニケーション技術', count: '25問' },
-    { num: 4, name: 'こころとからだのしくみと生活支援技術（1）', count: '25問' },
-    { num: 5, name: 'こころとからだのしくみと生活支援技術（2）', count: '26問' },
-  ];
+// ===== 認証チェック =====
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('loading-overlay').style.display = 'none';
+  if (!user) { window.location.href = 'mypage_login.html'; return; }
+  document.getElementById('header-email').textContent = user.email;
+  document.getElementById('main-container').style.display = 'block';
+  await loadMyPage(user);
+});
 
-  const videos = [
-    { title: '第1章：介護の基本理念と尊厳の保持', duration: '約45分' },
-    { title: '第2章：介護保険制度と福祉サービス', duration: '約50分' },
-    { title: '第3章：コミュニケーション技術', duration: '約40分' },
-  ];
+window.doLogout = async function() {
+  await signOut(auth);
+  window.location.href = 'mypage_login.html';
+};
 
-  onAuthStateChanged(auth, async user => {
-    if (!user) { window.location.href = 'mypage_login.html'; return; }
-
-    const name = user.displayName || user.email;
-    document.getElementById('header-name').textContent = name + ' さん';
-    document.getElementById('doc-name').value = name;
-    document.getElementById('doc-name').placeholder = name;
-
-    // 申し込みデータ取得
-    try {
-      const snap = await getDoc(doc(db, 'applications', docId));
-      if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
-
-const data = snap.data();
-      const status = data.status || 'pending';
-      renderCourseFlow(data);
-      const statusText = statusLabel[status] || status;
-
-      document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
-      document.getElementById('course-subtitle').textContent = '受講番号：' + (data.studentNo || '—');
-      document.getElementById('app-course').textContent = data.course || 'オンライン初任者研修';
-        document.getElementById('app-applied').textContent = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—';
-        document.getElementById('app-completed').textContent = data.completedAt ? new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
-
-        // 受講開始日・期限表示
-        if (data.activeAt) {
-          const startDate = new Date(data.activeAt.toMillis());
-          const today = new Date();
-          today.setHours(0,0,0,0);
-          document.getElementById('app-start').textContent = startDate.toLocaleDateString('ja-JP');
-
-          const tempLimit = new Date(startDate);
-          tempLimit.setMonth(tempLimit.getMonth() + 3);
-          const fullLimit = new Date(startDate);
-          fullLimit.setMonth(fullLimit.getMonth() + 8);
-
-          const tempDays = Math.ceil((tempLimit - today) / (1000 * 60 * 60 * 24));
-          const fullDays = Math.ceil((fullLimit - today) / (1000 * 60 * 60 * 24));
-
-          const tempColor = tempDays <= 7 ? '#e53935' : tempDays <= 30 ? '#F57C00' : 'inherit';
-          const fullColor = fullDays <= 7 ? '#e53935' : fullDays <= 30 ? '#F57C00' : 'inherit';
-
-          document.getElementById('app-temp-limit').innerHTML = `<span style="color:${tempColor};">${tempLimit.toLocaleDateString('ja-JP')}（残 ${tempDays}日）</span>`;
-          document.getElementById('app-full-limit').innerHTML = `<span style="color:${fullColor};">${fullLimit.toLocaleDateString('ja-JP')}（残 ${fullDays}日）</span>`;
-        }
-      document.getElementById('app-fee').textContent = data.fee || '33,000円（税込）';
-      document.getElementById('app-payment').textContent = data.payment || '—';
-      document.getElementById('app-textbook').textContent =
-        (data.textbook === 'purchase' || data.textbook === '購入（6,600円）') ? '購入（6,600円）' : (data.textbook || '—');
-      const statusEl = document.getElementById('app-status');
-      statusEl.textContent = statusText;
-      statusEl.className = 'status-badge status-' + statusText;
-
-      // ステータスによる表示制御
-      const isConfirmed = ['confirmed','active','completed'].includes(status);
-      const isVideoDone = status === 'completed';
-      const isTaskDone = status === 'completed';
-      const isActive = ['active','completed'].includes(status);
-      if (isActive) {
-        const todoke = document.getElementById('todoke-section');
-        if (todoke) todoke.style.display = 'block';
-      }
-      const canReceipt = isConfirmed;
-
-      // 添削課題・動画教材のロック表示
-      if (!isActive) {
-        document.querySelector('.grid-2').insertAdjacentHTML('afterend', `
-          <div style="background:#fff8e1; border:1px solid #ffe082; border-radius:12px; padding:20px; text-align:center; margin-bottom:28px;">
-            <div style="font-size:24px; margin-bottom:8px;">🔒</div>
-            <div style="font-weight:700; color:#B8860B; margin-bottom:4px;">${isConfirmed ? '受講準備完了後に利用できます' : '受講確定後に利用できます'}</div>
-            <div style="font-size:13px; color:#888;">動画教材・添削課題は受講開始後にご利用いただけます</div>
-          </div>
-        `);
-        document.querySelector('.video-section').style.display = 'none';
-        document.getElementById('task-list').closest('.card').style.opacity = '0.4';
-        document.getElementById('task-list').closest('.card').style.pointerEvents = 'none';
-      }
-
-      // 領収書の制御
-      if (!canReceipt) {
-        document.querySelectorAll('.doc-btn').forEach(btn => {
-          if (btn.getAttribute('onclick')?.includes('領収書')) {
-            btn.style.opacity = '0.4';
-            btn.style.pointerEvents = 'none';
-            btn.querySelector('.doc-sub').textContent = '受講確定後';
-          }
-        });
-      }
-
-      // eラーニング（合格状態・解放状態を管理）
-      const taskDone = data.taskDone || {};
-      const taskList = document.getElementById('task-list');
-      taskList.innerHTML = tasks.map((t) => {
-        const isPassed = taskDone[`round${t.num}`] === true;
-        const isUnlocked = t.num === 1 || taskDone[`round${t.num - 1}`] === true;
-        const locked = !isUnlocked;
-
-        let statusClass = 'task-未提出';
-        let statusLabel = '未学習';
-        if (isPassed) { statusClass = 'task-合格'; statusLabel = '合格✓'; }
-
-        return `
-          <div class="task-item" style="${locked ? 'opacity:0.45;' : ''}">
-            <div class="task-num" style="${isPassed ? 'background:var(--green-light);color:#2E7D47;' : ''}">${isPassed ? '✓' : t.num}</div>
-            <div style="flex:1;">
-              <div class="task-name">第${t.num}回 ${t.name}</div>
-              <div class="task-count">${t.count}</div>
-              ${locked ? `<div style="font-size:11px;color:#F57C00;margin-top:2px;">🔒 第${t.num - 1}回に合格すると解放</div>` : ''}
-            </div>
-            <span class="task-status ${statusClass}">${statusLabel}</span>
-            ${isPassed ? `
-              <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-                <button class="task-btn" style="background:#6c8ebf;" onclick="openTask(${t.num}, 'review')">復習する</button>
-                <button class="task-btn" style="background:#888;" onclick="openTask(${t.num}, 'retry')">再挑戦</button>
-              </div>`
-            : locked ? '<span style="font-size:18px;flex-shrink:0;">🔒</span>'
-            : `<button class="task-btn" onclick="openTask(${t.num})">学習する</button>`}
-          </div>`;
-      }).join('');
-
-      // 動画教材
-      const videoList = document.getElementById('video-list');
-      videoList.innerHTML = videos.map(v => `
-        <div class="video-item">
-          <div class="video-thumb">▶</div>
-          <div style="flex:1;">
-            <div class="video-title">${v.title}</div>
-            <div class="video-duration">${v.duration}</div>
-          </div>
-          ${isVideoDone ? '<span style="color:var(--green); font-weight:700; font-size:13px;">✅ 視聴済み</span>' : '<button class="video-btn" onclick="alert(\'動画URLは管理者が設定します\')">視聴する</button>'}
-        </div>
-      `).join('');
-
-    } catch(e) {
-      console.error(e);
-    }
-
-// お知らせをFirestoreから取得
-    const noticeList = document.getElementById('notice-list');
-    const uid = user.uid;
-    const email = user.email;
-    try {
-      const { collection, query, orderBy, getDocs, getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      const notices = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .filter(n => {
-          if (n.target === 'all') return true;
-          if (n.target === 'specific' && n.emails && n.emails.includes(email)) return true;
-          if (n.target === 'selected' && n.targetUids && n.targetUids.includes(uid)) return true;
-          return false;
-        });
-
-      // Firestoreから既読リストを取得
-      const { getDocs: getDocs2, collection: col2, doc: doc2 } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const readSnap = await getDocs2(col2(db, 'users', uid, 'readNotices'));
-      const readIds = readSnap.docs.map(d => d.id);
-
-      if (notices.length === 0) {
-        noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせはありません</div>';
-      } else {
-        const PER_PAGE = 5;
-        let currentPage = 1;
-        const totalPages = Math.ceil(notices.length / PER_PAGE);
-
-        function renderNotices() {
-          const start = (currentPage - 1) * PER_PAGE;
-          const pageItems = notices.slice(start, start + PER_PAGE);
-          const unreadCount = notices.filter(n => !readIds.includes(n.id)).length;
-          const badge = document.getElementById('unread-count');
-          if (badge) {
-            badge.textContent = unreadCount;
-            badge.style.display = unreadCount > 0 ? 'inline' : 'none';
-          }
-          noticeList.innerHTML = pageItems.map(n => {
-            const isRead = readIds.includes(n.id);
-            const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '';
-            return `
-              <div class="notice-item ${isRead ? '' : 'unread'}" onclick="markRead('${n.id}', this)" style="cursor:pointer;">
-                <div class="notice-dot" ${isRead ? 'style="background:var(--border);"' : ''}></div>
-                <div>
-                  <div class="notice-date">${dt}</div>
-                  <div class="notice-title">${n.title}</div>
-                  <div class="notice-preview">${n.body}</div>
-                  ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);">📎 ${n.fileName}</a>` : ''}
-                </div>
-              </div>`;
-          }).join('');
-          if (totalPages > 1) {
-            let pg = '<div style="display:flex;justify-content:center;align-items:center;gap:8px;padding:12px 0;">';
-            pg += `<button onclick="changePageS(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="padding:4px 12px;border:1px solid #ddd;border-radius:4px;background:${currentPage === 1 ? '#f5f5f5' : '#fff'};cursor:${currentPage === 1 ? 'default' : 'pointer'};color:#555;">‹ 前へ</button>`;
-            for (let i = 1; i <= totalPages; i++) {
-              pg += `<button onclick="changePageS(${i})" style="padding:4px 10px;border:1px solid ${i === currentPage ? 'var(--teal)' : '#ddd'};border-radius:4px;background:${i === currentPage ? 'var(--teal)' : '#fff'};color:${i === currentPage ? '#fff' : '#555'};cursor:pointer;">${i}</button>`;
-            }
-            pg += `<button onclick="changePageS(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="padding:4px 12px;border:1px solid #ddd;border-radius:4px;background:${currentPage === totalPages ? '#f5f5f5' : '#fff'};cursor:${currentPage === totalPages ? 'default' : 'pointer'};color:#555;">次へ ›</button>`;
-            pg += '</div>';
-            noticeList.innerHTML += pg;
-          }
-        }
-        window.changePageS = function(page) {
-          if (page < 1 || page > totalPages) return;
-          currentPage = page;
-          renderNotices();
-        };
-        renderNotices();
-      }
-    } catch(e) {
-      noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
-    }
-  });
-
-  window.__appData = {};
-
-  // アップロード機能
-  let currentUploadType = '';
-
-  window.openUpload = function(type) {
-    currentUploadType = type;
-    const modal = document.getElementById('upload-modal');
-    const title = document.getElementById('upload-modal-title');
-    const desc = document.getElementById('upload-modal-desc');
-    const idSection = document.getElementById('id-type-section');
-    // リセット
-    ['front','back'].forEach(side => {
-      document.getElementById(`upload-input-${side}`).value = '';
-      document.getElementById(`upload-input-${side}-camera`).value = '';
-      document.getElementById(`upload-preview-${side}`).style.display = 'none';
-    });
-    document.getElementById('upload-progress').style.display = 'none';
-    document.getElementById('back-section').style.display = 'none';
-    const notes = document.getElementById('upload-modal-notes');
-    if (type === 'photo') {
-      title.textContent = '顔写真のアップロード';
-      desc.textContent = '正面を向いた顔写真をアップロードしてください。';
-      document.getElementById('front-label').textContent = '📷 顔写真';
-      idSection.style.display = 'none';
-      notes.style.display = 'block';
-      notes.innerHTML = '・正面を向き、顔全体が写るように撮影してください<br>・帽子・サングラスは外してください<br>・背景はできるだけ無地にしてください<br>・明るい場所で撮影してください';
-    } else {
-      title.textContent = '本人確認書類のアップロード';
-      desc.innerHTML = '以下のいずれかをアップロードしてください。';
-      document.getElementById('front-label').textContent = '📄 表面';
-      idSection.style.display = 'block';
-      document.getElementById('id-doc-type').value = '';
-      notes.style.display = 'block';
-      notes.innerHTML = '・書類全体が枠内に収まるように撮影してください<br>・文字がはっきり読めるように撮影してください<br>・光の反射や影がないようにしてください<br>・運転免許証・在留カードは表裏両面が必要です<br>・マイナンバーカードは表面のみ提出してください<br>・住民票は発行から3ヶ月以内のものに限ります';
-    }
-    modal.style.display = 'flex';
-  };
-
-  window.closeUpload = function() {
-    closeCamera();
-    document.getElementById('upload-modal').style.display = 'none';
-  };
-
-  window.triggerFileInput = function(id) {
-    document.getElementById(id).click();
-  };
-
-  let currentCameraSide = 'front';
-  let cameraStream = null;
-
-  window.triggerCamera = async function(side) {
-    currentCameraSide = side;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      // スマホはネイティブカメラを使用
-      const inputId = `upload-input-${side}-camera`;
-      document.getElementById(inputId).click();
+// ===== マイページ読み込み =====
+async function loadMyPage(user) {
+  try {
+    const q = query(
+      collection(db, 'applications'),
+      where('email', '==', user.email),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      document.getElementById('app-content').innerHTML = '<p style="font-size:13px;color:var(--text-mid);">申込情報が見つかりません。</p>';
       return;
     }
-    const label = currentUploadType === 'photo' ? '📷 カメラ撮影' : side === 'front' ? '📷 カメラ撮影（表面）' : '📷 カメラ撮影（裏面）';
-    document.getElementById('camera-label').textContent = label;
-    document.getElementById('camera-section').style.display = 'block';
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-      document.getElementById('camera-preview').srcObject = cameraStream;
-    } catch(e) {
-      // PCでリアカメラがない場合はフロントカメラで試みる
-      try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        document.getElementById('camera-preview').srcObject = cameraStream;
-      } catch(e2) {
-        alert('カメラにアクセスできませんでした。ファイル選択をお使いください。');
-        document.getElementById('camera-section').style.display = 'none';
-      }
+    const data = snap.docs[0].data();
+    const status = data.status || '未対応';
+
+    renderAppInfo(data, status);
+    renderVideoSection(status);
+
+    const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
+    const progressData = progressSnap.exists() ? progressSnap.data() : {};
+    renderTaskList(status, progressData);
+
+    if (status === '受講確定') {
+      document.getElementById('receipt-card').style.display = 'block';
+      document.getElementById('receipt-content').innerHTML = '<p style="font-size:13px;color:var(--text-mid);">領収書の発行機能は準備中です。</p>';
     }
-  };
-
-  window.closeCamera = function() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
-    }
-    document.getElementById('camera-section').style.display = 'none';
-  };
-
-  window.capturePhoto = function() {
-    const video = document.getElementById('camera-preview');
-    const canvas = document.getElementById('camera-canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    canvas.toBlob(blob => {
-      const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
-      const preview = document.getElementById(`upload-preview-${currentCameraSide}`);
-      const img = document.getElementById(`preview-img-${currentCameraSide}`);
-      const name = document.getElementById(`preview-name-${currentCameraSide}`);
-      const reader = new FileReader();
-      reader.onload = e => { img.src = e.target.result; };
-      reader.readAsDataURL(file);
-      preview.style.display = 'block';
-      name.textContent = file.name;
-      // DataTransferを使ってinputにセット
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      document.getElementById(`upload-input-${currentCameraSide}-camera`).files = dt.files;
-      closeCamera();
-    }, 'image/jpeg', 0.9);
-  };
-
-  // 書類種類変更時に裏面表示を切り替え
-  document.getElementById('id-doc-type').addEventListener('change', function() {
-    const needsBack = ['運転免許証','在留カード'].includes(this.value);
-    document.getElementById('back-section').style.display = needsBack ? 'block' : 'none';
-  });
-
-  window.previewFile = function(event, side) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const preview = document.getElementById(`upload-preview-${side}`);
-    const img = document.getElementById(`preview-img-${side}`);
-    const name = document.getElementById(`preview-name-${side}`);
-    preview.style.display = 'block';
-    name.textContent = file.name;
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = e => { img.src = e.target.result; };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  window.submitUpload = async function() {
-    const frontInput = document.getElementById('upload-input-front').files[0] || document.getElementById('upload-input-front-camera').files[0];
-    if (!frontInput) { alert('ファイルを選択してください'); return; }
-
-    if (currentUploadType === 'id') {
-      const idType = document.getElementById('id-doc-type').value;
-      if (!idType) { alert('書類の種類を選択してください'); return; }
-      const needsBack = ['運転免許証','在留カード'].includes(idType);
-      if (needsBack) {
-        const backInput = document.getElementById('upload-input-back').files[0] || document.getElementById('upload-input-back-camera').files[0];
-        if (!backInput) { alert('裏面もアップロードしてください'); return; }
-      }
-    }
-
-    const btn = document.getElementById('upload-submit-btn');
-    const progress = document.getElementById('upload-progress');
-    btn.disabled = true;
-    progress.style.display = 'block';
-
-    try {
-      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
-      const { getFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const storage = getStorage();
-      const user = auth.currentUser;
-      const ts = Date.now();
-
-      // 表面アップロード
-      const frontExt = frontInput.name.split('.').pop();
-      const frontRef = ref(storage, `documents/${user.uid}/${currentUploadType}_front_${ts}.${frontExt}`);
-      await uploadBytes(frontRef, frontInput);
-      const frontUrl = await getDownloadURL(frontRef);
-
-      const db = getFirestore();
-      const updateData = {};
-
-      if (currentUploadType === 'photo') {
-        updateData['documentStatus.photo'] = 'pending';
-        updateData['documentStatus.photoUrl'] = frontUrl;
-      } else {
-        const idType = document.getElementById('id-doc-type').value;
-        updateData['documentStatus.idDocument'] = 'pending';
-        updateData['documentStatus.idDocumentUrl'] = frontUrl;
-        updateData['documentStatus.idDocumentType'] = idType;
-
-        // 裏面アップロード（必要な場合）
-        const needsBack = ['運転免許証','在留カード'].includes(idType);
-        if (needsBack) {
-          const backInput = document.getElementById('upload-input-back').files[0] || document.getElementById('upload-input-back-camera').files[0];
-          const backExt = backInput.name.split('.').pop();
-          const backRef = ref(storage, `documents/${user.uid}/${currentUploadType}_back_${ts}.${backExt}`);
-          await uploadBytes(backRef, backInput);
-          const backUrl = await getDownloadURL(backRef);
-          updateData['documentStatus.idDocumentBackUrl'] = backUrl;
-        }
-      }
-
-      await updateDoc(doc(db, 'applications', docId), updateData);
-      progress.style.display = 'none';
-      closeUpload();
-      alert('提出しました！確認後に承認されます。');
-      location.reload();
-    } catch(e) {
-      progress.style.display = 'none';
-      btn.disabled = false;
-      alert('アップロードに失敗しました：' + e.message);
-    }
-  };
-
-// 講座の流れチェックリスト
-  function renderCourseFlow(data) {
-    const el = document.getElementById('course-flow-card');
-    if (!el) return;
-    const status = data.status || '';
-    const docStatus = data.documentStatus || {};
-    const photoOk = docStatus.photo === 'approved';
-    const photoPending = docStatus.photo === 'pending';
-    const photoRejected = docStatus.photo === 'rejected';
-    const idOk = docStatus.idDocument === 'approved';
-    const idPending = docStatus.idDocument === 'pending';
-    const idRejected = docStatus.idDocument === 'rejected';
-    const photoRejectReason = docStatus.photoRejectReason || '';
-    const idRejectReason = docStatus.idDocumentRejectReason || '';
-    const pledgeOk = data.pledgeSigned === true;
-    const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
-    const isActive = ['active', 'completed'].includes(status);
-    const test1Ok = data.test1Passed === true;
-    const test2Ok = data.test2Passed === true;
-    const ojtOk = data.ojtPassed === true;
-
-    function item(icon, label, done, active, locked) {
-      const cls = done ? 'done' : (locked ? 'locked' : 'active');
-      const ic = done ? '✅' : (locked ? '🔒' : '🔄');
-      return `<div class="flow-item ${cls}"><span class="flow-icon">${ic}</span>${label}</div>`;
-    }
-
-    let html = '';
-
-    // STEP0
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟦 STEP 0｜受講確定</div>`;
-    html += item('', '受講料のお支払い', isConfirmed, !isConfirmed, false);
-    html += `</div><hr class="flow-divider">`;
-
-    // STEP1
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟨 STEP 1｜受講準備 ${!isConfirmed ? '<span style="font-size:11px;color:var(--text-light);">（受講確定後に解放）</span>' : ''}</div>`;
-    const photoBtn = isConfirmed && !photoOk && !photoPending && !photoRejected ? `<button onclick="openUpload('photo')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
-    const idBtn = isConfirmed && !idOk && !idPending && !idRejected ? `<button onclick="openUpload('id')" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">提出する</button>` : '';
-    const photoPendingBadge = photoPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
-    const idPendingBadge = idPending ? `<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 8px;border-radius:10px;">提出済み・確認中</span>` : '';
-    const photoRejectedBadge = photoRejected ? `<span style="margin-left:auto;font-size:11px;background:#FFF3F3;color:#c0392b;padding:3px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('photo')" style="margin-left:8px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">再提出する</button>${photoRejectReason ? '<div style="width:100%;font-size:11px;color:#c0392b;margin-top:4px;">理由：' + photoRejectReason + '</div>' : ''}` : '';
-    const idRejectedBadge = idRejected ? `<span style="margin-left:auto;font-size:11px;background:#FFF3F3;color:#c0392b;padding:3px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('id')" style="margin-left:8px;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">再提出する</button>${idRejectReason ? '<div style="width:100%;font-size:11px;color:#c0392b;margin-top:4px;">理由：' + idRejectReason + '</div>' : ''}` : '';
-    html += `<div class="flow-item ${photoOk ? 'done' : photoRejected ? 'rejected' : (isConfirmed ? 'active' : 'locked')}" style="flex-wrap:wrap;"><span class="flow-icon">${photoOk ? '✅' : photoRejected ? '⚠️' : (isConfirmed ? '🔄' : '🔒')}</span>顔写真の提出${photoBtn}${photoPendingBadge}${photoRejectedBadge}</div>`;
-    html += `<div class="flow-item ${idOk ? 'done' : idRejected ? 'rejected' : (isConfirmed ? 'active' : 'locked')}" style="flex-wrap:wrap;"><span class="flow-icon">${idOk ? '✅' : idRejected ? '⚠️' : (isConfirmed ? '🔄' : '🔒')}</span>本人確認書類の提出${idBtn}${idPendingBadge}${idRejectedBadge}</div>`;
-    html += `<div class="flow-item ${pledgeOk ? 'done' : (isConfirmed ? 'active' : 'locked')}"><span class="flow-icon">${pledgeOk ? '✅' : (isConfirmed ? '🔄' : '🔒')}</span>誓約書への同意${isConfirmed && !pledgeOk ? '<a href="gakusoku.html?id=' + docId + '" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;text-decoration:none;">確認・同意する</a>' : ''}</div>`;
-    html += `</div><hr class="flow-divider">`;
-
-    // STEP2
-    const step1Done = photoOk && idOk && pledgeOk;
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟩 STEP 2｜受講中 ${!step1Done ? '<span style="font-size:11px;color:var(--text-light);">（受講準備完了後に解放）</span>' : ''}</div>`;
-    html += item('', '添削課題の提出', data.taskAllDone === true, step1Done && !data.taskAllDone, !step1Done);
-    html += item('', '動画視聴（自社）', data.videoAllDone === true, step1Done && !data.videoAllDone, !step1Done);
-    html += item('', '動画視聴（外部）', data.externalVideoDone === true, step1Done && !data.externalVideoDone, !step1Done);
-    html += `</div><hr class="flow-divider">`;
-
-    // STEP3
-    const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟧 STEP 3｜テスト ${!step2Done ? '<span style="font-size:11px;color:var(--text-light);">（受講完了後に解放）</span>' : ''}</div>`;
-    html += item('', 'テスト１', test1Ok, step2Done && !test1Ok, !step2Done);
-    html += item('', 'テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok && !test2Ok, !step2Done || !test1Ok);
-    html += `</div><hr class="flow-divider">`;
-
-    // STEP4
-    html += `<div class="flow-step">`;
-    html += `<div class="flow-step-title">🟥 STEP 4｜修了 ${!test2Ok ? '<span style="font-size:11px;color:var(--text-light);">（テスト２合格後に解放）</span>' : ''}</div>`;
-    html += item('', 'OJT完了（本修了証発行・郵送）', ojtOk, test2Ok && !ojtOk, !test2Ok);
-    html += `</div>`;
-
-    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('app-content').innerHTML = `<p style="font-size:12px;color:var(--red);">エラー: ${e.message}</p>`;
   }
-</script>
+}
 
-<script>
-  async function doLogout() {
-    await window.__signOut(window.__auth);
-    window.location.href = 'mypage_login.html';
-  }
-  window.doLogout = doLogout;
+// ===== 申込情報 =====
+function renderAppInfo(data, status) {
+  const date = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString('ja-JP') : '—';
+  document.getElementById('app-content').innerHTML = `
+    <div style="margin-bottom:12px;"><span class="status-badge status-${status}">● ${status}</span></div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-label">受講番号</div><div class="info-value">${data.applicationId || '—'}</div></div>
+      <div class="info-item"><div class="info-label">申込日</div><div class="info-value">${date}</div></div>
+      <div class="info-item"><div class="info-label">お名前</div><div class="info-value">${data.name || '—'}</div></div>
+      <div class="info-item"><div class="info-label">講座</div><div class="info-value" style="font-size:11px;">${data.course || '介護職員初任者研修'}</div></div>
+    </div>
+    ${status === '入金待ち' ? '<div style="margin-top:12px;padding:10px 12px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;">⏳ 入金確認後に受講が確定します。</div>' : ''}
+  `;
+}
 
-  // ===== 添削問題システム =====
-  const QUIZ_BASE_URL = 'https://belageapp.github.io/academy/quiz/';
-
-  // 問題データキャッシュ
-  const quizCache = {};
-
-  // 問題データ読み込み
-  async function loadQuizData(round) {
-    if (quizCache[round]) return quizCache[round];
-    const url = `${QUIZ_BASE_URL}questions_r${round}_final.json`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('問題データの読み込みに失敗しました');
-    const data = await res.json();
-    quizCache[round] = data;
-    return data;
-  }
-
-  // 現在の問題状態
-  let quizState = {
-    round: 0,
-    questions: [],
-    currentIndex: 0,
-    answers: [],      // null=未回答, 番号=選択済み
-    results: [],      // null=未採点, true=正解, false=不正解
-    answered: false,  // 現在の問題に回答済みか
-  };
-
-  async function openTask(num, mode) {
-    const modal = document.getElementById('task-modal');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-
-    const modeLabel = mode === 'review' ? '📖 復習モード' : mode === 'retry' ? '🔄 再挑戦' : '';
-    title.textContent = `eラーニング 第${num}回 ${modeLabel}`;
-    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
-    modal.classList.add('open');
-
-    try {
-      const data = await loadQuizData(num);
-      const questions = data.questions;
-
-      // 復習モード（全問正解を一覧表示）
-      if (mode === 'review') {
-        renderReviewMode(content, questions, num);
-        return;
-      }
-
-      // 再挑戦モード（最初からリセット・Firestoreは上書き）
-      if (mode === 'retry') {
-        quizState = {
-          round: num, questions,
-          currentIndex: 0,
-          answers: new Array(questions.length).fill(null),
-          results: new Array(questions.length).fill(null),
-        };
-        renderQuizQuestion(content);
-        return;
-      }
-
-      // 通常モード：状態初期化
-      quizState = {
-        round: num, questions,
-        currentIndex: 0,
-        answers: new Array(questions.length).fill(null),
-        results: new Array(questions.length).fill(null),
-      };
-
-      // Firestoreから保存済み回答を復元（途中再開）
-      try {
-        const user = window.__auth?.currentUser;
-        if (user) {
-          const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-          const db = getFirestore();
-          const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', `round${num}`));
-          if (snap.exists()) {
-            const saved = snap.data();
-            if (saved.passed) {
-              // 合格済みなら結果画面へ
-              quizState.results = new Array(questions.length).fill(true);
-              if (saved.answers) quizState.answers = saved.answers;
-              if (saved.results) quizState.results = saved.results;
-              renderQuizResult(content);
-              return;
-            }
-            if (saved.answers) quizState.answers = saved.answers;
-            if (saved.results) quizState.results = saved.results;
-            const lastAnswered = quizState.results.reduce((acc, r, i) => r !== null ? i : acc, -1);
-            quizState.currentIndex = Math.min(lastAnswered + 1, questions.length - 1);
-            if (quizState.results.every(r => r !== null)) {
-              renderQuizResult(content);
-              return;
-            }
-          }
-        }
-      } catch(e) { /* 保存なければ最初から */ }
-
-      renderQuizQuestion(content);
-
-    } catch(e) {
-      content.innerHTML = `<p style="color:#c0392b;font-size:13px;">❌ ${e.message}</p>`;
-    }
-  }
-  window.openTask = openTask;
-
-  // 復習モード描画（全問一覧で正解を表示）
-  function renderReviewMode(content, questions, num) {
-    const listHtml = questions.map((q, i) => {
-      const correctText = q.choices[q.answer - 1];
-      return `
-        <div style="margin-bottom:16px;padding:12px;background:#F8F9FA;border-radius:10px;border-left:3px solid var(--teal);">
-          ${q.context ? `<div style="font-size:11px;color:var(--text-light);margin-bottom:6px;white-space:pre-wrap;line-height:1.6;">${q.context}</div>` : ''}
-          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.6;">Q${i+1}. ${q.question}</div>
-          <div style="font-size:12px;color:#2E7D32;background:#E8F5E9;padding:6px 10px;border-radius:6px;">
-            ✅ 正解：${q.answer}. ${correctText}
-          </div>
-          ${q.reference ? `<div style="font-size:11px;color:var(--text-light);margin-top:6px;">📖 参照：${q.reference}</div>` : ''}
-        </div>`;
-    }).join('');
-
-    content.innerHTML = `
-      <div style="font-size:12px;color:var(--text-mid);margin-bottom:14px;padding:10px 12px;background:#EEF6FF;border-radius:8px;line-height:1.6;">
-        📖 全${questions.length}問の正解を確認できます。テキストと照らし合わせて復習しましょう。
-      </div>
-      <div style="max-height:55vh;overflow-y:auto;">${listHtml}</div>
-      <button class="quiz-btn quiz-btn-primary" style="margin-top:14px;" onclick="closeTask()">閉じる</button>
-    `;
-  }
-
-  // 進捗ドット描画
-  function renderProgressDots(questions, answers, results, currentIndex) {
-    return questions.map((_, i) => {
-      let cls = 'unanswered';
-      if (i === currentIndex) cls = 'current';
-      else if (results[i] === true) cls = 'answered-correct';
-      else if (results[i] === false) cls = 'answered-wrong';
-      return `<div class="quiz-dot ${cls}">${i + 1}</div>`;
-    }).join('');
-  }
-
-  // 問題画面描画
-  function renderQuizQuestion(content) {
-    const { questions, currentIndex, answers, results, answered } = quizState;
-    const q = questions[currentIndex];
-    const total = questions.length;
-    const answeredCount = results.filter(r => r !== null).length;
-    const progressPct = Math.round((answeredCount / total) * 100);
-
-    const isAnswered = results[currentIndex] !== null;
-    const selectedAnswer = answers[currentIndex];
-
-    // 選択肢HTML
-    const choicesHtml = q.choices.map((c, i) => {
-      let cls = '';
-      if (isAnswered) {
-        if (i + 1 === q.answer) cls = 'show-correct';
-        if (i + 1 === selectedAnswer && selectedAnswer !== q.answer) cls = 'wrong';
-        if (i + 1 === selectedAnswer && selectedAnswer === q.answer) cls = 'correct';
-      } else if (i + 1 === selectedAnswer) {
-        cls = 'selected';
-      }
-      return `
-        <div class="quiz-choice ${cls}" onclick="selectChoice(${i + 1})" id="choice-${i+1}">
-          <div class="quiz-choice-num">${i + 1}</div>
-          <div>${c}</div>
-        </div>`;
-    }).join('');
-
-    // フィードバック
-    let feedbackHtml = '';
-    if (isAnswered) {
-      const isCorrect = results[currentIndex];
-      feedbackHtml = `<div class="quiz-feedback ${isCorrect ? 'correct' : 'wrong'}" style="display:block;">
-        ${isCorrect ? '✅ 正解です！' : `❌ 不正解です。正解は「${q.choices[q.answer - 1]}」です。`}
+// ===== 動画教材 =====
+function renderVideoSection(status) {
+  if (status !== '受講確定') {
+    document.getElementById('video-content').innerHTML = `
+      <div style="background:linear-gradient(135deg,#1E2820,#2A5E32);border-radius:10px;padding:24px;text-align:center;color:white;">
+        <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+        <div style="font-size:13px;opacity:0.8;">入金確認後に利用できるようになります</div>
       </div>`;
-    }
+  } else {
+    document.getElementById('video-content').innerHTML = `<p style="font-size:13px;color:var(--text-mid);">動画教材は準備中です。</p>`;
+  }
+}
 
-    // 次へボタン or 提出ボタン
-    const isLast = currentIndex === total - 1;
-    const btnLabel = isLast ? '結果を見る' : '次の問題へ';
-    const btnDisabled = (!isAnswered) ? 'disabled' : '';
-
-    content.innerHTML = `
-      <div class="quiz-progress-wrap">
-        <div class="quiz-progress-label">
-          <span>問題 ${currentIndex + 1} / ${total}</span>
-          <span style="color:var(--teal);font-size:11px;">✅ 自動保存されています</span>
-        </div>
-        <div class="quiz-progress-bar">
-          <div class="quiz-progress-fill" style="width:${progressPct}%"></div>
-        </div>
-        <div class="quiz-progress-dots">
-          ${renderProgressDots(questions, answers, results, currentIndex)}
-        </div>
-      </div>
-
-      ${q.reference ? `
-        <div style="background:#FFF8E1;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#795548;line-height:1.7;">
-          📖 <strong>テキスト ${q.reference} を学習してから、下の問題に答えてください。</strong>
-        </div>` : ''}
-
-      ${q.context ? `<div class="quiz-context">${q.context}</div>` : ''}
-
-      <div class="quiz-question">Q${currentIndex + 1}. ${q.question}</div>
-      <div class="quiz-choices">${choicesHtml}</div>
-      ${feedbackHtml}
-      <button class="quiz-btn quiz-btn-primary" id="quiz-next-btn" onclick="nextQuestion()" ${btnDisabled}>
-        ${isAnswered ? btnLabel : '選択してください'}
-      </button>
-    `;
-
-    // モーダルを先頭にスクロール
-    document.getElementById('task-modal').querySelector('.modal').scrollTop = 0;
+// ===== eラーニング リスト =====
+function renderTaskList(status, progressData) {
+  const taskList = document.getElementById('task-list');
+  if (status !== '受講確定') {
+    taskList.innerHTML = `<div style="padding:14px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講確定後にeラーニングが開放されます</div>`;
+    return;
   }
 
-  // 選択肢をクリック
-  window.selectChoice = function(num) {
-    if (quizState.results[quizState.currentIndex] !== null) return; // 回答済みなら無効
-    quizState.answers[quizState.currentIndex] = num;
+  taskList.innerHTML = LEARNING_THEMES.map(t => {
+    const isPassed = progressData[`theme${t.num}`] === true;
+    const isUnlocked = t.num === 1 || progressData[`theme${t.num - 1}`] === true;
+    const locked = !isUnlocked;
 
-    // 選択状態を更新
-    quizState.questions[quizState.currentIndex].choices.forEach((_, i) => {
-      const el = document.getElementById(`choice-${i+1}`);
-      if (el) el.classList.toggle('selected', i + 1 === num);
-    });
-
-    // 採点してフィードバック表示
-    const q = quizState.questions[quizState.currentIndex];
-    const isCorrect = num === q.answer;
-    quizState.results[quizState.currentIndex] = isCorrect;
-
-    // 選択肢に正解・不正解クラスを付与
-    q.choices.forEach((_, i) => {
-      const el = document.getElementById(`choice-${i+1}`);
-      if (!el) return;
-      el.classList.remove('selected');
-      if (i + 1 === q.answer) el.classList.add('show-correct');
-      if (i + 1 === num && !isCorrect) el.classList.add('wrong');
-      if (i + 1 === num && isCorrect) el.classList.add('correct');
-    });
-
-    // フィードバック表示
-    const isLast = quizState.currentIndex === quizState.questions.length - 1;
-    const feedback = document.querySelector('.quiz-feedback') || document.createElement('div');
-    if (!feedback.classList.contains('quiz-feedback')) {
-      feedback.className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
-      document.querySelector('.quiz-choices').after(feedback);
-    }
-    feedback.className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
-    feedback.style.display = 'block';
-    feedback.innerHTML = isCorrect ? '✅ 正解です！' : `❌ 不正解です。正解は「${q.choices[q.answer - 1]}」です。`;
-
-    // 次へボタン有効化
-    const btn = document.getElementById('quiz-next-btn');
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = isLast ? '結果を見る' : '次の問題へ';
-    }
-
-    // 進捗ドット更新
-    const dotsWrap = document.querySelector('.quiz-progress-dots');
-    if (dotsWrap) {
-      dotsWrap.innerHTML = renderProgressDots(quizState.questions, quizState.answers, quizState.results, quizState.currentIndex);
-    }
-
-    // 進捗バー更新
-    const answeredCount = quizState.results.filter(r => r !== null).length;
-    const progressPct = Math.round((answeredCount / quizState.questions.length) * 100);
-    const fill = document.querySelector('.quiz-progress-fill');
-    const label = document.querySelector('.quiz-progress-label span:last-child');
-    if (fill) fill.style.width = progressPct + '%';
-    if (label) label.textContent = `${answeredCount} 問回答済み（${progressPct}%）`;
-
-    // Firestoreに保存
-    saveQuizProgress();
-  };
-
-  // 次の問題へ
-  window.nextQuestion = function() {
-    const { currentIndex, questions } = quizState;
-    if (quizState.results[currentIndex] === null) return;
-
-    if (currentIndex >= questions.length - 1) {
-      // 全問終了→結果画面
-      renderQuizResult(document.getElementById('modal-content'));
-    } else {
-      quizState.currentIndex++;
-      renderQuizQuestion(document.getElementById('modal-content'));
-    }
-  };
-
-  // 結果画面描画
-  async function renderQuizResult(content) {
-    const { questions, results, round } = quizState;
-    const total = questions.length;
-    const correct = results.filter(r => r === true).length;
-    const pct = Math.round((correct / total) * 100);
-    const isPassed = pct >= 70;
-
-    // 不正解リスト
-    const wrongList = questions
-      .map((q, i) => ({ q, i, r: results[i] }))
-      .filter(x => x.r === false)
-      .map(x => `<div>・Q${x.i + 1} ${x.q.question.substring(0, 30)}…</div>`)
-      .join('');
-
-    content.innerHTML = `
-      <div class="quiz-result">
-        <div class="quiz-result-score ${isPassed ? 'pass' : 'fail'}">${pct}%</div>
-        <div class="quiz-result-label ${isPassed ? 'pass' : 'fail'}">${isPassed ? '🎉 合格！' : '😢 不合格'}</div>
-        <div class="quiz-result-detail">
-          全${total}問中 <strong>${correct}問</strong> 正解<br>
-          合格基準：70%以上
+    return `
+      <div class="task-item" style="${locked ? 'opacity:0.4;' : ''}">
+        <div class="task-num" style="${isPassed ? 'background:var(--green-light);color:var(--green-dark);' : ''}">
+          ${isPassed ? '✓' : t.num}
         </div>
-        ${!isPassed && wrongList ? `
-          <div class="quiz-result-wrong-list">
-            <div style="font-weight:700;margin-bottom:6px;">⚠️ 不正解だった問題</div>
-            ${wrongList}
-          </div>` : ''}
-        ${isPassed ? `
-          <button class="quiz-btn quiz-btn-primary" style="margin-bottom:8px;" onclick="closeTask();location.reload();">
-            ✅ 完了してマイページに戻る
-          </button>
-          <button class="quiz-btn" style="background:#6c8ebf;color:white;margin-bottom:8px;" onclick="openTask(${round}, 'review')">
-            📖 復習する（正解を確認）
-          </button>` : `
-          <button class="quiz-btn quiz-btn-primary" onclick="retryQuiz()">
-            🔄 もう一度挑戦する
-          </button>`}
-      </div>
-    `;
-
-    // 合格した場合Firestoreに記録
-    if (isPassed) {
-      try {
-        const user = window.__auth?.currentUser;
-        if (user) {
-          const { getFirestore, doc, updateDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-          const db = getFirestore();
-          const docId = window.__currentDocId;
-          if (docId) {
-            const appRef = doc(db, 'applications', docId);
-            const snap = await getDoc(appRef);
-            const taskDone = snap.data()?.taskDone || {};
-            taskDone[`round${round}`] = true;
-            const allDone = [1,2,3,4,5].every(r => taskDone[`round${r}`]);
-            await updateDoc(appRef, {
-              [`taskDone.round${round}`]: true,
-              ...(allDone ? { taskAllDone: true } : {})
-            });
-          }
-          // 進捗をクリア
-          const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-          await setDoc(doc(db, 'users', user.uid, 'quizProgress', `round${round}`), {
-            passed: true, score: pct, completedAt: new Date()
-          });
+        <div style="flex:1;min-width:0;">
+          <div class="task-name">学習${t.num}：${t.name}</div>
+          ${locked ? `<div style="font-size:10px;color:#F57C00;margin-top:2px;">🔒 学習${t.num - 1}に合格すると解放</div>` : ''}
+        </div>
+        <span class="task-status ${isPassed ? 'task-合格' : 'task-未提出'}">${isPassed ? '合格✓' : '未学習'}</span>
+        ${isPassed
+          ? `<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+               <button class="task-btn" style="background:#6c8ebf;font-size:10px;" onclick="window.openTask(${t.num},'review')">復習</button>
+               <button class="task-btn" style="background:#888;font-size:10px;" onclick="window.openTask(${t.num},'retry')">再挑戦</button>
+             </div>`
+          : locked
+            ? `<span style="font-size:18px;">🔒</span>`
+            : `<button class="task-btn" onclick="window.openTask(${t.num},'normal')">回答する</button>`
         }
-      } catch(e) { console.error('合格記録エラー:', e); }
-    }
+      </div>`;
+  }).join('');
+}
+
+// ===== クイズロジック =====
+let quizState = {};
+
+async function loadQuizData(themeNum) {
+  try {
+    const res = await fetch(`/quiz/theme${themeNum}.json`);
+    if (res.ok) return await res.json();
+  } catch(e) {}
+  // Firestoreフォールバック
+  try {
+    const snap = await getDoc(doc(db, 'quizData', `theme${themeNum}`));
+    if (snap.exists()) return snap.data();
+  } catch(e) {}
+  // デモデータ
+  return { questions: generateDemoQuestions(themeNum) };
+}
+
+function generateDemoQuestions(themeNum) {
+  const t = LEARNING_THEMES[themeNum - 1];
+  return Array.from({ length: 5 }, (_, i) => ({
+    question: `（学習${themeNum}・問${i+1}）${t.name}に関する問題です。正しいものを1つ選んでください。`,
+    choices: ['選択肢①', '選択肢②', '選択肢③（正解）', '選択肢④', '選択肢⑤'],
+    answer: 3,
+    ref: `テキスト第${themeNum}章 ${10 + i*3}ページ`
+  }));
+}
+
+// モーダルを閉じる
+window.closeTask = function() {
+  document.getElementById('task-modal').classList.remove('open');
+};
+
+// モーダルを開く
+window.openTask = async function(themeNum, mode) {
+  const theme = LEARNING_THEMES[themeNum - 1];
+  const modal = document.getElementById('task-modal');
+  const titleEl = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+
+  const modeLabel = mode === 'review' ? '（復習）' : mode === 'retry' ? '（再挑戦）' : '';
+  titleEl.textContent = `eラーニング　学習${themeNum}：${theme.name}${modeLabel}`;
+  content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
+  modal.classList.add('open');
+
+  const data = await loadQuizData(themeNum);
+  const questions = data.questions;
+
+  if (mode === 'review') {
+    renderReviewMode(content, questions, themeNum);
+    return;
   }
 
-  // もう一度挑戦
-  window.retryQuiz = function() {
-    const { round, questions } = quizState;
-    quizState.currentIndex = 0;
-    quizState.answers = new Array(questions.length).fill(null);
-    quizState.results = new Array(questions.length).fill(null);
-    renderQuizQuestion(document.getElementById('modal-content'));
+  quizState = {
+    themeNum,
+    themeName: theme.name,
+    questions,
+    currentIndex: 0,
+    answers: new Array(questions.length).fill(null),
+    submitted: false,
   };
 
-  // Firestoreに進捗保存
-  async function saveQuizProgress() {
-    try {
-      const user = window.__auth?.currentUser;
-      if (!user) return;
-      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      await setDoc(doc(db, 'users', user.uid, 'quizProgress', `round${quizState.round}`), {
-        answers: quizState.answers,
-        results: quizState.results,
-        currentIndex: quizState.currentIndex,
-        updatedAt: new Date()
-      });
-    } catch(e) { /* 保存エラーは無視 */ }
+  if (mode === 'retry') {
+    renderQuizQuestion(content);
+    return;
   }
 
-  function closeTask() {
-    document.getElementById('task-modal').classList.remove('open');
-  }
-  window.closeTask = closeTask;
-
-  window.markRead = async function(id, el) {
-    try {
-      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      const user = window.__auth?.currentUser;
-      if (user) {
-        await setDoc(doc(db, 'users', user.uid, 'readNotices', id), { readAt: new Date() });
+  // 通常モード: 途中保存を復元
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', `theme${themeNum}`));
+      if (snap.exists()) {
+        const saved = snap.data();
+        if (saved.passed) {
+          quizState.answers = saved.answers || quizState.answers;
+          quizState.submitted = true;
+          quizState.results = saved.results || new Array(questions.length).fill(true);
+          renderQuizResult(content);
+          return;
+        }
+        if (saved.answers) {
+          quizState.answers = saved.answers;
+          const lastIdx = saved.answers.reduce((acc, a, i) => a !== null ? i : acc, -1);
+          quizState.currentIndex = Math.min(lastIdx + 1, questions.length - 1);
+        }
       }
-    } catch(e) {
-      console.error('既読保存エラー:', e);
     }
-    el.classList.remove('unread');
-    el.querySelector('.notice-dot').style.background = 'var(--border)';
-    // バッジ更新
-    const badge = document.getElementById('unread-count');
-    if (badge && parseInt(badge.textContent) > 0) {
-      const count = parseInt(badge.textContent) - 1;
-      badge.textContent = count;
-      badge.style.display = count > 0 ? 'inline' : 'none';
-    }
-  };
+  } catch(e) {}
 
-  function generateDoc(type) {
-    const name = document.getElementById('doc-name').value || 'お客様';
-    alert(`${type}の発行機能は準備中です。\n宛名：${name}`);
+  renderQuizQuestion(content);
+};
+
+// ===== 問題画面 =====
+function renderQuizQuestion(content) {
+  const { themeNum, themeName, questions, currentIndex, answers } = quizState;
+  const q = questions[currentIndex];
+  const total = questions.length;
+  const answeredCount = answers.filter(a => a !== null).length;
+  const progressPct = Math.round((answeredCount / total) * 100);
+  const isLast = currentIndex === total - 1;
+  const allAnswered = answers.every(a => a !== null);
+
+  // 番号ナビ
+  const navDots = questions.map((_, i) => {
+    let cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
+    return `<div class="quiz-nav-dot ${cls}" onclick="window.goToQuestion(${i})">${i + 1}</div>`;
+  }).join('');
+
+  // 選択肢
+  const choicesHtml = q.choices.map((c, i) => {
+    const num = i + 1;
+    return `
+      <div class="quiz-choice ${answers[currentIndex] === num ? 'selected' : ''}" onclick="window.selectChoice(${num})">
+        <div class="quiz-choice-num">${num}</div>
+        <div>${c}</div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="quiz-theme-label">学習${themeNum}：${themeName}</div>
+
+    <div class="quiz-progress-bar-wrap">
+      <div class="quiz-progress-meta">
+        <span>${answeredCount}/${total}問 回答済み</span>
+        <span style="color:var(--green);font-size:10px;">✅ 自動保存されています</span>
+      </div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${progressPct}%"></div></div>
+    </div>
+
+    <div class="quiz-nav-wrap">
+      <div class="quiz-nav-label">問題番号をタップして移動できます（回答済み：<span style="color:#4F46E5;">■</span>　現在：<span style="color:var(--green);">■</span>）</div>
+      <div class="quiz-nav-dots">${navDots}</div>
+    </div>
+
+    ${q.ref ? `<div class="quiz-ref-box">📖 <span>テキスト <strong>${q.ref}</strong> を学習してから答えてください</span></div>` : ''}
+
+    <div class="quiz-question-num">問題 ${currentIndex + 1} / ${total}</div>
+    <div class="quiz-question-text">${q.question}</div>
+    <div class="quiz-choices">${choicesHtml}</div>
+
+    <div class="quiz-btn-row">
+      <button class="quiz-btn quiz-btn-prev" onclick="window.goToPrev()" ${currentIndex === 0 ? 'disabled' : ''}>← 前の問題</button>
+      <button class="quiz-btn quiz-btn-pause" onclick="window.pauseAndSave()">💾 保存して中断</button>
+      ${isLast
+        ? `<button class="quiz-btn quiz-btn-submit" onclick="window.submitQuiz()" ${allAnswered ? '' : 'disabled'}>
+             📊 採点する${allAnswered ? '' : `（残${total - answeredCount}問）`}
+           </button>`
+        : `<button class="quiz-btn quiz-btn-next" onclick="window.goToNext()" ${answers[currentIndex] === null ? 'disabled' : ''}>
+             次の問題 →
+           </button>`
+      }
+    </div>
+    ${isLast && !allAnswered ? `<p style="font-size:11px;color:var(--text-mid);margin-top:8px;text-align:center;">⚠️ 未回答の問題は番号ボタンから確認できます（紫色＝回答済み）</p>` : ''}
+  `;
+}
+
+// 選択肢を選ぶ
+window.selectChoice = function(num) {
+  quizState.answers[quizState.currentIndex] = num;
+  saveQuizProgressAuto();
+  renderQuizQuestion(document.getElementById('modal-content'));
+};
+
+// 番号ナビでジャンプ
+window.goToQuestion = function(index) {
+  quizState.currentIndex = index;
+  renderQuizQuestion(document.getElementById('modal-content'));
+};
+
+// 前の問題へ
+window.goToPrev = function() {
+  if (quizState.currentIndex > 0) {
+    quizState.currentIndex--;
+    renderQuizQuestion(document.getElementById('modal-content'));
   }
-  window.generateDoc = generateDoc;
-</script>
+};
 
+// 次の問題へ（回答必須）
+window.goToNext = function() {
+  if (quizState.answers[quizState.currentIndex] === null) return;
+  if (quizState.currentIndex < quizState.questions.length - 1) {
+    quizState.currentIndex++;
+    renderQuizQuestion(document.getElementById('modal-content'));
+  }
+};
+
+// 保存して中断
+window.pauseAndSave = async function() {
+  await saveQuizProgressAuto();
+  window.closeTask();
+  // リスト再描画
+  const user = auth.currentUser;
+  if (user) {
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
+      renderTaskList('受講確定', snap.exists() ? snap.data() : {});
+    } catch(e) {}
+  }
+};
+
+// 採点実行（全問終了後）
+window.submitQuiz = async function() {
+  const { questions, answers, themeNum } = quizState;
+  const results = questions.map((q, i) => answers[i] === q.answer);
+  const correct = results.filter(r => r).length;
+  const pct = Math.round((correct / questions.length) * 100);
+  const isPassed = pct >= 70;
+  quizState.results = results;
+  quizState.submitted = true;
+
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      await setDoc(doc(db, 'users', user.uid, 'quizProgress', `theme${themeNum}`), {
+        answers, results, passed: isPassed, score: pct, submittedAt: new Date()
+      });
+      if (isPassed) {
+        await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
+          { [`theme${themeNum}`]: true }, { merge: true });
+      }
+    }
+  } catch(e) {}
+
+  renderQuizResult(document.getElementById('modal-content'));
+};
+
+// 自動保存
+async function saveQuizProgressAuto() {
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    await setDoc(doc(db, 'users', user.uid, 'quizProgress', `theme${quizState.themeNum}`),
+      { answers: quizState.answers, savedAt: new Date() }, { merge: true });
+  } catch(e) {}
+}
+
+// ===== 採点結果画面 =====
+function renderQuizResult(content) {
+  const { questions, answers, results, themeNum, themeName } = quizState;
+  const total = questions.length;
+  const correct = results.filter(r => r).length;
+  const pct = Math.round((correct / total) * 100);
+  const isPassed = pct >= 70;
+
+  const listHtml = questions.map((q, i) => {
+    const ok = results[i];
+    const chosenLabel = answers[i] != null ? `${answers[i]}（${q.choices[answers[i]-1]}）` : '未回答';
+    return `
+      <div class="quiz-result-row">
+        <div class="quiz-result-row-icon">${ok ? '✅' : '❌'}</div>
+        <div class="quiz-result-row-body">
+          <div class="quiz-result-row-qtext">Q${i+1}. ${q.question.length > 50 ? q.question.slice(0,50)+'…' : q.question}</div>
+          ${!ok ? `<div class="quiz-result-row-wrong-info">あなた：${chosenLabel} ／ 正解：${q.answer}（${q.choices[q.answer-1]}）</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="quiz-theme-label">学習${themeNum}：${themeName}</div>
+    <div class="quiz-result-header">
+      <div class="quiz-result-score ${isPassed ? 'pass' : 'fail'}">${pct}%</div>
+      <div class="quiz-result-label">${isPassed ? '🎉 合格！' : '😢 不合格'}</div>
+      <div class="quiz-result-detail">
+        全${total}問中 <strong>${correct}問</strong> 正解（合格基準：70%以上）<br>
+        ${isPassed
+          ? '<span style="color:var(--green-dark);font-weight:700;">次のテーマが解放されました！</span>'
+          : '<span style="color:var(--red);">もう一度挑戦できます。何度でも挑戦してください。</span>'
+        }
+      </div>
+    </div>
+
+    <div class="quiz-result-list">
+      <div class="quiz-result-list-title">📋 全問 回答結果一覧</div>
+      ${listHtml}
+    </div>
+
+    <div class="quiz-result-btns">
+      <button class="quiz-result-btn primary" onclick="window.closeTask();location.reload();">✅ マイページに戻る</button>
+      ${isPassed
+        ? `<button class="quiz-result-btn secondary" onclick="window.openTask(${themeNum},'review')">📖 復習する（正解一覧）</button>`
+        : `<button class="quiz-result-btn tertiary" onclick="window.openTask(${themeNum},'retry')">🔄 もう一度挑戦する</button>`
+      }
+    </div>
+  `;
+}
+
+// ===== 復習モード =====
+function renderReviewMode(content, questions, themeNum) {
+  const theme = LEARNING_THEMES[themeNum - 1];
+  const itemsHtml = questions.map((q, i) => `
+    <div class="review-item">
+      <div class="review-q">Q${i+1}. ${q.question}</div>
+      <div class="review-ans">正解：${q.answer}（${q.choices[q.answer-1]}）</div>
+      ${q.ref ? `<div class="review-ref">📖 参照：テキスト ${q.ref}</div>` : ''}
+    </div>`).join('');
+
+  content.innerHTML = `
+    <div class="quiz-theme-label">学習${themeNum}：${theme.name}</div>
+    <p style="font-size:12px;color:var(--text-mid);margin-bottom:14px;">全問の正解を確認できます。</p>
+    ${itemsHtml}
+    <button class="quiz-result-btn primary" style="margin-top:16px;width:100%;" onclick="window.closeTask()">閉じる</button>
+  `;
+}
+</script>
 </body>
 </html>
