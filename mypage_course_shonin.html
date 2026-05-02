@@ -548,7 +548,7 @@
       <span class="toggle-arrow" id="arrow-elearn-body">›</span>
     </button>
     <div class="toggle-body" id="elearn-body">
-      <p style="font-size:12px;color:var(--text-mid);margin:4px 0 12px;line-height:1.7;">テキストで各テーマを学習後、確認問題に答えてください。前のテーマに合格すると次が解放されます。</p>
+      <p style="font-size:12px;color:var(--text-mid);margin:4px 0 12px;line-height:1.7;">学習テーマに関連する箇所のテキストを読み、問題に回答します（全10の学習テーマ）。前のテーマに合格すると次が解放されます。</p>
       <div id="task-list">
         <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
       </div>
@@ -605,8 +605,7 @@
       <span class="toggle-arrow" id="arrow-todoke-body">›</span>
     </button>
     <div class="toggle-body" id="todoke-body">
-      
-      <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div><div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div></div>
           <button onclick="alert('近日公開予定です')" class="action-btn">提出する</button>
@@ -905,26 +904,43 @@
     taskList.innerHTML = LEARNING_THEMES.map(t => {
       const isPassed = progressData['theme' + t.num] === true;
       const isFailed = progressData['theme' + t.num + '_failed'] === true;
+      const hasResult = isPassed || isFailed;
       const isUnlocked = t.num === 1 || progressData['theme' + (t.num - 1)] === true;
       const locked = !isUnlocked;
-      return `<div class="task-item" style="${locked ? 'opacity:0.4;' : ''}">
-        <div class="task-num" style="${isPassed ? 'background:var(--green-light);color:#2E7D47;' : ''}">${isPassed ? '✓' : t.num}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="task-name">学習${t.num}：${t.name}</div>
-          ${locked ? '<div style="font-size:10px;color:#F57C00;margin-top:2px;">🔒 前のテーマに合格すると解放</div>' : ''}
-        </div>
-        <span class="task-status ${isPassed ? 'task-合格' : isFailed ? 'task-不合格' : 'task-未提出'}">${isPassed ? '合格✓' : isFailed ? '不合格' : '未学習'}</span>
-        ${isPassed
-          ? `<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-               <button class="task-btn" style="background:linear-gradient(135deg,#F5A623,#E8823A);font-size:10px;" onclick="window.openTask(${t.num},'review')">📖 復習</button>
-               <button class="task-btn" style="background:linear-gradient(135deg,#F2708A,#d45570);font-size:10px;" onclick="window.openTask(${t.num},'retry')">🔄 再挑戦</button>
-             </div>`
-          : isFailed
-            ? `<button class="task-btn" style="background:linear-gradient(135deg,#F2708A,#d45570);font-size:11px;padding:6px 12px;" onclick="window.openTask(${t.num},'normal')">🔄 再挑戦</button>`
-          : locked ? '<span style="font-size:16px;">🔒</span>'
-          : `<button class="task-btn" style="background:linear-gradient(135deg,#2BBCD4,#1A9AB0);font-size:11px;padding:6px 12px;" onclick="window.openTask(${t.num},'normal')">📝 学習する</button>`
-        }
-      </div>`;
+
+      // ステータス
+      const statusCls = isPassed ? 'task-合格' : isFailed ? 'task-不合格' : 'task-未提出';
+      const statusLabel = isPassed ? '合格' : isFailed ? '不合格' : locked ? '未解放' : '未学習';
+
+      // ボタン定義（常時表示・アクティブ/非アクティブ制御）
+      // 学習するボタン: 未学習かつ解放済みのみアクティブ
+      const canStudy = !isPassed && isUnlocked;
+      // 再挑戦ボタン: 1度以上挑戦済み（合格・不合格問わず）かつ解放済み
+      const canRetry = hasResult && isUnlocked;
+      // 復習ボタン: 合格済みのみ
+      const canReview = isPassed;
+      // 結果確認ボタン: 1度以上採点済み
+      const canResult = hasResult;
+
+      const btnStyle = 'font-size:10px;padding:5px 8px;border-radius:6px;border:none;font-family:inherit;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;';
+      const disabledStyle = 'opacity:0.3;cursor:default;pointer-events:none;';
+
+      const studyBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#2BBCD4,#1A9AB0);color:white;' + (canStudy ? '' : disabledStyle) + '" onclick="' + (canStudy ? 'window.openTask(' + t.num + ',&quot;normal&quot;)' : '') + '">📝 学習</button>';
+      const retryBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#F2708A,#d45570);color:white;' + (canRetry ? '' : disabledStyle) + '" onclick="' + (canRetry ? 'window.openTask(' + t.num + ',&quot;retry&quot;)' : '') + '">🔄 再挑戦</button>';
+      const reviewBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#F5A623,#E8823A);color:white;' + (canReview ? '' : disabledStyle) + '" onclick="' + (canReview ? 'window.openTask(' + t.num + ',&quot;review&quot;)' : '') + '">📖 復習</button>';
+      const resultBtn = '<button style="' + btnStyle + 'background:linear-gradient(135deg,#7C3AED,#5B21B6);color:white;' + (canResult ? '' : disabledStyle) + '" onclick="' + (canResult ? 'window.openTask(' + t.num + ',&quot;result&quot;)' : '') + '">📊 結果</button>';
+
+      return '<div class="task-item" style="' + (locked ? 'opacity:0.45;' : '') + 'flex-wrap:wrap;gap:6px;">' +
+        '<div class="task-num" style="' + (isPassed ? 'background:var(--green-light);color:#2E7D47;' : isFailed ? 'background:#FEF2F2;color:#DC2626;' : '') + '">' + (isPassed ? '✓' : isFailed ? '✗' : t.num) + '</div>' +
+        '<div style="flex:1;min-width:120px;">' +
+          '<div class="task-name">学習' + t.num + '：' + t.name + '</div>' +
+          (locked ? '<div style="font-size:10px;color:#F57C00;margin-top:2px;">🔒 前のテーマに合格すると解放</div>' : '') +
+        '</div>' +
+        '<span class="task-status ' + statusCls + '">' + statusLabel + '</span>' +
+        '<div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">' +
+          studyBtn + retryBtn + reviewBtn + resultBtn +
+        '</div>' +
+      '</div>';
     }).join('');
   }
 
@@ -962,6 +978,24 @@
     const questions = data.questions;
 
     if (mode === 'review') { renderReviewMode(content, questions, themeNum); return; }
+
+    // resultモード: 最後の採点結果を表示
+    if (mode === 'result') {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const snap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum));
+          if (snap.exists() && snap.data().results) {
+            const saved = snap.data();
+            quizState = { themeNum, themeName: theme.name, questions,
+              currentIndex: 0, answers: saved.answers || [], results: saved.results, submitted: true };
+            renderQuizResult(content); return;
+          }
+        }
+      } catch(e) {}
+      content.innerHTML = '<p style="padding:20px;color:var(--text-mid);font-size:13px;">結果データが見つかりません。</p>';
+      return;
+    }
 
     quizState = { themeNum, themeName: theme.name, questions, currentIndex: 0,
       answers: new Array(questions.length).fill(null), submitted: false };
