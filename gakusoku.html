@@ -449,8 +449,9 @@
         pledgeSignedBy: user.email,
       });
 
-      // お知らせ送信
-      const appSnap = await getDoc(doc(db, 'applications', docId));
+      // お知らせ送信（失敗してもメイン処理に影響しない）
+      try {
+        const appSnap = await getDoc(doc(db, 'applications', docId));
       const appData = appSnap.data();
       await addDoc(collection(db, 'notices'), {
         title: '誓約書への同意が完了しました',
@@ -459,7 +460,10 @@
         emails: [appData.email],
         createdAt: serverTimestamp(),
         createdBy: 'info@holiscare.or.jp',
-      });
+        });
+      } catch(noticeError) {
+        console.warn('お知らせ送信失敗（同意は記録済み）:', noticeError);
+      }
 
       btn.textContent = '同意完了 ✅';
       btn.classList.add('done');
