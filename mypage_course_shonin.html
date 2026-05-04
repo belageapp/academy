@@ -792,6 +792,22 @@
         if (flowBody) flowBody.classList.add('open');
         if (flowArrow) flowArrow.classList.add('open');
       }
+      // 受講中かつeラーニング未完了 → eラーニングを自動でopen
+      if (isActive && !data.taskAllDone) {
+        const elearnBody = document.getElementById('elearn-body');
+        const elearnArrow = document.getElementById('arrow-elearn-body');
+        if (elearnBody) elearnBody.classList.add('open');
+        if (elearnArrow) elearnArrow.classList.add('open');
+      }
+
+      // 受講中かつ動画教材未完了 → 動画教材を自動でopen
+      if (isActive && !data.videoAllDone) {
+        const videoBody = document.getElementById('video-body');
+        const videoArrow = document.getElementById('arrow-video-body');
+        if (videoBody) videoBody.classList.add('open');
+        if (videoArrow) videoArrow.classList.add('open');
+      }
+
       const statusText = statusLabel[status] || status;
 
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
