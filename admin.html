@@ -928,7 +928,7 @@ document.getElementById('m-status').value = a.status || 'pending';
           const data = d.data();
           return `
             <label style="display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);">
-              <input type="checkbox" value="${data.uid}" data-email="${data.email}" data-name="${data.name}" style="accent-color:var(--teal);">
+              <input type="checkbox" value="${data.uid}" data-email="${data.email}" data-name="${data.name}" data-application-id="${d.id}" style="accent-color:var(--teal);">
               <span>${data.name}（${data.email}）</span>
             </label>`;
         }).join('');
