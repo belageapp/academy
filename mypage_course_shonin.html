@@ -912,7 +912,14 @@
       const uid = user.uid;
       const email = user.email;
       const notices = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .filter(n => n.target === 'all' || (n.target === 'specific' && n.emails?.includes(email)) || (n.target === 'selected' && n.targetUids?.includes(uid)));
+        .filter(n => {
+          const appCreatedAt = data.createdAt?.toMillis?.() || 0;
+          const noticeCreatedAt = n.createdAt?.toMillis?.() || 0;
+          if (n.target === 'all') return noticeCreatedAt >= appCreatedAt;
+          if (n.target === 'specific') return n.emails?.includes(email);
+          if (n.target === 'selected') return n.targetUids?.includes(uid);
+          return false;
+        });
       const readSnap = await getDocs(collection(db, 'users', uid, 'readNotices'));
       const readIds = readSnap.docs.map(d => d.id);
 
