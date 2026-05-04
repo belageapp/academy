@@ -864,11 +864,13 @@ document.getElementById('m-status').value = a.status || 'pending';
       // 選択受講生のUID・メールを取得
       let targetUids = [];
       let targetEmails = [];
+      let targetApplicationIds = [];
       if (target === 'selected') {
         const checked = document.querySelectorAll('#student-checkboxes input[type=checkbox]:checked');
         checked.forEach(cb => {
           targetUids.push(cb.value);
           targetEmails.push(cb.dataset.email);
+          if (cb.dataset.applicationId) targetApplicationIds.push(cb.dataset.applicationId);
         });
       } else if (target === 'specific') {
         targetEmails = emails ? emails.split(',').map(e => e.trim()) : [];
@@ -878,6 +880,7 @@ document.getElementById('m-status').value = a.status || 'pending';
         title, body, target,
         emails: targetEmails,
         targetUids: targetUids,
+        applicationIds: targetApplicationIds,
         fileUrl, fileName,
         createdAt: window.__serverTs(),
         createdBy: window.__auth.currentUser.email,
