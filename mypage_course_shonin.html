@@ -792,14 +792,6 @@
         if (flowBody) flowBody.classList.add('open');
         if (flowArrow) flowArrow.classList.add('open');
       }
-
-      // confirmed状態の時は講座の流れを自動でopen
-      if (status === 'confirmed') {
-        const flowBody = document.getElementById('flow-body');
-        const flowArrow = document.getElementById('arrow-flow-body');
-        if (flowBody) flowBody.classList.add('open');
-        if (flowArrow) flowArrow.classList.add('open');
-      }
       const statusText = statusLabel[status] || status;
 
       document.getElementById('course-title').textContent = data.course || 'オンライン初任者研修';
