@@ -569,7 +569,7 @@
       <span class="toggle-arrow" id="arrow-elearn-body">›</span>
     </button>
     <div class="toggle-body" id="elearn-body">
-      <p style="font-size:12px;color:var(--text-mid);margin:0 0 12px;line-height:1.7;">前のテーマに合格すると次が解放されます。</p>
+      <p style="font-size:12px;color:var(--text-mid);margin:0 0 12px;line-height:1.7;">どのテーマからでも学習を始められます。</p>
       <div id="task-list">
         <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
       </div>
@@ -1004,8 +1004,8 @@
       const isPassed = progressData['theme' + t.num] === true;
       const isFailed = progressData['theme' + t.num + '_failed'] === true;
       const hasResult = isPassed || isFailed;
-      const isUnlocked = t.num === 1 || progressData['theme' + (t.num - 1)] === true;
-      const locked = !isUnlocked;
+      const isUnlocked = true;
+      const locked = false;
 
       // ステータス
       const statusCls = isPassed ? 'task-合格' : isFailed ? 'task-不合格' : 'task-未提出';
