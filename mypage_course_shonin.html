@@ -1255,6 +1255,9 @@
   }
 
   function renderQuizResult(content) {
+    // 採点結果表示時に一番上にスクロール
+    const modal = document.getElementById('task-modal');
+    if (modal) modal.scrollTop = 0;
     const { questions, answers, results, themeNum, themeName } = quizState;
     const total = questions.length;
     const correct = results.filter(r => r).length;
