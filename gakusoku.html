@@ -163,6 +163,28 @@
       table.gakusoku th { display: block; width: 100%; border: none; border-bottom: 1px solid var(--border); }
       table.gakusoku td { display: block; width: 100%; border: none; }
     }
+   /* ステップナビ */
+    .step-nav {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px; gap: 0;
+    }
+    .step-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .step-item:hover { opacity: 0.8; }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--border); color: var(--text-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; transition: all 0.2s;
+    }
+    .step-item.active .step-circle { background: var(--teal); color: white; }
+    .step-item.done .step-circle { background: #4CAF72; color: white; }
+    .step-label { font-size: 12px; color: var(--text-light); font-weight: 500; }
+    .step-item.active .step-label { color: var(--teal); font-weight: 700; }
+    .step-item.done .step-label { color: #4CAF72; }
+    .step-line { flex: 1; height: 2px; background: var(--border); min-width: 40px; margin: 0 4px; margin-bottom: 18px; } 
   </style>
 </head>
 <body>
@@ -178,13 +200,25 @@
   <div class="page-title">📋 学則・修了要件・受講誓約書</div>
   <div class="page-subtitle">オンライン初任者研修</div>
 
-  <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('gakusoku')">学則</button>
-    <button class="tab-btn" onclick="switchTab('ryoken')">修了要件</button>
-    <button class="tab-btn" onclick="switchTab('pledge')">受講誓約書</button>
+  <!-- ステップインジケーター -->
+  <div class="step-nav">
+    <div class="step-item active" id="step-ind-1" onclick="goToStep(1)">
+      <div class="step-circle">1</div>
+      <div class="step-label">学則</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" id="step-ind-2" onclick="goToStep(2)">
+      <div class="step-circle">2</div>
+      <div class="step-label">修了要件</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" id="step-ind-3" onclick="goToStep(3)">
+      <div class="step-circle">3</div>
+      <div class="step-label">受講誓約書</div>
+    </div>
   </div>
 
-  <!-- 学則タブ -->
+  <!-- STEP 1: 学則 -->
   <div id="tab-gakusoku" class="tab-content active">
     <div class="card">
       <table class="gakusoku">
@@ -212,9 +246,12 @@
         <tr><th>17　その他留意事項</th><td>修了期限は、原則として8か月以内とする。ただし、やむを得ないと判断した場合は1年6か月までに修了すること。</td></tr>
       </table>
     </div>
+    <div style="text-align:right;margin-top:20px;">
+        <button onclick="goToStep(2)" style="background:var(--teal);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">修了要件へ →</button>
+      </div>
   </div>
 
-  <!-- 修了要件タブ -->
+  <!-- STEP 2: 修了要件 -->
   <div id="tab-ryoken" class="tab-content">
     <div class="card">
       <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">次の4項目を受講開始日から原則として<strong>8ヵ月以内</strong>に完了することで修了となります。</p>
@@ -291,9 +328,12 @@
       <div style="margin-top:16px;margin-bottom:8px;font-weight:700;font-size:13px;">未成年者の受講について</div>
       <p style="font-size:13px;color:var(--text-mid);">未成年が受講する場合は、「未成年者受講承諾書」に署名・捺印し、弊社事務局宛てに提出してください。</p>
     </div>
+  <div style="text-align:right;margin-top:20px;">
+        <button onclick="goToStep(3)" style="background:var(--teal);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">受講誓約書へ →</button>
+      </div>  
   </div>
 
-  <!-- 誓約書タブ -->
+  <!-- STEP 3: 受講誓約書 -->
   <div id="tab-pledge" class="tab-content">
     <div class="card">
       <div style="text-align:center; margin-bottom:24px;">
@@ -412,12 +452,23 @@
 </script>
 
 <script>
-  function switchTab(tab) {
+  let currentStep = 1;
+  const stepIds = ['gakusoku', 'ryoken', 'pledge'];
+
+  function goToStep(num) {
+    currentStep = num;
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    event.target.classList.add('active');
+    document.getElementById('tab-' + stepIds[num - 1]).classList.add('active');
+    // インジケーター更新
+    for (let i = 1; i <= 3; i++) {
+      const ind = document.getElementById('step-ind-' + i);
+      ind.classList.remove('active', 'done');
+      if (i < num) ind.classList.add('done');
+      else if (i === num) ind.classList.add('active');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  window.goToStep = goToStep;
 
   function updateBtn() {
     const c1 = document.getElementById('check1').checked;
