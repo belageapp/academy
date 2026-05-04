@@ -476,25 +476,30 @@
             <div style="margin-bottom:16px;">
               <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">送信対象</label>
               <div style="display:flex;gap:12px;flex-wrap:wrap;">
-<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;background:var(--teal-pale);border:1.5px solid var(--border);padding:8px 16px;border-radius:8px;">
-                  <input type="radio" name="n-target" value="all" checked style="accent-color:var(--teal);" onchange="toggleTarget()"> 全受講生
-                </label>
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;background:var(--teal-pale);border:1.5px solid var(--border);padding:8px 16px;border-radius:8px;">
-                  <input type="radio" name="n-target" value="specific" style="accent-color:var(--teal);" onchange="toggleTarget()"> 特定の受講生
+                  <input type="radio" name="n-target" value="all" checked style="accent-color:var(--teal);" onchange="toggleTarget()"> 全受講生
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;background:var(--teal-pale);border:1.5px solid var(--border);padding:8px 16px;border-radius:8px;">
                   <input type="radio" name="n-target" value="selected" style="accent-color:var(--teal);" onchange="toggleTarget()"> 受講生を選択
                 </label>
               </div>
             </div>
-            <div id="specific-target" style="display:none;margin-bottom:16px;">
-              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">メールアドレス（複数の場合はカンマ区切り）</label>
-              <input type="text" id="n-emails" placeholder="例）taro@example.com, hanako@example.com"
-                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;">
-            </div>
             <div id="selected-target" style="display:none;margin-bottom:16px;">
-              <label style="font-size:12px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">受講生を選択</label>
-              <div id="student-checkboxes" style="max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:8px;">
+              <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                <select id="n-status-filter" onchange="filterStudentCheckboxes()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;">
+                  <option value="">すべてのステータス</option>
+                  <option value="pending">入金待ち</option>
+                  <option value="awaiting_payment">入金待ち（カード）</option>
+                  <option value="paid">入金確認中</option>
+                  <option value="confirmed">受講確定</option>
+                  <option value="active">受講中</option>
+                  <option value="completed">修了</option>
+                  <option value="cancelled">キャンセル</option>
+                </select>
+                <input type="text" id="n-search" onkeyup="filterStudentCheckboxes()" placeholder="名前・メールで検索"
+                  style="flex:1;min-width:150px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;">
+              </div>
+              <div id="student-checkboxes" style="max-height:250px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;padding:8px;">
                 <div style="color:var(--text-light);font-size:13px;padding:8px;">読み込み中...</div>
               </div>
             </div>
@@ -872,8 +877,6 @@ document.getElementById('m-status').value = a.status || 'pending';
           targetEmails.push(cb.dataset.email);
           if (cb.dataset.applicationId) targetApplicationIds.push(cb.dataset.applicationId);
         });
-      } else if (target === 'specific') {
-        targetEmails = emails ? emails.split(',').map(e => e.trim()) : [];
       }
 
       await window.__addDoc(window.__col(window.__db, 'notices'), {
@@ -900,13 +903,14 @@ document.getElementById('m-status').value = a.status || 'pending';
   // 送信対象切り替え
   function toggleTarget() {
     const target = document.querySelector('[name="n-target"]:checked').value;
-    document.getElementById('specific-target').style.display = target === 'specific' ? 'block' : 'none';
     document.getElementById('selected-target').style.display = target === 'selected' ? 'block' : 'none';
     if (target === 'selected') loadStudentCheckboxes();
   }
   window.toggleTarget = toggleTarget;
 
   // 受講生チェックボックス読み込み
+  let allStudents = [];
+
   async function loadStudentCheckboxes() {
     const container = document.getElementById('student-checkboxes');
     try {
@@ -917,26 +921,53 @@ document.getElementById('m-status').value = a.status || 'pending';
         return;
       }
       const seen = new Set();
-      container.innerHTML = snap.docs
+      allStudents = snap.docs
         .filter(d => {
           const uid = d.data().uid;
           if (!uid || seen.has(uid)) return false;
           seen.add(uid);
           return true;
         })
-        .map(d => {
-          const data = d.data();
-          return `
-            <label style="display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);">
-              <input type="checkbox" value="${data.uid}" data-email="${data.email}" data-name="${data.name}" data-application-id="${d.id}" style="accent-color:var(--teal);">
-              <span>${data.name}（${data.email}）</span>
-            </label>`;
-        }).join('');
+        .map(d => ({ id: d.id, ...d.data() }));
+      renderStudentCheckboxes(allStudents);
     } catch(e) {
       container.innerHTML = '<div style="color:var(--red);font-size:13px;padding:8px;">読み込みエラー</div>';
     }
   }
   window.loadStudentCheckboxes = loadStudentCheckboxes;
+
+  function renderStudentCheckboxes(students) {
+    const container = document.getElementById('student-checkboxes');
+    if (students.length === 0) {
+      container.innerHTML = '<div style="color:var(--text-light);font-size:13px;padding:8px;">該当する受講生がいません</div>';
+      return;
+    }
+    const statusLabel = {
+      pending:'入金待ち', awaiting_payment:'入金待ち', paid:'入金確認中',
+      confirmed:'受講確定', active:'受講中', completed:'修了', cancelled:'キャンセル'
+    };
+    container.innerHTML = students.map(data => `
+      <label style="display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);">
+        <input type="checkbox" value="${data.uid}" data-email="${data.email}" data-name="${data.name}" data-application-id="${data.id}" style="accent-color:var(--teal);">
+        <span style="flex:1;">${data.name}（${data.email}）</span>
+        <span style="font-size:11px;color:var(--text-mid);">${statusLabel[data.status] || data.status || '—'}</span>
+      </label>`).join('');
+  }
+  window.renderStudentCheckboxes = renderStudentCheckboxes;
+
+  function filterStudentCheckboxes() {
+    const status = document.getElementById('n-status-filter').value;
+    const search = document.getElementById('n-search').value.toLowerCase();
+    const filtered = allStudents.filter(d => {
+      const matchStatus = !status || d.status === status;
+      const matchSearch = !search || 
+        (d.name || '').toLowerCase().includes(search) || 
+        (d.email || '').toLowerCase().includes(search);
+      return matchStatus && matchSearch;
+    });
+    renderStudentCheckboxes(filtered);
+  }
+  window.filterStudentCheckboxes = filterStudentCheckboxes;
 
   window.postNotice = postNotice;
 
