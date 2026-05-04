@@ -659,9 +659,14 @@
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
   };
 
-  async function doLogin() {
+async function doLogin() {
     const e = document.getElementById('l-email').value;
     const p = document.getElementById('l-pass').value;
+    const adminEmails = ['info@holiscare.or.jp']; // 管理者メールアドレス
+    if (!adminEmails.includes(e)) {
+      document.getElementById('l-err').style.display = 'block';
+      return;
+    }
     try { await window.__login(e, p); }
     catch { document.getElementById('l-err').style.display = 'block'; }
   }
