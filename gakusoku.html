@@ -454,6 +454,7 @@
         const appSnap = await getDoc(doc(db, 'applications', docId));
       const appData = appSnap.data();
       await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
         title: '誓約書への同意が完了しました',
         body: '受講誓約書への同意が確認されました。顔写真・本人確認書類の承認が完了次第、受講を開始できます。マイページで状況をご確認ください。',
         target: 'specific',
