@@ -782,11 +782,13 @@
       const snap = await getDoc(doc(db, 'applications', docId));
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       const data = snap.data();
+      window.__appData = data;
+      const appData = data;
       const status = data.status || 'pending';
       renderCourseFlow(data);
 
-      // confirmed状態の時は講座の流れを自動でopen
-      if (status === 'confirmed') {
+      // 受講中になるまでは講座の流れを常にopen
+      if (!isActive) {
         const flowBody = document.getElementById('flow-body');
         const flowArrow = document.getElementById('arrow-flow-body');
         if (flowBody) flowBody.classList.add('open');
@@ -885,30 +887,33 @@
 
       const isConfirmed = ['confirmed','active','completed'].includes(status);
       const isActive = ['active','completed'].includes(status);
+      const isAwaitingPayment = status === 'awaiting_payment';
 
       if (isActive) {
         const todoke = document.getElementById('todoke-section');
         if (todoke) todoke.style.display = 'block';
       }
 
-      if (!isConfirmed) {
-        document.querySelectorAll('.doc-btn').forEach(btn => {
-          if (btn.getAttribute('onclick')?.includes('領収書')) {
-            btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
-            btn.querySelector('.doc-sub').textContent = '受講確定後';
-          }
-        });
-      }
+      document.querySelectorAll('.doc-btn').forEach(btn => {
+        const isReceipt = btn.getAttribute('onclick')?.includes('領収書');
+        if (!isConfirmed) {
+          btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+          btn.querySelector('.doc-sub').textContent = isAwaitingPayment ? '決済完了後' : '受講確定後';
+        } else if (isReceipt && !isActive) {
+          // 領収書は受講中以降のみ
+        }
+      });
 
       // eラーニング進捗取得
       const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
       const progressData = progressSnap.exists() ? progressSnap.data() : {};
-      renderTaskList(isActive, progressData, user.uid);
+      function renderTaskList(isActive, progressData, uid) {
 
       // 動画
       const videoList = document.getElementById('video-list');
       if (!isActive) {
-        videoList.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:24px;margin-bottom:8px;">🔒</div><div style="font-size:13px;color:var(--text-light);">受講開始後に利用できます</div></div>';
+        const lockMsg = isAwaitingPayment ? '決済完了後に利用できます' : '受講開始後に利用できます';
+        videoList.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:24px;margin-bottom:8px;">🔒</div><div style="font-size:13px;color:var(--text-light);">' + lockMsg + '</div></div>';
       } else {
         videoList.innerHTML = videos.map(v => `
           <div class="video-item">
@@ -997,7 +1002,8 @@
   function renderTaskList(isActive, progressData, uid) {
     const taskList = document.getElementById('task-list');
     if (!isActive) {
-      taskList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
+      const msg = status === 'awaiting_payment' ? '🔒 決済完了後に解放されます' : '🔒 受講開始後に解放されます';
+      taskList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">' + msg + '</div>';
       return;
     }
     taskList.innerHTML = LEARNING_THEMES.map(t => {
@@ -1324,7 +1330,32 @@
       itemsHtml +
       '<button class="quiz-result-btn primary" style="margin-top:16px;width:100%;" onclick="window.closeTask()">閉じる</button>';
   }
-
+// awaiting_payment時の再決済
+  window.__retryPayment = async function() {
+    try {
+      const btn = event.target;
+      btn.textContent = '処理中...'; btn.disabled = true;
+      const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          docId: docId,
+          textbook: (window.__appData?.textbook || '').includes('購入') ? 'purchase' : 'none',
+          name: window.__appData?.name || '',
+          email: window.__appData?.email || '',
+          recaptchaToken: '',
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('決済URLの取得に失敗しました');
+      }
+    } catch(e) {
+      alert('エラーが発生しました：' + e.message);
+    }
+  };
   // 講座の流れ
   // 講座の流れ（スタイリッシュ版）
   function renderCourseFlow(data) {
@@ -1382,7 +1413,10 @@
 
     let html = '';
     html += stepHeader('Step 0', '受講確定', 's0');
-    html += item('受講料のお支払い', isConfirmed, !isConfirmed, false);
+    const payBtn = (status === 'awaiting_payment')
+      ? '<button onclick="window.__retryPayment && window.__retryPayment()" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;">💳 クレジット決済へ</button>'
+      : '';
+    html += item('受講料のお支払い', isConfirmed, !isConfirmed, false, payBtn);
     html += '<div class="flow-connector"></div>';
 
     html += stepHeader('Step 1', '受講準備', 's1');
