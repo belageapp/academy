@@ -843,7 +843,7 @@
       document.getElementById('app-phone').textContent = data.phone || '—';
       document.getElementById('app-email').textContent = data.email || '—';
       document.getElementById('app-zip').textContent = data.zip || '—';
-      document.getElementById('app-address').textContent = data.address1 || '—';
+      document.getElementById('app-address').textContent = data.address || data.address1 || '—';
       if (data.address2) {
         document.getElementById('app-address2-row').style.display = '';
         document.getElementById('app-address2').textContent = data.address2;
@@ -890,18 +890,16 @@
         if (flowArrow) flowArrow.classList.add('open');
       }
 
-      if (isActive) {
+      if (isConfirmed) {
         const todoke = document.getElementById('todoke-section');
         if (todoke) todoke.style.display = 'block';
       }
 
       document.querySelectorAll('.doc-btn').forEach(btn => {
         const isReceipt = btn.getAttribute('onclick')?.includes('領収書');
-        if (!isConfirmed) {
+        if (isReceipt && !isConfirmed) {
           btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
           btn.querySelector('.doc-sub').textContent = isAwaitingPayment ? '決済完了後' : '受講確定後';
-        } else if (isReceipt && !isActive) {
-          // 領収書は受講中以降のみ
         }
       });
 
