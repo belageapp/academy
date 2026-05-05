@@ -890,9 +890,14 @@
         if (flowArrow) flowArrow.classList.add('open');
       }
 
-      if (isConfirmed) {
+      if (isConfirmed || isAwaitingPayment) {
         const todoke = document.getElementById('todoke-section');
         if (todoke) todoke.style.display = 'block';
+        if (isAwaitingPayment) {
+          document.querySelectorAll('#todoke-section .action-btn').forEach(btn => {
+            btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+          });
+        }
       }
 
       document.querySelectorAll('.doc-btn').forEach(btn => {
