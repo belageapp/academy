@@ -535,6 +535,30 @@
       document.getElementById('already-agreed').style.display = 'flex';
 
       // 3秒後にマイページに戻る
+      // 顔写真・本人確認が既に承認済みならactiveに自動変更
+      try {
+        const latestSnap = await getDoc(doc(db, 'applications', docId));
+        const latestData = latestSnap.data();
+        const docStatus = latestData.documentStatus || {};
+        const photoOk = docStatus.photo === 'approved';
+        const idOk = docStatus.idDocument === 'approved';
+        if (photoOk && idOk) {
+          await updateDoc(doc(db, 'applications', docId), {
+            status: 'active',
+            activeAt: serverTimestamp()
+          });
+          await addDoc(collection(db, 'notices'), {
+            applicationId: docId,
+            title: '受講開始できます！',
+            body: '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！',
+            target: 'specific',
+            emails: [latestData.email],
+            createdAt: serverTimestamp(),
+            createdBy: 'info@holiscare.or.jp',
+          });
+        }
+      } catch(e) { console.warn('active自動変更失敗:', e); }
+
       setTimeout(() => {
         window.location.href = 'mypage_course_shonin.html?id=' + docId;
       }, 2000);
