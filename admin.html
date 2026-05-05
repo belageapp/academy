@@ -824,6 +824,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       document.getElementById('m-status').value = 'confirmed';
       document.getElementById('bank-confirm-area').style.display = 'none';
       // メール・お知らせ送信
+      alert('メール・お知らせ送信開始');
       const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
       if (appSnap.exists()) {
         const appData = appSnap.data();
