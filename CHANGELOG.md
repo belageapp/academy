@@ -20,16 +20,20 @@
 ### course画面改善
 - 銀行振込pending時にStep0に「🏦 振込情報」ボタンを追加
 - 振込情報モーダル（お振込金額・明細・お振込先）を新設
-- お知らせのアコーディオン開閉をclassベースに修正（display→classList）
+- お知らせのアコーディオン開閉をclassベースに修正
 - お知らせ未読バッジをmarkRead時に即時更新
+- eラーニング・動画教材のロックメッセージを「受講開始後に解放されます」に統一
+- 講座の流れのopen/close制御：
+  - pending・awaiting_payment・confirmed → 自動open
+  - active・completed → デフォルトclose
 
 ### Cloud Functions
-- `onNoticeCreated`関数を削除（不要な「新しいお知らせがあります」メールを廃止）
+- `onNoticeCreated`関数を削除（不要な通知メールを廃止）
 - `sendConfirmationEmailHttp`関数を追加
 
 ### mypage.html
 - パスワードフォームを`<form>`タグで囲みブラウザ警告を解消
-- markReadのnullチェックを追加（notice-dot・notice-unread-bar）
+- markReadのnullチェックを追加
 
 ---
 
@@ -52,7 +56,7 @@
 - 受講内容・ステータスの全項目を表示
 - 講座の流れを受講中まで常にopen
 - Step0に「💳 クレジット決済へ」ボタンを追加
-- eラーニング・動画教材を「決済完了後に利用できます」ロック表示
+- eラーニング・動画教材を「受講開始後に利用できます」ロック表示
 - 書類発行：見積書・請求書はアクティブ、領収書のみ非アクティブ
 - 届出書セクションを表示（提出ボタンは非アクティブ）
 
@@ -169,6 +173,26 @@
 - Cloud Functions初期実装・Stripe決済連携
 
 ---
+
+## ステータス定義
+| 値 | 表示名 | 意味 |
+|---|---|---|
+| `pending` | 入金待ち（振込） | 銀行振込申込後 |
+| `awaiting_payment` | 入金待ち（カード） | クレジットカード申込後・決済前 |
+| `confirmed` | 受講確定 | 入金確認済み |
+| `active` | 受講中 | 受講開始後 |
+| `completed` | 修了 | 全課程修了 |
+| `cancelled` | キャンセル | キャンセル済み |
+
+## course画面のステータス別表示
+| セクション | pending | awaiting_payment | confirmed | active | completed |
+|---|---|---|---|---|---|
+| 講座の流れ | 自動open | 自動open | 自動open | close | close |
+| eラーニング | ロック | ロック | ロック | 解放 | 解放 |
+| 動画教材 | ロック | ロック | ロック | 解放 | 解放 |
+| 書類発行（見積・請求） | 非アクティブ | 非アクティブ | アクティブ | アクティブ | アクティブ |
+| 書類発行（領収書） | 非アクティブ | 非アクティブ | 非アクティブ | アクティブ | アクティブ |
+| 届出書 | 非表示 | 表示（ボタン無効） | 表示 | 表示 | 表示 |
 
 ## 技術スタック
 - **フロントエンド：** HTML / CSS / JavaScript（GitHub Pages）
