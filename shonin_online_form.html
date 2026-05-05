@@ -688,9 +688,12 @@
         ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
       </p>
       <div style="background:var(--teal-pale);border-radius:12px;padding:14px 18px;margin:16px 0;font-size:13px;color:var(--teal-dark);line-height:1.8;text-align:left;">
-        💳 クレジット決済がお済みでない場合は、マイページの「講座の流れ」から決済できます。
+        💳 続けてクレジット決済を行うことができます。後から決済する場合はマイページの「講座の流れ」から行えます。
       </div>
-      <a href="mypage_login.html" style="display:inline-block;margin-top:8px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;padding:12px 32px;border-radius:25px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(43,188,212,0.3);">マイページへ →</a>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+        <button onclick="window.__goStripeFromComplete()" style="width:100%;padding:14px;border:none;border-radius:25px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;box-shadow:0 4px 12px rgba(43,188,212,0.3);">💳 クレジット決済へ進む</button>
+        <a href="mypage_login.html" style="display:block;text-align:center;padding:12px;border:1.5px solid var(--border);border-radius:25px;font-size:14px;color:var(--text-mid);text-decoration:none;">後で決済する（マイページへ）</a>
+      </div>
     </div>
   </div>
 
@@ -1073,51 +1076,16 @@ const payment = window.__formVals.payment;
         // 少し待ってからStripe決済へ
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // カスタムモーダルを表示
-        const modal = document.getElementById('credit-complete-modal');
-        modal.style.display = 'flex';
-        btn.textContent = '申し込みを確定する →';
-        btn.disabled = false;
-
-        window.__creditModalClose = function() {
-          modal.style.display = 'none';
-          document.getElementById('confirm-screen').classList.remove('active');
-          document.getElementById('complete-screen-credit').style.display = 'block';
-          document.getElementById('s2').classList.replace('active', 'done');
-          document.getElementById('line2').classList.add('done');
-          document.getElementById('s3').classList.add('active');
-          if (window.__clearFormDraft) window.__clearFormDraft();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.__creditModalPay = async function() {
-          modal.style.display = 'none';
-          btn.textContent = '決済ページへ移動中...';
-          btn.disabled = true;
-          try {
-            const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                docId: docId,
-                textbook: (window.__formVals.textbook || '').includes('購入') ? 'purchase' : 'none',
-                name: window.__formVals.name,
-                email: window.__formVals.email,
-                recaptchaToken: await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}),
-              })
-            });
-            const data = await res.json();
-            if (data.url) {
-              window.location.href = data.url;
-            } else {
-              throw new Error('決済URLの取得に失敗しました');
-            }
-          } catch(e) {
-            alert('エラーが発生しました：' + e.message);
-            btn.textContent = '申し込みを確定する →';
-            btn.disabled = false;
-          }
-        };
+        // 完了画面（クレジット版）に遷移
+        window.__creditDocId = docId;
+        window.__creditFormVals = window.__formVals;
+        document.getElementById('confirm-screen').classList.remove('active');
+        document.getElementById('complete-screen-credit').style.display = 'block';
+        document.getElementById('s2').classList.replace('active', 'done');
+        document.getElementById('line2').classList.add('done');
+        document.getElementById('s3').classList.add('active');
+        if (window.__clearFormDraft) window.__clearFormDraft();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // 銀行振込の場合はFirestoreに保存
         const ref = await window.__addDoc(
@@ -1139,6 +1107,32 @@ const payment = window.__formVals.payment;
       btn.disabled = false; btn.textContent = '申し込みを確定する ✓';
     }
   }
+  window.__goStripeFromComplete = async function() {
+    const btn = document.querySelector('#complete-screen-credit button');
+    if (btn) { btn.textContent = '決済ページへ移動中...'; btn.disabled = true; }
+    try {
+      const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          docId: window.__creditDocId,
+          textbook: (window.__creditFormVals?.textbook || '').includes('購入') ? 'purchase' : 'none',
+          name: window.__creditFormVals?.name || '',
+          email: window.__creditFormVals?.email || '',
+          recaptchaToken: await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}),
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error('決済URLの取得に失敗しました');
+      }
+    } catch(e) {
+      alert('エラーが発生しました：' + e.message);
+      if (btn) { btn.textContent = '💳 クレジット決済へ進む'; btn.disabled = false; }
+    }
+  };
   window.finalSubmit = finalSubmit;
 // ===== 入力内容の自動保存・復元 =====
   const SAVE_KEY = 'shonin_form_draft';
