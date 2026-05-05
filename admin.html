@@ -779,7 +779,9 @@ document.getElementById('m-status').value = a.status || 'pending';
       if (idx>-1) all[idx].status = ns;
       // confirmedに変更した時はメール・お知らせを送信
       if (ns === 'confirmed') {
+        console.log('confirmed処理開始 curId:', curId);
         const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
+        console.log('appSnap exists:', appSnap.exists());
         if (appSnap.exists()) {
           const appData = appSnap.data();
           try {
