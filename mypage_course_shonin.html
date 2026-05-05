@@ -928,8 +928,9 @@
       const videoList = document.getElementById('video-list');
       if (!isActive) {
         const _status = window.__appData?.status || '';
-        const lockMsg = '受講開始後に利用できます';
-        videoList.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:24px;margin-bottom:8px;">🔒</div><div style="font-size:13px;color:var(--text-light);">' + lockMsg + '</div></div>';
+        const lockMsg = '受講開始後に解放されます';
+        videoList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
+        document.getElementById('edulio-section').innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
       } else {
         videoList.innerHTML = videos.map(v => `
           <div class="video-item">
