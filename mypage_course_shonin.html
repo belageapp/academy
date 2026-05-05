@@ -1349,7 +1349,7 @@
           textbook: (window.__appData?.textbook || '').includes('購入') ? 'purchase' : 'none',
           name: window.__appData?.name || '',
           email: window.__appData?.email || '',
-          recaptchaToken: '',
+          recaptchaToken: typeof grecaptcha !== 'undefined' ? await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}) : '',
         })
       });
       const data = await res.json();
