@@ -774,7 +774,7 @@ document.getElementById('m-status').value = a.status || 'pending';
 
     try {
       const updateData = { status: ns };
-      if (ns === '完了') updateData.completedAt = window.__serverTimestamp();
+      if (ns === '完了') updateData.completedAt = window.__serverTs();
       await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
@@ -893,14 +893,15 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('section-notices').style.display      = section === 'notices'      ? 'block' : 'none';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
+    if (section === 'applications') loadData();
+    if (section === 'notices') loadNotices();
     document.getElementById('topbar-title').textContent = 
       section === 'applications' ? '📋 申し込み管理' : 
       section === 'notices' ? '📢 お知らせ管理' : 
       section === 'documents' ? '🪪 書類確認' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
-    if (section === 'notices') loadNotices();
-  }
+    }
   window.showSection = showSection;
 
   // 特定受講生トグル

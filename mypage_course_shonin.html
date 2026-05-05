@@ -900,7 +900,7 @@
         if (flowArrow) flowArrow.classList.add('open');
       }
 
-      if (isConfirmed || isAwaitingPayment) {
+      if (isConfirmed || isAwaitingPayment || status === 'pending') {
         const todoke = document.getElementById('todoke-section');
         if (todoke) todoke.style.display = 'block';
         if (isAwaitingPayment) {
