@@ -1043,29 +1043,48 @@ const payment = window.__formVals.payment;
       let docId;
 
       if (payment === 'クレジットカード') {
-        // クレジットカードの場合はFirestoreに仮保存（アカウント未作成）
+        // 案２：まずFirestoreに保存してアカウント作成・メール送信、その後Stripe決済へ
         const ref = await window.__addDoc(
           window.__col(window.__db, 'applications'),
           Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'awaiting_payment', createdAt: window.__ts() })
         );
         docId = ref.id;
-        btn.textContent = '決済ページへ移動中...';
-        const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-          docId: docId,
-          textbook: (window.__formVals.textbook || '').includes('購入') ? 'purchase' : 'none',
-          name: window.__formVals.name,
-          email: window.__formVals.email,
-          recaptchaToken: await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}),
-        })
-        });
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+
+        // アカウント作成・ログイン情報メール送信を待つ（onApplicationCreatedが発火）
+        // 少し待ってからStripe決済へ
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 完了ダイアログを表示
+        const goStripe = confirm('申し込みが完了しました！\n\nログイン情報をメールでお送りしました。\n\n続けてクレジット決済を行います。\n「OK」を押すと決済画面に移動します。\n「キャンセル」を押すと後から決済できます。');
+
+        if (goStripe) {
+          btn.textContent = '決済ページへ移動中...';
+          const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              docId: docId,
+              textbook: (window.__formVals.textbook || '').includes('購入') ? 'purchase' : 'none',
+              name: window.__formVals.name,
+              email: window.__formVals.email,
+              recaptchaToken: await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}),
+            })
+          });
+          const data = await res.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            throw new Error('決済URLの取得に失敗しました');
+          }
         } else {
-          throw new Error('決済URLの取得に失敗しました');
+          // キャンセルの場合は完了画面を表示
+          document.getElementById('confirm-screen').classList.remove('active');
+          document.getElementById('complete-screen').classList.add('active');
+          document.getElementById('s2').classList.replace('active', 'done');
+          document.getElementById('line2').classList.add('done');
+          document.getElementById('s3').classList.add('active');
+          if (window.__clearFormDraft) window.__clearFormDraft();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       } else {
         // 銀行振込の場合はFirestoreに保存
