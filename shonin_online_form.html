@@ -488,9 +488,9 @@
                 <div style="display:flex; justify-content:center; gap:0; height:180px; overflow:hidden; position:relative;">
                   <!-- 選択中ハイライト -->
                   <div style="position:absolute; top:50%; left:0; right:0; height:40px; transform:translateY(-50%); background:rgba(43,188,212,0.15); border-top:2px solid var(--teal); border-bottom:2px solid var(--teal); pointer-events:none; z-index:1;"></div>
-                  <div id="bdp-year" class="bdp-col" style="flex:1.6; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
-                  <div id="bdp-month" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
-                  <div id="bdp-day" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
+                  <div id="bdp-year" class="bdp-col" style="flex:1.6; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; text-align:center;"></div>
+                  <div id="bdp-month" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; text-align:center;"></div>
+                  <div id="bdp-day" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; text-align:center;"></div>
                 </div>
                 <!-- ボタン行 -->
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px 20px;">
@@ -772,9 +772,9 @@
   }
   function buildCol(id, items, selected) {
     const el = document.getElementById(id);
-    el.innerHTML = '<div class="bdp-item pad"></div><div class="bdp-item pad"></div>' +
+    el.innerHTML = '<div class="bdp-item pad"></div><div class="bdp-item pad"></div><div class="bdp-item pad"></div>' +
       items.map(it => `<div class="bdp-item" data-v="${it.v}">${it.l}</div>`).join('') +
-      '<div class="bdp-item pad"></div><div class="bdp-item pad"></div>';
+      '<div class="bdp-item pad"></div><div class="bdp-item pad"></div><div class="bdp-item pad"></div>';
     const idx = items.findIndex(it => it.v === selected);
     el.scrollTop = (idx < 0 ? 0 : idx) * 40;
   }
