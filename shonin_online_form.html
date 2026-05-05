@@ -664,7 +664,7 @@
     </div>
   </div>
 
-  <!-- ===== 完了画面 ===== -->
+  <!-- ===== 完了画面（銀行振込） ===== -->
   <div id="complete-screen">
     <div class="complete-box">
       <div class="complete-icon" style="color: white; font-weight: 900; font-size: 44px;">✓</div>
@@ -674,7 +674,23 @@
         メールが届かない場合は迷惑メールフォルダをご確認ください。<br><br>
         ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
       </p>
-      
+    </div>
+  </div>
+
+  <!-- ===== 完了画面（クレジット） ===== -->
+  <div id="complete-screen-credit" style="display:none;">
+    <div class="complete-box">
+      <div class="complete-icon" style="color: white; font-weight: 900; font-size: 44px;">✓</div>
+      <h2>お申し込みが完了しました！</h2>
+      <p>
+        ログイン情報をご登録のメールアドレスにお送りしました。<br>
+        マイページからいつでも受講状況をご確認いただけます。<br><br>
+        ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。
+      </p>
+      <div style="background:var(--teal-pale);border-radius:12px;padding:14px 18px;margin:16px 0;font-size:13px;color:var(--teal-dark);line-height:1.8;text-align:left;">
+        💳 クレジット決済がお済みでない場合は、マイページの「講座の流れ」から決済できます。
+      </div>
+      <a href="mypage_login.html" style="display:inline-block;margin-top:8px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;padding:12px 32px;border-radius:25px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(43,188,212,0.3);">マイページへ →</a>
     </div>
   </div>
 
@@ -1066,7 +1082,7 @@ const payment = window.__formVals.payment;
         window.__creditModalClose = function() {
           modal.style.display = 'none';
           document.getElementById('confirm-screen').classList.remove('active');
-          document.getElementById('complete-screen').classList.add('active');
+          document.getElementById('complete-screen-credit').style.display = 'block';
           document.getElementById('s2').classList.replace('active', 'done');
           document.getElementById('line2').classList.add('done');
           document.getElementById('s3').classList.add('active');
