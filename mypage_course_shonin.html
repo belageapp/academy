@@ -1422,9 +1422,20 @@
 
     let html = '';
     html += stepHeader('Step 0', '受講確定', 's0');
+    const isBankPending = status === 'pending' && (window.__appData?.payment === '銀行振込' || window.__appData?.payment === '銀行振り込み');
+    if (isBankPending) {
+      const textbook = window.__appData?.textbook || '';
+      const hasTextbook = textbook === 'purchase' || textbook === '購入（6,600円）';
+      const amount = hasTextbook ? '39,600円（税込）' : '33,000円（税込）';
+      const detail = hasTextbook ? '受講料33,000円＋テキスト代6,600円' : '受講料33,000円';
+      document.getElementById('bank-modal-amount').textContent = amount;
+      document.getElementById('bank-modal-detail').textContent = detail;
+    }
     const payBtn = (status === 'awaiting_payment')
       ? '<button onclick="window.__retryPayment && window.__retryPayment()" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;">💳 クレジット決済へ</button>'
-      : '';
+      : isBankPending
+        ? '<button onclick="document.getElementById(\'bank-modal\').style.display=\'flex\'" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;background:linear-gradient(135deg,#F5A623,#E8823A);">🏦 振込情報</button>'
+        : '';
     html += item('受講料のお支払い', isConfirmed, !isConfirmed, false, payBtn);
     html += '<div class="flow-connector"></div>';
 
@@ -1642,5 +1653,28 @@
     if (arrow) arrow.classList.toggle('open', !isOpen);
   };
 </script>
+<!-- 銀行振込情報モーダル -->
+<div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;width:90%;max-width:400px;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+    <div style="background:linear-gradient(135deg,#F5A623,#E8823A);padding:20px 24px 16px;">
+      <div style="color:white;font-size:16px;font-weight:700;">🏦 銀行振込のご案内</div>
+    </div>
+    <div style="padding:20px 24px;">
+      <div style="background:#FFF8E1;border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:11px;color:#92400E;margin-bottom:4px;">お振込金額</div>
+        <div id="bank-modal-amount" style="font-size:22px;font-weight:700;color:#E65100;"></div>
+        <div id="bank-modal-detail" style="font-size:11px;color:#92400E;margin-top:4px;"></div>
+      </div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:8px 4px;color:#888;width:100px;">金融機関</td><td style="padding:8px 4px;color:#333;">広島銀行</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:8px 4px;color:#888;">支店</td><td style="padding:8px 4px;color:#333;">矢野支店</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:8px 4px;color:#888;">口座番号</td><td style="padding:8px 4px;color:#333;font-weight:700;">3285702</td></tr>
+        <tr><td style="padding:8px 4px;color:#888;">口座名義</td><td style="padding:8px 4px;color:#333;font-weight:700;">トクヒ）ソーシャルケアグッド</td></tr>
+      </table>
+      <p style="font-size:11px;color:#aaa;margin-top:12px;line-height:1.7;">※お振込の際はお名前をフルネームでご入力ください。<br>※振込手数料はご負担をお願いいたします。<br>※入金確認後、受講確定メールをお送りします。</p>
+      <button onclick="document.getElementById('bank-modal').style.display='none'" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">閉じる</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

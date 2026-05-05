@@ -636,7 +636,10 @@ await window.__updatePassword(window.__auth.currentUser, pw1);
     }
     if (el) {
       el.classList.remove('unread');
-      el.querySelector('.notice-dot').style.background = 'var(--border)';
+      const dot = el.querySelector('.notice-dot');
+      if (dot) dot.style.background = 'var(--border)';
+      const bar = el.querySelector('.notice-unread-bar');
+      if (bar) bar.style.background = 'transparent';
     }
     const badge = document.getElementById('unread-count');
     if (badge && parseInt(badge.textContent) > 0) {
