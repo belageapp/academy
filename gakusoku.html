@@ -518,6 +518,7 @@
       }
 
       // メール送信
+      console.log('メール送信開始');
       try {
         const appSnap2 = await getDoc(doc(db, 'applications', docId));
         const appData2 = appSnap2.data();
