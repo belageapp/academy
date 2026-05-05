@@ -785,6 +785,10 @@
       window.__appData = data;
       const appData = data;
       const status = data.status || 'pending';
+      const isConfirmed = ['confirmed','active','completed'].includes(status);
+      const isActive = ['active','completed'].includes(status);
+      const isAwaitingPayment = status === 'awaiting_payment';
+
       // 受講中かつeラーニング未完了 → eラーニングを自動でopen
       if (isActive && !data.taskAllDone) {
         const elearnBody = document.getElementById('elearn-body');
@@ -875,10 +879,6 @@
         document.getElementById('app-temp-limit').innerHTML = '<span style="color:' + tempColor + ';">' + tempLimit.toLocaleDateString('ja-JP') + '（残 ' + tempDays + '日）</span>';
         document.getElementById('app-full-limit').innerHTML = '<span style="color:' + fullColor + ';">' + fullLimit.toLocaleDateString('ja-JP') + '（残 ' + fullDays + '日）</span>';
       }
-
-      const isConfirmed = ['confirmed','active','completed'].includes(status);
-      const isActive = ['active','completed'].includes(status);
-      const isAwaitingPayment = status === 'awaiting_payment';
 
       renderCourseFlow(data);
 
