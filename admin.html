@@ -777,6 +777,31 @@ document.getElementById('m-status').value = a.status || 'pending';
       await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
+      // confirmedに変更した時はメール・お知らせを送信
+      if (ns === 'confirmed') {
+        const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
+        if (appSnap.exists()) {
+          const appData = appSnap.data();
+          try {
+            await window.__addDoc(window.__col(window.__db, 'notices'), {
+              applicationId: curId,
+              title: 'お支払いが確認されました。受講が確定しました！',
+              body: `${appData.name} 様のお支払いが確認されました。マイページから受講の準備を進めてください。`,
+              target: 'specific',
+              emails: [appData.email],
+              createdAt: window.__serverTs(),
+              createdBy: 'info@holiscare.or.jp',
+            });
+          } catch(e) { console.warn('お知らせ送信失敗:', e); }
+          try {
+            await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendConfirmationEmailHttp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ docId: curId, name: appData.name, email: appData.email })
+            });
+          } catch(e) { console.warn('メール送信失敗:', e); }
+        }
+      }
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments(); closeModal();
     } catch(e) { alert('更新に失敗しました：'+e.message); }
@@ -795,6 +820,29 @@ document.getElementById('m-status').value = a.status || 'pending';
       if (idx > -1) all[idx].status = 'confirmed';
       document.getElementById('m-status').value = 'confirmed';
       document.getElementById('bank-confirm-area').style.display = 'none';
+      // メール・お知らせ送信
+      const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
+      if (appSnap.exists()) {
+        const appData = appSnap.data();
+        try {
+          await window.__addDoc(window.__col(window.__db, 'notices'), {
+            applicationId: curId,
+            title: 'お支払いが確認されました。受講が確定しました！',
+            body: `${appData.name} 様のお振込が確認されました。マイページから受講の準備を進めてください。`,
+            target: 'specific',
+            emails: [appData.email],
+            createdAt: window.__serverTs(),
+            createdBy: 'info@holiscare.or.jp',
+          });
+        } catch(e) { console.warn('お知らせ送信失敗:', e); }
+        try {
+          await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendConfirmationEmailHttp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ docId: curId, name: appData.name, email: appData.email })
+          });
+        } catch(e) { console.warn('メール送信失敗:', e); }
+      }
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
       alert('受講確定にしました！');
