@@ -778,6 +778,25 @@ document.getElementById('m-status').value = a.status || 'pending';
       await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
+      // activeに変更した時はedulio IDを自動発行
+      if (ns === 'active') {
+        try {
+          const counterRef = window.__doc(window.__db, 'counters', 'edulio');
+          const counterSnap = await window.__getDoc(counterRef);
+          const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
+          const newNum = currentNum + 1;
+          const edulioId = 'hca' + String(newNum).padStart(3, '0');
+          const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+          let edulioPassword = '';
+          for (let i = 0; i < 8; i++) edulioPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+          await window.__updateDoc(counterRef, { count: newNum });
+          await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
+            edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
+          });
+          console.log('edulio ID発行:', edulioId);
+        } catch(e) { console.warn('edulio ID発行失敗:', e); }
+      }
+
       // confirmedに変更した時はメール・お知らせを送信
       if (ns === 'confirmed') {
         console.log('confirmed処理開始 curId:', curId);
