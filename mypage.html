@@ -310,11 +310,11 @@
       <span class="toggle-arrow" id="arrow-pw-body">›</span>
     </button>
     <div class="toggle-body" id="pw-body">
-      <div class="pw-form">
-        <input type="password" id="new-pw" placeholder="新しいパスワード（8文字以上）">
-        <input type="password" id="new-pw2" placeholder="新しいパスワード（確認）">
-        <button class="pw-submit" onclick="changePassword()">パスワードを変更する</button>
-      </div>
+      <form class="pw-form" onsubmit="changePassword();return false;">
+        <input type="password" id="new-pw" placeholder="新しいパスワード（8文字以上）" autocomplete="new-password">
+        <input type="password" id="new-pw2" placeholder="新しいパスワード（確認）" autocomplete="new-password">
+        <button type="submit" class="pw-submit">パスワードを変更する</button>
+      </form>
       <div id="pw-msg" style="font-size:13px; margin-top:10px; display:none;"></div>
     </div>
   </div>
