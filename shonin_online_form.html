@@ -1080,6 +1080,7 @@ const payment = window.__formVals.payment;
         document.getElementById('s2').classList.replace('active', 'done');
         document.getElementById('line2').classList.add('done');
         document.getElementById('s3').classList.add('active');
+        if (window.__clearFormDraft) window.__clearFormDraft();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
@@ -1088,6 +1089,75 @@ const payment = window.__formVals.payment;
     }
   }
   window.finalSubmit = finalSubmit;
+// ===== 入力内容の自動保存・復元 =====
+  const SAVE_KEY = 'shonin_form_draft';
+  const SAVE_FIELDS = ['payment','sei','mei','sei_kana','mei_kana','phone','email','zip','address1','address2','workplace','message'];
+
+  function saveFormDraft() {
+    const draft = {};
+    SAVE_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) draft[id] = el.value;
+    });
+    // ラジオボタン
+    const gender = document.querySelector('[name="gender"]:checked');
+    if (gender) draft.gender = gender.value;
+    const textbook = document.querySelector('[name="textbook"]:checked');
+    if (textbook) draft.textbook = textbook.value;
+    const altAddr = document.querySelector('[name="alt_addr"]:checked');
+    if (altAddr) draft.alt_addr = altAddr.value;
+    // 生年月日
+    const bd = document.getElementById('birthdate');
+    if (bd) draft.birthdate = bd.value;
+    localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
+  }
+
+  function restoreFormDraft() {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) return;
+    try {
+      const draft = JSON.parse(saved);
+      SAVE_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && draft[id]) el.value = draft[id];
+      });
+      // ラジオボタン復元
+      if (draft.gender) {
+        const r = document.querySelector('[name="gender"][value="' + draft.gender + '"]');
+        if (r) r.checked = true;
+      }
+      if (draft.textbook) {
+        const r = document.querySelector('[name="textbook"][value="' + draft.textbook + '"]');
+        if (r) r.checked = true;
+      }
+      if (draft.alt_addr) {
+        const r = document.querySelector('[name="alt_addr"][value="' + draft.alt_addr + '"]');
+        if (r) { r.checked = true; toggleAltAddr(); }
+      }
+      // 生年月日復元
+      if (draft.birthdate) {
+        document.getElementById('birthdate').value = draft.birthdate;
+        document.getElementById('bd-display').textContent = draft.birthdate;
+      }
+    } catch(e) {}
+  }
+
+  // 各フィールドの変更を監視して自動保存
+  SAVE_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saveFormDraft);
+  });
+  document.querySelectorAll('[name="gender"],[name="textbook"],[name="alt_addr"],[name="payment"]').forEach(el => {
+    el.addEventListener('change', saveFormDraft);
+  });
+
+  // 送信完了後にドラフトを削除
+  window.__clearFormDraft = function() {
+    localStorage.removeItem(SAVE_KEY);
+  };
+
+  // ページ読み込み時に復元
+  restoreFormDraft();
 </script>
 
 </body>
