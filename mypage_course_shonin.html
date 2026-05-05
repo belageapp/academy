@@ -907,7 +907,8 @@
       // eラーニング進捗取得
       const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
       const progressData = progressSnap.exists() ? progressSnap.data() : {};
-      function renderTaskList(isActive, progressData, uid) {
+
+      renderTaskList(isActive, progressData, user.uid, status);
 
       // 動画
       const videoList = document.getElementById('video-list');
@@ -1000,7 +1001,7 @@
   });
 
   // ===== eラーニング リスト描画 =====
-  function renderTaskList(isActive, progressData, uid) {
+  function renderTaskList(isActive, progressData, uid, status) {
     const taskList = document.getElementById('task-list');
     if (!isActive) {
       const msg = (window.__appData?.status || status) === 'awaiting_payment' ? '🔒 決済完了後に解放されます' : '🔒 受講開始後に解放されます';
