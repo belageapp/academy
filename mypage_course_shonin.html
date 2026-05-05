@@ -1628,9 +1628,9 @@
     const body = document.getElementById('nb-' + id);
     const arrow = document.getElementById('na-' + id);
     if (!body) return;
-    const open = body.style.display !== 'none';
-    body.style.display = open ? 'none' : 'block';
-    if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
+    const open = body.classList.contains('open');
+    body.classList.toggle('open', !open);
+    if (arrow) arrow.classList.toggle('open', !open);
   };
   // トグル開閉
   window.toggleSection = function(id) {
