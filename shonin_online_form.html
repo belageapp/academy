@@ -477,25 +477,25 @@
             </div>
             <input type="hidden" name="birthdate" id="birthdate">
             <!-- ピッカーモーダル -->
-<div id="bdpicker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-              <div style="background:#fff; width:90%; max-width:400px; border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+<div id="bdpicker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:1000; align-items:flex-end; justify-content:center; backdrop-filter:blur(2px);">
+              <div style="background:#fff; width:100%; max-width:480px; border-radius:24px 24px 0 0; overflow:hidden; box-shadow:0 -4px 30px rgba(0,0,0,0.12); padding-bottom:env(safe-area-inset-bottom);">
                 <!-- ヘッダー -->
-                <div style="background:linear-gradient(135deg, #2BBCD4, #1A9AB0); padding:20px 24px 16px;">
-                  <p style="color:rgba(255,255,255,0.8); font-size:12px; margin:0 0 4px; letter-spacing:1px;">生年月日</p>
-                  <p style="color:white; font-size:20px; font-weight:700; margin:0;" id="bdpicker-preview">生年月日を選択</p>
-                </div>
-                <!-- ボタン行 -->
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px 4px;">
-                  <button type="button" onclick="closeBdPicker(false)" style="background:none; border:none; font-size:14px; color:#aaa; cursor:pointer; padding:4px 8px;">キャンセル</button>
-                  <button type="button" onclick="closeBdPicker(true)" style="background:var(--teal); border:none; font-size:14px; color:white; font-weight:600; cursor:pointer; padding:8px 20px; border-radius:20px;">決定</button>
+                <div style="padding:20px 24px 12px; border-bottom:1px solid #f0f0f0;">
+                  <p style="color:var(--text-light); font-size:11px; margin:0 0 4px; letter-spacing:0.08em; text-transform:uppercase;">生年月日</p>
+                  <p style="color:var(--text); font-size:18px; font-weight:700; margin:0;" id="bdpicker-preview">生年月日を選択</p>
                 </div>
                 <!-- ピッカー本体 -->
-<div style="display:flex; justify-content:center; gap:0; height:200px; overflow:hidden; position:relative;">
+                <div style="display:flex; justify-content:center; gap:0; height:180px; overflow:hidden; position:relative; padding:0 16px;">
                   <!-- 選択中ハイライト -->
-                  <div style="position:absolute; top:50%; left:0; right:0; height:40px; transform:translateY(-50%); background:rgba(43,188,212,0.1); border-top:2px solid var(--teal); border-bottom:2px solid var(--teal); pointer-events:none; z-index:1;"></div>
-                  <div id="bdp-year" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
+                  <div style="position:absolute; top:50%; left:16px; right:16px; height:40px; transform:translateY(-50%); background:var(--teal-pale); border-radius:10px; pointer-events:none; z-index:1;"></div>
+                  <div id="bdp-year" class="bdp-col" style="flex:1.4; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
                   <div id="bdp-month" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
                   <div id="bdp-day" class="bdp-col" style="flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
+                </div>
+                <!-- ボタン行 -->
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px 20px;">
+                  <button type="button" onclick="closeBdPicker(false)" style="background:none; border:1.5px solid var(--border); font-size:14px; color:var(--text-mid); cursor:pointer; padding:10px 24px; border-radius:20px; font-family:'Noto Sans JP',sans-serif;">キャンセル</button>
+                  <button type="button" onclick="closeBdPicker(true)" style="background:linear-gradient(135deg,var(--teal),var(--teal-dark)); border:none; font-size:14px; color:white; font-weight:700; cursor:pointer; padding:10px 28px; border-radius:20px; font-family:'Noto Sans JP',sans-serif; box-shadow:0 4px 12px rgba(43,188,212,0.3);">決定</button>
                 </div>
               </div>
             </div>
@@ -815,7 +815,9 @@ function updateBdPreview() {
       const d = getColVal('bdp-day');
       if (y && m && d) {
         document.getElementById('birthdate').value = `${y}年${m}月${d}日`;
-        const disp = document.getElementById('bdpicker-display');
+        // 生年月日を自動保存
+    if (typeof saveFormDraft === 'function') saveFormDraft();
+    const disp = document.getElementById('bdpicker-display');
 disp.textContent = `${y}年${m}月${d}日`;
         disp.style.color = '#333';
         disp.style.borderColor = '#ccc';
