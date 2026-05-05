@@ -938,6 +938,35 @@
             <div style="flex:1;"><div class="video-title">${v.title}</div><div class="video-duration">${v.duration}</div></div>
             <button class="action-btn" onclick="alert('動画URLは管理者が設定します')">視聴する</button>
           </div>`).join('');
+
+        // edulio表示
+        const edulioSection = document.getElementById('edulio-section');
+        const edulioId = data.edulioId || '';
+        const edulioPw = data.edulioPassword || '';
+        if (!edulioId) {
+          edulioSection.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">📋 ログイン情報は管理者から発行されます</div>';
+        } else {
+          edulioSection.innerHTML = `
+            <div style="background:var(--teal-pale);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+              <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">以下のID・パスワードでedulioにログインして動画を視聴してください。</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">ログインID</span>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioId}</span>
+                <button onclick="navigator.clipboard.writeText('${edulioId}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">パスワード</span>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioPw}</span>
+                <button onclick="navigator.clipboard.writeText('${edulioPw}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <a href="https://tlp.edulio.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 edulioで視聴する →</a>
+              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);" ${data.externalVideoDone ? 'disabled' : ''}>
+                ${data.externalVideoDone ? '✅ 視聴完了済み' : '✅ 視聴完了を報告する'}
+              </button>
+            </div>`;
+        }
       }
 
     } catch(e) { console.error(e); }

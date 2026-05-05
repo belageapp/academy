@@ -517,6 +517,19 @@
         console.warn('お知らせ送信失敗（同意は記録済み）:', noticeError);
       }
 
+      // メール送信
+      try {
+        const appSnap2 = await getDoc(doc(db, 'applications', docId));
+        const appData2 = appSnap2.data();
+        await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendPledgeSignedMail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ docId, name: appData2.name, email: appData2.email })
+        });
+      } catch(mailError) {
+        console.warn('メール送信失敗:', mailError);
+      }
+
       btn.textContent = '同意完了 ✅';
       btn.classList.add('done');
       document.getElementById('already-agreed').style.display = 'flex';
