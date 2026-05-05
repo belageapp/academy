@@ -940,7 +940,7 @@
       const email = user.email;
       const notices = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         .filter(n => {
-          const appCreatedAt = data.createdAt?.toMillis?.() || 0;
+          const appCreatedAt = (window.__appData?.createdAt || data?.createdAt)?.toMillis?.() || 0;
           const noticeCreatedAt = n.createdAt?.toMillis?.() || 0;
           if (n.target === 'all') return noticeCreatedAt >= appCreatedAt;
           if (n.target === 'specific') return n.emails?.includes(email);
