@@ -1125,6 +1125,7 @@ const payment = window.__formVals.payment;
       const data = await res.json();
       if (data.url) {
         window.open(data.url, '_blank');
+        if (btn) { btn.textContent = '💳 クレジット決済へ進む'; btn.disabled = false; }
       } else {
         throw new Error('決済URLの取得に失敗しました');
       }

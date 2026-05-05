@@ -1355,6 +1355,9 @@
       const data = await res.json();
       if (data.url) {
         window.open(data.url, '_blank');
+        // 別ウィンドウで開いた後はボタンを元に戻す
+        const retryBtn = document.querySelector('[onclick*="__retryPayment"]');
+        if (retryBtn) { retryBtn.textContent = '💳 クレジット決済へ'; retryBtn.disabled = false; }
       } else {
         throw new Error('決済URLの取得に失敗しました');
       }
