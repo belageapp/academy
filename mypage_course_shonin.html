@@ -1000,6 +1000,7 @@
         renderNotices();
       }
     } catch(e) {
+      console.error('お知らせ取得エラー:', e);
       noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
     }
   });
