@@ -771,6 +771,7 @@ document.getElementById('m-status').value = a.status || 'pending';
   async function saveStatus() {
     if (!curId) return;
     const ns = document.getElementById('m-status').value;
+    console.log('saveStatus ns:', ns);
     try {
       const updateData = { status: ns };
       if (ns === '完了') updateData.completedAt = window.__serverTimestamp();
