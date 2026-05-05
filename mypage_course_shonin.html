@@ -585,8 +585,19 @@
       <span class="toggle-arrow" id="arrow-video-body">›</span>
     </button>
     <div class="toggle-body" id="video-body">
-      <div id="video-list" style="margin-top:4px;">
-        <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+      <!-- 自社動画 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">📹 自社動画教材</div>
+        <div id="video-list" style="margin-top:4px;">
+          <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+        </div>
+      </div>
+      <!-- 外部動画（edulio） -->
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🎬 外部動画教材（edulio）</div>
+        <div id="edulio-section">
+          <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1337,6 +1348,33 @@
       '<button class="quiz-result-btn primary" style="margin-top:16px;width:100%;" onclick="window.closeTask()">閉じる</button>';
   }
 // awaiting_payment時の再決済
+// edulio視聴完了報告
+  window.__reportEdulioComplete = async function() {
+    if (!confirm('edulioの動画を全て視聴しましたか？')) return;
+    try {
+      const { getFirestore, doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      await updateDoc(doc(db, 'applications', docId), {
+        externalVideoDone: true,
+        externalVideoDoneAt: serverTimestamp()
+      });
+      document.getElementById('edulio-complete-btn').textContent = '✅ 視聴完了済み';
+      document.getElementById('edulio-complete-btn').disabled = true;
+      document.getElementById('edulio-complete-btn').style.opacity = '0.5';
+      // お知らせ送信
+      await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
+        title: '外部動画教材の視聴完了が報告されました',
+        body: '受講生がedulioの動画視聴完了を報告しました。管理者にて確認をお願いします。',
+        target: 'all',
+        createdAt: serverTimestamp(),
+        createdBy: 'system',
+      });
+      alert('視聴完了を報告しました！');
+    } catch(e) {
+      alert('エラーが発生しました：' + e.message);
+    }
+  };
   window.__retryPayment = async function() {
     try {
       const btn = event.target;
