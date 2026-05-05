@@ -420,7 +420,7 @@
             </div>
             <select class="fsel" id="sf" onchange="doFilter()">
               <option value="">すべてのステータス</option>
-              <option value="pending">入金待ち</option>
+              <option value="pending">入金待ち（振込）</option>
               <option value="confirmed">受講確定</option>
               <option value="active">受講中</option>
               <option value="completed">修了</option>
@@ -488,7 +488,7 @@
               <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                 <select id="n-status-filter" onchange="filterStudentCheckboxes()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;">
                   <option value="">すべてのステータス</option>
-                  <option value="pending">入金待ち</option>
+                  <option value="pending">入金待ち（振込）</option>
                   <option value="awaiting_payment">入金待ち（カード）</option>
                   <option value="paid">入金確認中</option>
                   <option value="confirmed">受講確定</option>
@@ -575,7 +575,7 @@
       <div class="modal-status">
         <label>ステータスを変更する</label>
 <select id="m-status">
-              <option value="pending">入金待ち</option>
+              <option value="pending">入金待ち（振込）</option>
               <option value="confirmed">受講確定</option>
               <option value="active">受講中</option>
               <option value="completed">修了</option>
@@ -731,7 +731,7 @@ async function doLogin() {
           <td>${a.phone||'—'}</td>
           <td style="font-size:12px;">${a.email||'—'}</td>
           <td>${a.payment||'—'}</td>
-          <td><span class="sbadge sbadge-${a.status}">${{pending:'入金待ち',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル'}[a.status]||a.status||'—'}</span></td>
+          <td><span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル'}[a.status]||a.status||'—'}</span></td>
           <td><button class="detail-btn" onclick="openModal('${a.id}')">詳細</button></td>
         </tr>`;
       }).join('');
@@ -943,7 +943,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       return;
     }
     const statusLabel = {
-      pending:'入金待ち', awaiting_payment:'入金待ち', paid:'入金確認中',
+      pending:'入金待ち（振込）', awaiting_payment:'入金待ち（カード）', paid:'入金確認中',
       confirmed:'受講確定', active:'受講中', completed:'修了', cancelled:'キャンセル'
     };
     container.innerHTML = students.map(data => `
