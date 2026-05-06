@@ -875,6 +875,7 @@ document.getElementById('m-status').value = a.status || 'pending';
             body: JSON.stringify({ docId: curId, name: appData.name, email: appData.email })
           });
         } catch(e) { console.warn('メール送信失敗:', e); }
+      　}
       }
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
