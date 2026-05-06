@@ -778,7 +778,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       await window.__updateDoc(window.__doc(window.__db,'applications',curId), updateData);
       const idx = all.findIndex(a => a.id===curId);
       if (idx>-1) all[idx].status = ns;
-      // activeに変更した時はedulio IDを自動発行
+      // activeに変更した時はedulio IDを自動発行・受講開始メール送信
       if (ns === 'active') {
         try {
           const counterRef = window.__doc(window.__db, 'counters', 'edulio');
@@ -792,14 +792,24 @@ document.getElementById('m-status').value = a.status || 'pending';
           await window.__updateDoc(counterRef, { count: newNum });
           await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
             edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
-          });
-          console.log('edulio ID発行:', edulioId);
+      console.log('edulio ID発行:', edulioId);
         } catch(e) { console.warn('edulio ID発行失敗:', e); }
+
+        // 受講開始メール送信
+        try {
+          const activeAppSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
+          if (activeAppSnap.exists()) {
+            const activeAppData = activeAppSnap.data();
+            await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendActiveNotifyMail', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: activeAppData.name, email: activeAppData.email })
+            });
+          }
+        } catch(e) { console.warn('受講開始メール送信失敗:', e); }
       }
 
       // confirmedに変更した時はメール・お知らせを送信
-      if (ns === 'confirmed') {
-        console.log('confirmed処理開始 curId:', curId);
         const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
         console.log('appSnap exists:', appSnap.exists());
         if (appSnap.exists()) {
