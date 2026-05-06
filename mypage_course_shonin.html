@@ -1217,6 +1217,31 @@
     }
   };
 
+  function buildQuizGroups(questions) {
+    const groups = [];
+    questions.forEach((q, i) => {
+      const match = q.context && q.context.match(/【問題([\d\-]+)】/);
+      const groupKey = match ? 'q' + match[1] : 'q_single_' + i;
+      const last = groups[groups.length - 1];
+      if (last && last.key === groupKey) {
+        last.indices.push(i);
+      } else {
+        groups.push({ key: groupKey, indices: [i] });
+      }
+    });
+    let mainNum = 0;
+    groups.forEach(g => {
+      mainNum++;
+      g.label = String(mainNum);
+      if (g.indices.length === 1) {
+        g.subLabels = [String(mainNum)];
+      } else {
+        g.subLabels = g.indices.map((_, si) => mainNum + '-' + (si + 1));
+      }
+    });
+    return groups;
+  }
+
   function renderQuizQuestion(content) {
     const { themeNum, themeName, questions, currentIndex, answers } = quizState;
     const q = questions[currentIndex];
@@ -1226,9 +1251,15 @@
     const isLast = currentIndex === total - 1;
     const allAnswered = answers.every(a => a !== null);
 
-    const navDots = questions.map((_, i) => {
-      const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
-      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + i + ')">' + (i+1) + '</div>';
+    const groups = buildQuizGroups(questions);
+    const navDots = groups.map((g) => {
+      return g.indices.map((qIdx, si) => {
+        const isThisCurrent = qIdx === currentIndex;
+        const isThisAns = answers[qIdx] !== null;
+        const cls = isThisCurrent ? 'current' : isThisAns ? 'answered' : '';
+        const lbl = g.subLabels[si];
+        return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + qIdx + ')" style="min-width:36px;font-size:10px;">' + lbl + '</div>';
+      }).join('');
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
@@ -1239,14 +1270,13 @@
 
     content.innerHTML =
       '<div class="quiz-theme-label">学習' + themeNum + '：' + themeName + '</div>' +
-      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み</span>' +
+      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み（大問 ' + groups.length + '問）</span>' +
       '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
       '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
-      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
+      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">大問番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
       (q.ref ? '<div class="quiz-ref-box">📖 <span>テキスト <strong>' + q.ref + '</strong> を学習してから答えてください</span></div>' : '') +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
-      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       '<div class="quiz-question-text">' + q.question + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
       '<div class="quiz-btn-row">' +
