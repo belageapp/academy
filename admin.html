@@ -1200,7 +1200,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const label = type === 'photo' ? '顔写真' : '本人確認書類';
     await sendNotice(appData, `${label}が承認されました`, `提出いただいた${label}が承認されました。マイページで受講準備の状況をご確認ください。`);
     // メール送信
-    console.log('書類承認メール送信開始', appData.email);
+    
     try {
       const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendDocApprovedMail', {
         method: 'POST',
@@ -1208,9 +1208,9 @@ document.getElementById('m-status').value = a.status || 'pending';
         body: JSON.stringify({ name: appData.name, email: appData.email, docType: type })
       });
       const data = await res.json();
-      console.log('書類承認メールレスポンス:', res.status, JSON.stringify(data));
+      
     } catch(e) { console.warn('書類承認メール送信失敗:', e); }
-    console.log('書類承認メール送信完了');
+    
 
     const docStatus = appData.documentStatus || {};
     const photoOk = type === 'photo' ? true : docStatus.photo === 'approved';
