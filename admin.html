@@ -1178,9 +1178,9 @@ document.getElementById('m-status').value = a.status || 'pending';
   }
   window.loadDocuments = loadDocuments;
 
-  async function sendNotice(appData, title, body) {
+  async function sendNotice(appData, title, body, applicationId) {
     await window.__addDoc(window.__col(window.__db, 'notices'), {
-      applicationId: appData.id || curId,
+      applicationId: applicationId || appData.id || curId,
       title,
       body,
       target: 'specific',
@@ -1218,7 +1218,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const pledgeOk = appData.pledgeSigned === true;
     if (photoOk && idOk && pledgeOk) {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active', activeAt: window.__serverTs() });
-      await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！');
+      await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！', docId);
     }
 
     alert('承認しました');
@@ -1239,7 +1239,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
     const appData = appSnap.data();
     const label = type === 'photo' ? '顔写真' : '本人確認書類';
-    await sendNotice(appData, `${label}が差し戻されました`, `提出いただいた${label}を確認しましたが、再提出が必要です。\n理由：${reason}\nマイページから再提出してください。`);
+    await sendNotice(appData, `${label}が差し戻されました`, `提出いただいた${label}を確認しましたが、再提出が必要です。\n理由：${reason}\nマイページから再提出してください。`, docId);
     alert('差し戻しました');
     loadDocuments();
   }
