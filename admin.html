@@ -1124,10 +1124,14 @@ document.getElementById('m-status').value = a.status || 'pending';
       if (photoPending || idPending) pendingCount++;
       if (photoApproved && idApproved) approvedCount++;
 
-      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl;
+      const edulioVideoPending = data.externalVideoPending === true && data.externalVideoDone !== true;
+      const edulioVideoDone = data.externalVideoDone === true;
+      if (edulioVideoPending) pendingCount++;
+
+      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl || edulioVideoPending || edulioVideoDone;
       if (!hasDocs) return;
-      if (filter === 'pending' && !photoPending && !idPending) return;
-      if (filter === 'approved' && !photoApproved && !idApproved) return;
+      if (filter === 'pending' && !photoPending && !idPending && !edulioVideoPending) return;
+      if (filter === 'approved' && !photoApproved && !idApproved && !edulioVideoDone) return;
 
       html += `
         <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
@@ -1171,6 +1175,21 @@ document.getElementById('m-status').value = a.status || 'pending';
                 </div>
               </div>` : '<div></div>'}
           </div>
+          ${(edulioVideoPending || edulioVideoDone) ? `
+          <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px;">
+            <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🎬 外部動画教材（edulio）視聴完了報告</div>
+            <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
+              ステータス：<span style="color:${edulioVideoDone ? 'var(--teal)' : 'var(--yellow-warn)'};">${edulioVideoDone ? '✅ 承認済み' : '⏳ 承認待ち'}</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              ${!edulioVideoDone ? `
+                <button onclick="approveEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
+                <button onclick="rejectEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
+              ` : `
+                <button onclick="cancelEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
+              `}
+            </div>
+          </div>` : ''}
         </div>`;
     });
 
@@ -1272,6 +1291,46 @@ document.getElementById('m-status').value = a.status || 'pending';
     loadDocuments();
   }
   window.rejectDoc = rejectDoc;
+
+  async function approveEdulioVideo(docId) {
+    if (!confirm('外部動画の視聴完了を承認しますか？')) return;
+    const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+    const appData = appSnap.data();
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
+      externalVideoDone: true,
+      externalVideoDoneAt: window.__serverTs(),
+      externalVideoPending: false,
+    });
+    await sendNotice(appData, '外部動画教材の視聴が承認されました', '外部動画教材（edulio）の視聴完了が承認されました。次のステップに進んでください。', docId);
+    alert('承認しました');
+    loadDocuments();
+  }
+  window.approveEdulioVideo = approveEdulioVideo;
+
+  async function rejectEdulioVideo(docId) {
+    const reason = prompt('差し戻し理由を入力してください：');
+    if (reason === null) return;
+    const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+    const appData = appSnap.data();
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
+      externalVideoPending: false,
+      externalVideoRejectReason: reason,
+    });
+    await sendNotice(appData, '外部動画教材の視聴完了が差し戻されました', `差し戻し理由：${reason}`, docId);
+    alert('差し戻しました');
+    loadDocuments();
+  }
+  window.rejectEdulioVideo = rejectEdulioVideo;
+
+  async function cancelEdulioVideo(docId) {
+    if (!confirm('承認を取り消しますか？')) return;
+    await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
+      externalVideoDone: false,
+      externalVideoPending: true,
+    });
+    loadDocuments();
+  }
+  window.cancelEdulioVideo = cancelEdulioVideo;
 
   async function cancelApprove(docId, type) {
     if (!confirm('承認を取り消しますか？')) return;

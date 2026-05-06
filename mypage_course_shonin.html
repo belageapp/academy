@@ -962,8 +962,8 @@
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <a href="https://tlp.edulio.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 edulioで視聴する →</a>
-              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);" ${data.externalVideoDone ? 'disabled' : ''}>
-                ${data.externalVideoDone ? '✅ 視聴完了済み' : '✅ 視聴完了を報告する'}
+              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
+                ${data.externalVideoDone ? '✅ 視聴完了済み' : data.externalVideoPending ? '⏳ 管理者の承認待ちです' : '✅ 視聴完了を報告する'}
               </button>
             </div>`;
         }
@@ -1385,10 +1385,10 @@
       const { getFirestore, doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = getFirestore();
       await updateDoc(doc(db, 'applications', docId), {
-        externalVideoDone: true,
-        externalVideoDoneAt: serverTimestamp()
+        externalVideoPending: true,
+        externalVideoPendingAt: serverTimestamp()
       });
-      document.getElementById('edulio-complete-btn').textContent = '✅ 視聴完了済み';
+      document.getElementById('edulio-complete-btn').textContent = '⏳ 管理者の承認待ちです';
       document.getElementById('edulio-complete-btn').disabled = true;
       document.getElementById('edulio-complete-btn').style.opacity = '0.5';
       // お知らせ送信
