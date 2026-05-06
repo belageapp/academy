@@ -1841,6 +1841,7 @@
       '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
       '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
+      (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
       '<div class="quiz-question-text">' + q.text + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
       '<div class="quiz-btn-row">' +
