@@ -1474,14 +1474,6 @@
     // テストセクション描画
     renderTestList(data, step2Done);
 
-    // テストがアクティブな間はトグルをopen
-    if (step2Done && !(data.test1Passed && data.test2Passed)) {
-      const testBody = document.getElementById('test-body');
-      const testArrow = document.getElementById('arrow-test-body');
-      if (testBody) testBody.classList.add('open');
-      if (testArrow) testArrow.classList.add('open');
-    }
-
     function item(label, done, active, locked, extra) {
       const cls = done ? 'done' : locked ? 'locked' : 'active';
       return '<div class="flow-item ' + cls + '" style="flex-wrap:wrap;">' +
@@ -1772,6 +1764,21 @@
     return null;
   }
 
+  function buildGroups(questions) {
+    const groups = [];
+    questions.forEach((q, i) => {
+      const match = q.context && q.context.match(/【問題(\d[\d\-]*)】/);
+      const groupKey = match ? 'q' + match[1] : 'q_single_' + i;
+      const last = groups[groups.length - 1];
+      if (last && last.key === groupKey) {
+        last.indices.push(i);
+      } else {
+        groups.push({ key: groupKey, label: groups.length + 1, indices: [i] });
+      }
+    });
+    return groups;
+  }
+
   window.openTestModal = async function(num) {
     const modal = document.getElementById('task-modal');
     const titleEl = document.getElementById('modal-title');
@@ -1787,7 +1794,6 @@
     }
     const questions = data.questions;
 
-    // 合格済みなら結果表示
     try {
       const user = auth.currentUser;
       if (user) {
@@ -1798,7 +1804,6 @@
           renderTestResult(content);
           return;
         }
-        // 途中保存があれば復元
         if (snap.exists() && snap.data().answers) {
           const saved = snap.data();
           testState = { num, questions, answers: saved.answers, submitted: false, currentIndex: 0 };
@@ -1823,9 +1828,13 @@
     const isLast = currentIndex === total - 1;
     const allAnswered = answers.every(a => a !== null);
 
-    const navDots = questions.map((_, i) => {
-      const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
-      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + i + ')">' + (i+1) + '</div>';
+    const groups = buildGroups(questions);
+
+    const navDots = groups.map((g) => {
+      const allAns = g.indices.every(i => answers[i] !== null);
+      const isCurrent = g.indices.includes(currentIndex);
+      const cls = isCurrent ? 'current' : allAns ? 'answered' : '';
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + g.indices[0] + ')">' + g.label + '</div>';
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
@@ -1835,13 +1844,13 @@
 
     content.innerHTML =
       '<div class="quiz-theme-label">テスト' + num + '　問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
-      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み</span>' +
+      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み（大問 ' + groups.length + '問）</span>' +
       '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
       '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
-      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
+      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">大問番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
-      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
+      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       '<div class="quiz-question-text">' + q.text + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
       '<div class="quiz-btn-row">' +
@@ -1895,14 +1904,12 @@
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
     testState.results = results; testState.submitted = true;
-
     try {
       const user = auth.currentUser;
       if (user) {
         await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
         if (isPassed) {
-          // applicationsのフラグ更新
           const { updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
           const appRef = doc(db, 'applications', docId);
           if (num === 1) {
@@ -1925,19 +1932,32 @@
     const pct = Math.round((correct / total) * 100);
     const isPassed = pct >= 70;
 
-    const listHtml = questions.map((q, i) => {
-      const ok = results[i];
-      const chosenLabel = answers[i] != null ? (answers[i]+1) + '（' + q.choices[answers[i]] + '）' : '未回答';
-      const correctLabel = (q.answer+1) + '（' + q.choices[q.answer] + '）';
-      const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
-      return '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-        '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
-        (ok
-          ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
-          : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + correctLabel + '</div>'
-        ) +
-        '</div></div>';
-    }).join('');
+    const listHtml = (() => {
+      let html = '';
+      let lastContextKey = null;
+      questions.forEach((q, i) => {
+        const ok = results[i];
+        if (q.context) {
+          const contextKey = q.context.split('\n')[0];
+          if (contextKey !== lastContextKey) {
+            lastContextKey = contextKey;
+            html += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
+          }
+        } else {
+          lastContextKey = null;
+        }
+        const chosenLabel = answers[i] != null ? (answers[i]+1) + '（' + q.choices[answers[i]] + '）' : '未回答';
+        const correctLabel = (q.answer+1) + '（' + q.choices[q.answer] + '）';
+        const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
+        html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
+          '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
+          (ok
+            ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
+            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + correctLabel + '</div>'
+          ) + '</div></div>';
+      });
+      return html;
+    })();
 
     content.innerHTML =
       '<div class="quiz-theme-label">テスト' + num + (num===1?'　介護技術に関する問題':'　総合問題') + '</div>' +
@@ -1956,7 +1976,6 @@
         (!isPassed ? '<button class="quiz-result-btn tertiary" onclick="window.openTestModal(' + num + ')">🔄 もう一度挑戦する</button>' : '') +
       '</div>';
   }
-  window.openTestModal = window.openTestModal;
 
 
   window.toggleNotice = function(id) {
