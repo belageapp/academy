@@ -1220,7 +1220,7 @@
   function buildQuizGroups(questions) {
     const groups = [];
     questions.forEach((q, i) => {
-      const match = q.context && q.context.match(/【問題([\d\-]+)】/);
+      const match = q.context && q.context.match(/【問題([\d]+)】/);
       const groupKey = match ? 'q' + match[1] : 'q_single_' + i;
       const last = groups[groups.length - 1];
       if (last && last.key === groupKey) {
