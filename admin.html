@@ -792,7 +792,8 @@ document.getElementById('m-status').value = a.status || 'pending';
           await window.__updateDoc(counterRef, { count: newNum });
           await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
             edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
-      console.log('edulio ID発行:', edulioId);
+          });
+          console.log('edulio ID発行:', edulioId);
         } catch(e) { console.warn('edulio ID発行失敗:', e); }
 
         // 受講開始メール送信
