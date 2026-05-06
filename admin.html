@@ -1198,7 +1198,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
     const appData = appSnap.data();
     const label = type === 'photo' ? '顔写真' : '本人確認書類';
-    await sendNotice(appData, `${label}が承認されました`, `提出いただいた${label}が承認されました。マイページで受講準備の状況をご確認ください。`);
+    await sendNotice(appData, `${label}が承認されました`, `提出いただいた${label}が承認されました。マイページで受講準備の状況をご確認ください。`, docId);
     // メール送信
     
     try {
