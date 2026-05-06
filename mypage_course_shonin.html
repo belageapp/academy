@@ -1474,6 +1474,14 @@
     // テストセクション描画
     renderTestList(data, step2Done);
 
+    // test2Passed または step2Done の間はトグルをopen
+    if (step2Done && !data.test2Passed) {
+      const testBody = document.getElementById('test-body');
+      const testArrow = document.getElementById('arrow-test-body');
+      if (testBody) testBody.classList.add('open');
+      if (testArrow) testArrow.classList.add('open');
+    }
+
     function item(label, done, active, locked, extra) {
       const cls = done ? 'done' : locked ? 'locked' : 'active';
       return '<div class="flow-item ' + cls + '" style="flex-wrap:wrap;">' +
