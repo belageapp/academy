@@ -1220,23 +1220,24 @@
   function buildQuizGroups(questions) {
     const groups = [];
     questions.forEach((q, i) => {
-      const match = q.context && q.context.match(/【問題([\d]+)】/);
-      const groupKey = match ? 'q' + match[1] : 'q_single_' + i;
+      // contextから【問題8】の番号を取得、なければquestionから取得
+      const ctxMatch = q.context && q.context.match(/【問題(\d+)】/);
+      const qMatch = !ctxMatch && q.question && q.question.match(/^【問題(\d+)】/);
+      const pdfNum = ctxMatch ? ctxMatch[1] : qMatch ? qMatch[1] : null;
+      const groupKey = pdfNum ? 'q' + pdfNum : 'q_single_' + i;
       const last = groups[groups.length - 1];
       if (last && last.key === groupKey) {
         last.indices.push(i);
       } else {
-        groups.push({ key: groupKey, indices: [i] });
+        groups.push({ key: groupKey, pdfNum: pdfNum, indices: [i] });
       }
     });
-    let mainNum = 0;
     groups.forEach(g => {
-      mainNum++;
-      g.label = String(mainNum);
+      const n = g.pdfNum || String(g.indices[0] + 1);
       if (g.indices.length === 1) {
-        g.subLabels = [String(mainNum)];
+        g.subLabels = [n];
       } else {
-        g.subLabels = g.indices.map((_, si) => mainNum + '-' + (si + 1));
+        g.subLabels = g.indices.map((_, si) => n + '-' + (si + 1));
       }
     });
     return groups;
@@ -1805,24 +1806,23 @@
   function buildGroups(questions) {
     const groups = [];
     questions.forEach((q, i) => {
-      const match = q.context && q.context.match(/【問題(\d[\d\-]*)】/);
-      const groupKey = match ? 'q' + match[1] : 'q_single_' + i;
+      const ctxMatch = q.context && q.context.match(/【問題(\d+)】/);
+      const qMatch = !ctxMatch && q.text && q.text.match(/^【問題(\d+)】/);
+      const pdfNum = ctxMatch ? ctxMatch[1] : qMatch ? qMatch[1] : null;
+      const groupKey = pdfNum ? 'q' + pdfNum : 'q_single_' + i;
       const last = groups[groups.length - 1];
       if (last && last.key === groupKey) {
         last.indices.push(i);
       } else {
-        groups.push({ key: groupKey, indices: [i] });
+        groups.push({ key: groupKey, pdfNum: pdfNum, indices: [i] });
       }
     });
-    // ラベルを付ける（単独問題も大問番号、複数小問は1-1,1-2形式）
-    let mainNum = 0;
     groups.forEach(g => {
-      mainNum++;
-      g.label = String(mainNum);
+      const n = g.pdfNum || String(g.indices[0] + 1);
       if (g.indices.length === 1) {
-        g.subLabels = [String(mainNum)];
+        g.subLabels = [n];
       } else {
-        g.subLabels = g.indices.map((_, si) => mainNum + '-' + (si + 1));
+        g.subLabels = g.indices.map((_, si) => n + '-' + (si + 1));
       }
     });
     return groups;
