@@ -2,63 +2,80 @@
 
 ---
 
-## v2.2.0 - 2026/05/05（構築１０）※確認中の項目あり
+## v2.3.0 - 2026/05/06（構築１０完了）
+
+### 全未解決項目を解決
+
+#### activeへの自動遷移
+- gakusoku.htmlの誓約書同意後に顔写真・本人確認が既に承認済みなら自動でactiveに変更
+- 逆順（書類承認→誓約書同意）でもactiveになるよう対応
+
+#### edulio ID自動発行
+- adminでステータスをactiveに変更した時点でedulio IDを自動発行
+- Firestoreのcounters/edulioで連番管理（hca001〜）
+- Firestoreセキュリティルールにcountersの読み書き権限を追加
+
+#### メール送信の修正
+- FROM_EMAILに`|| 'info@holiscare.or.jp'`を全関数に追加（Invalid from email address エラー解消）
+- 誓約書同意メール（sendPledgeSignedMail）が正常に届くよう修正
+- 顔写真・本人確認書類承認時のメール送信を実装（sendDocApprovedMail）
+- SendGrid APIキーをFull Accessに変更
+
+#### お知らせのapplicationId修正
+- sendNotice関数に第4引数`applicationId`を追加
+- approveDoc・rejectDoc・受講開始通知全てに`docId`を渡すよう修正
+- これによりapplication削除時のnotices自動削除が正常に動作
+
+#### Firestoreセキュリティルール
+- noticesの書き込みを認証済みユーザー全員に許可（gakusoku.htmlからの書き込み対応）
+- countersの読み書きを認証済みユーザーに許可
+
+#### その他修正
+- 届出セクションをpending・awaiting_payment・confirmed時に表示
+- adminのメニュー切り替え時に各セクションのデータをリロード
+- serverTimestampのバグ修正（__serverTimestamp→__serverTs）
+
+---
+
+## v2.2.0 - 2026/05/05（構築１０前半）
 
 ### 動画教材セクション
 - 自社動画・外部動画（edulio）の2種類に分割表示
 - edulioログインID・パスワードの表示（コピーボタン付き）
 - 「edulioで視聴する →」ボタン（別タブで開く）
 - 「視聴完了を報告する」ボタン（Firestoreに記録）
-- activeになった時点でedulio IDを自動発行（hca001〜連番）
-- Firestoreのcounters/edulioで連番管理（int64で初期値0）
 
 ### 受講確定通知（銀行振込）
-- sendNotice関数にapplicationIdを追加（notices削除対応）
+- sendNotice関数にapplicationIdを追加
 
 ### 誓約書同意（gakusoku.html）
-- 誓約書同意時のメール送信処理を追加（sendPledgeSignedMail）
-- Cloud FunctionsにsendPledgeSignedMail関数を追加・デプロイ
+- 誓約書同意時のメール送信処理を追加
+- Cloud FunctionsにsendPledgeSignedMail関数を追加
 
 ### admin.html
 - showSection切り替え時に各セクションのデータをリロード
-- serverTimestampのバグ修正（__serverTimestamp→__serverTs）
-
----
-
-## 未解決・確認中の項目（2026/05/05時点）
-
-- **届出セクション**：confirmed前（pending・awaiting_payment）で非表示になっている
-- **edulio ID自動発行**：activeに変更しても発行されない（serverTimestampバグが原因の可能性）
-- **誓約書同意のお知らせ**：届かない
-- **誓約書同意のメール**：届かない（sendPledgeSignedMailが機能していない可能性）
-- **顔写真・本人確認のメール**：届かない
+- serverTimestampのバグ修正
 
 ---
 
 ## v2.1.0 - 2026/05/05
 
 ### 申し込みフロー・決済
-- 銀行振込完了画面の文面変更
-- 銀行振込完了画面に「マイページへ →」ボタン追加
-- payment_success.htmlのタイトルを「お支払いが完了しました！」に変更
-- payment_success.htmlに「マイページへ →」ボタン追加
+- 銀行振込完了画面の文面変更・マイページへボタン追加
+- payment_success.htmlのタイトル変更・マイページへボタン追加
 - ユーザーへのメールにお振込金額を明示
 - メール内お振込金額を目立つデザインに変更
 
 ### 受講確定通知（銀行振込）
-- admin.htmlの振込確認ボタン押下時にメール・お知らせを自動送信
-- admin.htmlのsaveStatusでconfirmedに変更時もメール・お知らせを自動送信
+- admin.htmlの振込確認ボタン・saveStatus時にメール・お知らせ自動送信
 - sendConfirmationEmailHttp関数をCloud Functionsに追加
 
 ### course画面改善
-- 銀行振込pending時にStep0に「🏦 振込情報」ボタンを追加
-- 振込情報モーダル（お振込金額・明細・お振込先）を新設
+- 銀行振込pending時にStep0に「🏦 振込情報」ボタン追加・モーダル新設
 - お知らせのアコーディオン開閉をclassベースに修正
 - お知らせ未読バッジをmarkRead時に即時更新
 - eラーニング・動画教材のロックメッセージを統一
-- 講座の流れのopen/close制御：
-  - pending・awaiting_payment・confirmed → 自動open
-  - active・completed → デフォルトclose
+- 講座の流れのopen/close制御（pending/awaiting_payment/confirmed→open、active/completed→close）
 
 ### Cloud Functions
 - onNoticeCreated関数を削除
@@ -107,7 +124,7 @@
 ---
 
 ## v1.6.0 - 2026/05/01
-- eラーニングシステム設計・実装（PDFから全5回×約130問のJSONデータ作成）
+- eラーニングシステム設計・実装
 
 ---
 
@@ -164,7 +181,19 @@
 | 動画教材（edulio） | ロック | ロック | ロック | ID表示 | ID表示 |
 | 書類発行（見積・請求） | 非アクティブ | 非アクティブ | アクティブ | アクティブ | アクティブ |
 | 書類発行（領収書） | 非アクティブ | 非アクティブ | 非アクティブ | アクティブ | アクティブ |
-| 届出書 | 表示予定 | 表示（ボタン無効） | 表示 | 表示 | 表示 |
+| 届出書 | 表示（ボタン無効） | 表示（ボタン無効） | 表示 | 表示 | 表示 |
+
+## メール送信一覧
+| タイミング | 送信先 | 関数 |
+|---|---|---|
+| 申し込み完了 | ユーザー | onApplicationCreated |
+| 申し込み完了 | 管理者 | onApplicationCreated |
+| 受講確定（Stripe） | ユーザー | stripeWebhook |
+| 受講確定（振込確認） | ユーザー | sendConfirmationEmailHttp |
+| 受講確定（手動） | ユーザー | sendConfirmationEmailHttp |
+| 誓約書同意 | ユーザー | sendPledgeSignedMail |
+| 顔写真承認 | ユーザー | sendDocApprovedMail |
+| 本人確認承認 | ユーザー | sendDocApprovedMail |
 
 ## 技術スタック
 - **フロントエンド：** HTML / CSS / JavaScript（GitHub Pages）
