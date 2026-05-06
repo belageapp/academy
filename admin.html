@@ -1179,6 +1179,7 @@ document.getElementById('m-status').value = a.status || 'pending';
   window.loadDocuments = loadDocuments;
 
   async function sendNotice(appData, title, body, applicationId) {
+    console.log('sendNotice applicationId:', applicationId, 'curId:', curId);
     await window.__addDoc(window.__col(window.__db, 'notices'), {
       applicationId: applicationId || appData.id || curId,
       title,
