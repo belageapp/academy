@@ -1762,10 +1762,200 @@
   }
   window.renderTestList = renderTestList;
 
-  function openTestModal(num) {
-    alert(`テスト${num}は近日公開予定です`);
+  let testState = {};
+
+  async function loadTestData(num) {
+    try {
+      const res = await fetch('quiz/test' + num + '.json');
+      if (res.ok) return await res.json();
+    } catch(e) {}
+    return null;
   }
-  window.openTestModal = openTestModal;
+
+  window.openTestModal = async function(num) {
+    const modal = document.getElementById('task-modal');
+    const titleEl = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    titleEl.textContent = 'テスト' + num + (num === 1 ? '　介護技術に関する問題' : '　総合問題');
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
+    modal.classList.add('open');
+
+    const data = await loadTestData(num);
+    if (!data) {
+      content.innerHTML = '<div style="padding:30px;text-align:center;color:var(--red);">問題データの読み込みに失敗しました。</div>';
+      return;
+    }
+    const questions = data.questions;
+
+    // 合格済みなら結果表示
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const snap = await getDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num));
+        if (snap.exists() && snap.data().passed) {
+          const saved = snap.data();
+          testState = { num, questions, answers: saved.answers || [], results: saved.results, submitted: true, viewOnly: true };
+          renderTestResult(content);
+          return;
+        }
+        // 途中保存があれば復元
+        if (snap.exists() && snap.data().answers) {
+          const saved = snap.data();
+          testState = { num, questions, answers: saved.answers, submitted: false, currentIndex: 0 };
+          const lastIdx = saved.answers.reduce((acc, a, i) => a !== null ? i : acc, -1);
+          testState.currentIndex = Math.min(Math.max(lastIdx, 0), questions.length - 1);
+          renderTestQuestion(content);
+          return;
+        }
+      }
+    } catch(e) {}
+
+    testState = { num, questions, currentIndex: 0, answers: new Array(questions.length).fill(null), submitted: false };
+    renderTestQuestion(content);
+  };
+
+  function renderTestQuestion(content) {
+    const { num, questions, currentIndex, answers } = testState;
+    const q = questions[currentIndex];
+    const total = questions.length;
+    const answeredCount = answers.filter(a => a !== null).length;
+    const progressPct = Math.round((answeredCount / total) * 100);
+    const isLast = currentIndex === total - 1;
+    const allAnswered = answers.every(a => a !== null);
+
+    const navDots = questions.map((_, i) => {
+      const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + i + ')">' + (i+1) + '</div>';
+    }).join('');
+
+    const choicesHtml = q.choices.map((c, i) => {
+      return '<div class="quiz-choice ' + (answers[currentIndex] === i ? 'selected' : '') + '" onclick="window.testSelect(' + i + ')">' +
+        '<div class="quiz-choice-num">' + (i+1) + '</div><div>' + c + '</div></div>';
+    }).join('');
+
+    content.innerHTML =
+      '<div class="quiz-theme-label">テスト' + num + '　問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
+      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み</span>' +
+      '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
+      '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
+      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
+      '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
+      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
+      '<div class="quiz-question-text">' + q.text + '</div>' +
+      '<div class="quiz-choices">' + choicesHtml + '</div>' +
+      '<div class="quiz-btn-row">' +
+        '<button class="quiz-btn quiz-btn-prev" onclick="window.testPrev()" ' + (currentIndex === 0 ? 'disabled' : '') + '>← 前の問題</button>' +
+        '<button class="quiz-btn quiz-btn-pause" onclick="window.testPause()">💾 保存して中断</button>' +
+        (!isLast ? '<button class="quiz-btn quiz-btn-next" onclick="window.testNext()" ' + (answers[currentIndex] === null ? 'disabled' : '') + '>次の問題 →</button>' : '') +
+      '</div>' +
+      '<div style="margin-top:8px;">' +
+        '<button class="quiz-btn quiz-btn-submit" style="width:100%;" onclick="window.testSubmit()" ' + (allAnswered ? '' : 'disabled') + '>' +
+          '📊 採点する' + (allAnswered ? '' : '　（残り' + (total - answeredCount) + '問）') +
+        '</button>' +
+      '</div>' +
+      (!allAnswered ? '<p style="font-size:11px;color:var(--text-mid);margin-top:6px;text-align:center;">⚠️ 未回答の問題は上の番号ボタンから確認できます</p>' : '');
+  }
+
+  window.testSelect = function(i) {
+    testState.answers[testState.currentIndex] = i;
+    saveTestProgressAuto();
+    renderTestQuestion(document.getElementById('modal-content'));
+  };
+  window.testGoTo = function(i) {
+    testState.currentIndex = i;
+    renderTestQuestion(document.getElementById('modal-content'));
+  };
+  window.testPrev = function() {
+    if (testState.currentIndex > 0) { testState.currentIndex--; renderTestQuestion(document.getElementById('modal-content')); }
+  };
+  window.testNext = function() {
+    if (testState.answers[testState.currentIndex] === null) return;
+    if (testState.currentIndex < testState.questions.length - 1) { testState.currentIndex++; renderTestQuestion(document.getElementById('modal-content')); }
+  };
+  window.testPause = async function() {
+    await saveTestProgressAuto();
+    document.getElementById('task-modal').classList.remove('open');
+    location.reload();
+  };
+
+  async function saveTestProgressAuto() {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + testState.num),
+        { answers: testState.answers, savedAt: new Date() }, { merge: true });
+    } catch(e) {}
+  }
+
+  window.testSubmit = async function() {
+    const { num, questions, answers } = testState;
+    const results = questions.map((q, i) => answers[i] === q.answer);
+    const correct = results.filter(r => r).length;
+    const pct = Math.round((correct / questions.length) * 100);
+    const isPassed = pct >= 70;
+    testState.results = results; testState.submitted = true;
+
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
+          { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
+        if (isPassed) {
+          // applicationsのフラグ更新
+          const { updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          const appRef = doc(db, 'applications', docId);
+          if (num === 1) {
+            await updateDoc(appRef, { test1Passed: true, test1PassedAt: new Date() });
+          } else {
+            await updateDoc(appRef, { test2Passed: true, test2PassedAt: new Date() });
+          }
+        }
+      }
+    } catch(e) {}
+    renderTestResult(document.getElementById('modal-content'));
+  };
+
+  function renderTestResult(content) {
+    const modal = document.getElementById('task-modal');
+    if (modal) modal.scrollTop = 0;
+    const { num, questions, answers, results } = testState;
+    const total = questions.length;
+    const correct = results.filter(r => r).length;
+    const pct = Math.round((correct / total) * 100);
+    const isPassed = pct >= 70;
+
+    const listHtml = questions.map((q, i) => {
+      const ok = results[i];
+      const chosenLabel = answers[i] != null ? (answers[i]+1) + '（' + q.choices[answers[i]] + '）' : '未回答';
+      const correctLabel = (q.answer+1) + '（' + q.choices[q.answer] + '）';
+      const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
+      return '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
+        '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
+        (ok
+          ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
+          : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + correctLabel + '</div>'
+        ) +
+        '</div></div>';
+    }).join('');
+
+    content.innerHTML =
+      '<div class="quiz-theme-label">テスト' + num + (num===1?'　介護技術に関する問題':'　総合問題') + '</div>' +
+      (testState.viewOnly ? '<div style="text-align:center;margin-bottom:8px;"><span style="background:linear-gradient(135deg,#4CAF72,#2E7D47);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;">✅ 合格済み</span></div>' : '') +
+      '<div class="quiz-result-header"><div class="quiz-result-score ' + (isPassed ? 'pass' : 'fail') + '">' + pct + '%</div>' +
+      '<div class="quiz-result-label">' + (isPassed ? '🎉 合格！' : '😢 不合格') + '</div>' +
+      '<div class="quiz-result-detail">全' + total + '問中 <strong>' + correct + '問</strong> 正解（合格基準：70%以上）<br>' +
+      (isPassed
+        ? '<span style="color:#2E7D47;font-weight:700;">' + (num===1 ? 'テスト２が解放されました！' : '全テスト合格おめでとうございます！') + '</span>'
+        : '<span style="color:var(--red);">もう一度挑戦できます。何度でも挑戦してください。</span>'
+      ) +
+      '</div></div>' +
+      '<div class="quiz-result-list"><div class="quiz-result-list-title">📋 全問 回答結果一覧</div>' + listHtml + '</div>' +
+      '<div class="quiz-result-btns">' +
+        '<button class="quiz-result-btn primary" onclick="document.getElementById(\'task-modal\').classList.remove(\'open\');location.reload();">✅ 講座ページに戻る</button>' +
+        (!isPassed ? '<button class="quiz-result-btn tertiary" onclick="window.openTestModal(' + num + ')">🔄 もう一度挑戦する</button>' : '') +
+      '</div>';
+  }
+  window.openTestModal = window.openTestModal;
 
 
   window.toggleNotice = function(id) {
