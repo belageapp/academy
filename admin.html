@@ -1324,6 +1324,13 @@ document.getElementById('m-status').value = a.status || 'pending';
       externalVideoRejectReason: reason,
     });
     await sendNotice(appData, '外部動画教材の視聴完了が差し戻されました', `差し戻し理由：${reason}`, docId);
+    try {
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioRejectedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: appData.name, email: appData.email, reason })
+      });
+    } catch(e) { console.warn('外部動画差し戻しメール送信失敗:', e); }
     alert('差し戻しました');
     loadDocuments();
   }

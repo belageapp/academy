@@ -962,7 +962,7 @@
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <a href="https://tlp.edulio.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 edulioで視聴する →</a>
-              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
+              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
                 ${data.externalVideoDone ? '✅ 視聴完了・承認済み' : data.externalVideoPending ? '⏳ 管理者の承認待ちです' : '✅ 視聴完了を報告する'}
               </button>
             </div>`;
