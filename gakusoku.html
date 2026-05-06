@@ -407,7 +407,7 @@
           <span class="agree-check-text">本誓約書への同意が電子署名として有効であることを理解しました。</span>
         </label>
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button onclick="goToStep(1)" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">← 学則に戻る</button>
+          <button onclick="window.history.back()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">同意せずに閉じる</button>
           <button class="agree-btn" id="agree-btn" onclick="submitPledge()" style="flex:2;">上記に同意して送信する</button>
         </div>
       </div>
