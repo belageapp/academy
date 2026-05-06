@@ -1784,15 +1784,14 @@
         groups.push({ key: groupKey, indices: [i] });
       }
     });
-    // ラベルを付ける
+    // ラベルを付ける（単独問題も大問番号、複数小問は1-1,1-2形式）
     let mainNum = 0;
     groups.forEach(g => {
       mainNum++;
+      g.label = String(mainNum);
       if (g.indices.length === 1) {
-        g.label = String(mainNum);
         g.subLabels = [String(mainNum)];
       } else {
-        g.label = String(mainNum);
         g.subLabels = g.indices.map((_, si) => mainNum + '-' + (si + 1));
       }
     });
@@ -1869,14 +1868,13 @@
     }).join('');
 
     content.innerHTML =
-      '<div class="quiz-theme-label">テスト' + num + '　問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
+      '<div class="quiz-theme-label">テスト' + num + (num===1?'　介護技術に関する問題':'　総合問題') + '</div>' +
       '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み（大問 ' + groups.length + '問）</span>' +
       '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
       '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
       '<div class="quiz-nav-wrap"><div class="quiz-nav-label">大問番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
-      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       '<div class="quiz-question-text">' + q.text + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
       '<div class="quiz-btn-row">' +
