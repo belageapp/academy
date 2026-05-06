@@ -1302,6 +1302,13 @@ document.getElementById('m-status').value = a.status || 'pending';
       externalVideoPending: false,
     });
     await sendNotice(appData, '外部動画教材の視聴が承認されました', '外部動画教材（edulio）の視聴完了が承認されました。次のステップに進んでください。', docId);
+    try {
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioApprovedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: appData.name, email: appData.email })
+      });
+    } catch(e) { console.warn('外部動画承認メール送信失敗:', e); }
     alert('承認しました');
     loadDocuments();
   }
