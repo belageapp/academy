@@ -1583,8 +1583,8 @@
     html += '<div class="flow-connector"></div>';
 
     html += stepHeader('Step 3', 'テスト', 's3');
-    html += item('テスト１', test1Ok, step2Done, !step2Done);
-    html += item('テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok, !step2Done || !test1Ok);
+    html += item('テスト１　介護技術に関する問題', test1Ok, step2Done, !step2Done);
+    html += item('テスト２　総合問題', test2Ok, step2Done && test1Ok, !step2Done || !test1Ok);
     html += '<div class="flow-connector"></div>';
 
     html += stepHeader('Step 4', '修了', 's4');
