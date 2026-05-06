@@ -1228,7 +1228,16 @@ document.getElementById('m-status').value = a.status || 'pending';
     const idOk = type === 'id' ? true : docStatus.idDocument === 'approved';
     const pledgeOk = appData.pledgeSigned === true;
     if (photoOk && idOk && pledgeOk) {
-      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active', activeAt: window.__serverTs() });
+      const counterRef = window.__doc(window.__db, 'counters', 'edulio');
+      const counterSnap = await window.__getDoc(counterRef);
+      const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
+      const newNum = currentNum + 1;
+      const edulioId = 'hca' + String(newNum).padStart(3, '0');
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let edulioPassword = '';
+      for (let i = 0; i < 8; i++) edulioPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      await window.__updateDoc(counterRef, { count: newNum });
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active', activeAt: window.__serverTs(), edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() });
       await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！', docId);
       // 受講開始メール送信
       try {
