@@ -1220,6 +1220,14 @@ document.getElementById('m-status').value = a.status || 'pending';
     if (photoOk && idOk && pledgeOk) {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { status: 'active', activeAt: window.__serverTs() });
       await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！', docId);
+      // 受講開始メール送信
+      try {
+        await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendActiveNotifyMail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: appData.name, email: appData.email })
+        });
+      } catch(e) { console.warn('受講開始メール送信失敗:', e); }
     }
 
     alert('承認しました');
