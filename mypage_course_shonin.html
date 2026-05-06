@@ -1471,18 +1471,7 @@
     const step1Done = photoOk && idOk && pledgeOk;
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
 
-    // テストセクションの表示制御
-    const testSection = document.getElementById('test-section');
-    const testBody = document.getElementById('test-body');
-    if (step2Done) {
-      testSection.style.display = '';
-      if (!data.test1Passed || !data.test2Passed) {
-        testBody.classList.add('open');
-        document.getElementById('arrow-test-body').style.transform = 'rotate(90deg)';
-      }
-    } else {
-      testSection.style.display = 'none';
-    }
+    // テストセクション描画
     renderTestList(data, step2Done);
 
     function item(label, done, active, locked, extra) {
