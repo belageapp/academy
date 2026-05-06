@@ -834,7 +834,6 @@ document.getElementById('m-status').value = a.status || 'pending';
             });
           } catch(e) { console.warn('メール送信失敗:', e); }
         }
-      }
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments(); closeModal();
     } catch(e) { alert('更新に失敗しました：'+e.message); }
@@ -876,7 +875,6 @@ document.getElementById('m-status').value = a.status || 'pending';
           });
         } catch(e) { console.warn('メール送信失敗:', e); }
       　}
-      }
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
       alert('受講確定にしました！');
