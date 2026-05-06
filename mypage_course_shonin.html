@@ -602,7 +602,23 @@
     </div>
   </div>
 
-  <!-- ⑥ 書類発行 -->
+  <!-- ⑥ テスト -->
+  <div class="toggle-section" id="test-section">
+    <button class="toggle-header" onclick="toggleSection('test-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap">📝</span>
+        <span class="toggle-header-title">テスト<span class="toggle-header-desc">修了認定のためのテストです</span></span>
+      </span>
+      <span class="toggle-arrow" id="arrow-test-body">›</span>
+    </button>
+    <div class="toggle-body" id="test-body">
+      <div id="test-list">
+        <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ 書類発行 -->
   <div class="toggle-section">
     <button class="toggle-header" onclick="toggleSection('doc-body')">
       <span class="toggle-header-left">
@@ -1701,6 +1717,44 @@
     alert(type + 'の発行機能は準備中です。\n宛名：' + name);
   }
   window.generateDoc = generateDoc;
+
+  // ===== テスト =====
+  function renderTestList(data, step2Done) {
+    const el = document.getElementById('test-list');
+    if (!el) return;
+    if (!step2Done) {
+      el.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:24px;margin-bottom:8px;">🔒</div><div style="font-size:13px;color:var(--text-light);">eラーニング・動画視聴完了後に解放されます</div></div>';
+      return;
+    }
+    const test1Passed = data.test1Passed === true;
+    const test2Passed = data.test2Passed === true;
+
+    const testItem = (num, label, passed, locked) => `
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;${locked ? 'opacity:0.5;' : ''}">
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${label}</div>
+          <div style="font-size:12px;color:var(--text-light);">
+            ${passed ? '✅ 合格済み' : locked ? '🔒 テスト１合格後に解放' : '受験可能'}
+          </div>
+        </div>
+        <button class="action-btn"
+          style="background:${passed ? 'var(--border)' : locked ? '#ccc' : 'linear-gradient(135deg,#2BBCD4,#1A9AB0)'};cursor:${locked || passed ? 'not-allowed' : 'pointer'};opacity:${passed ? '0.5' : '1'};"
+          ${locked || passed ? 'disabled' : ''}
+          onclick="${locked || passed ? '' : `openTestModal(${num})`}">
+          ${passed ? '合格済み' : locked ? 'ロック中' : '受験する'}
+        </button>
+      </div>`;
+
+    el.innerHTML =
+      testItem(1, 'テスト１　介護技術に関する問題', test1Passed, false) +
+      testItem(2, 'テスト２　総合問題', test2Passed, !test1Passed);
+  }
+  window.renderTestList = renderTestList;
+
+  function openTestModal(num) {
+    alert(`テスト${num}は近日公開予定です`);
+  }
+  window.openTestModal = openTestModal;
 
 
   window.toggleNotice = function(id) {
