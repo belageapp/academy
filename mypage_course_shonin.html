@@ -1969,7 +1969,6 @@
         await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
         if (isPassed) {
-          const { updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
           const appRef = doc(db, 'applications', docId);
           if (num === 1) {
             await updateDoc(appRef, { test1Passed: true, test1PassedAt: new Date() });
@@ -1978,7 +1977,7 @@
           }
         }
       }
-    } catch(e) {}
+    } catch(e) { console.error('testSubmitエラー:', e); }
     renderTestResult(document.getElementById('modal-content'));
   };
 
