@@ -1301,7 +1301,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       externalVideoDoneAt: window.__serverTs(),
       externalVideoPending: false,
     });
-    await sendNotice(appData, '外部動画教材の視聴が承認されました', '外部動画教材（edulio）の視聴完了が承認されました。次のステップに進んでください。', docId);
+    try { await sendNotice(appData, '外部動画教材の視聴が承認されました', '外部動画教材（edulio）の視聴完了が承認されました。次のステップに進んでください。', docId); } catch(e) { console.warn('notice失敗:', e); }
     try {
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioApprovedMail', {
         method: 'POST',
@@ -1323,7 +1323,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       externalVideoPending: false,
       externalVideoRejectReason: reason,
     });
-    await sendNotice(appData, '外部動画教材の視聴完了が差し戻されました', `差し戻し理由：${reason}`, docId);
+    try { await sendNotice(appData, '外部動画教材の視聴完了が差し戻されました', `差し戻し理由：${reason}`, docId); } catch(e) { console.warn('notice失敗:', e); }
     try {
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioRejectedMail', {
         method: 'POST',
