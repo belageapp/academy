@@ -1781,7 +1781,19 @@
       if (last && last.key === groupKey) {
         last.indices.push(i);
       } else {
-        groups.push({ key: groupKey, label: groups.length + 1, indices: [i] });
+        groups.push({ key: groupKey, indices: [i] });
+      }
+    });
+    // ラベルを付ける
+    let mainNum = 0;
+    groups.forEach(g => {
+      mainNum++;
+      if (g.indices.length === 1) {
+        g.label = String(mainNum);
+        g.subLabels = [String(mainNum)];
+      } else {
+        g.label = String(mainNum);
+        g.subLabels = g.indices.map((_, si) => mainNum + '-' + (si + 1));
       }
     });
     return groups;
@@ -1841,8 +1853,14 @@
     const navDots = groups.map((g) => {
       const allAns = g.indices.every(i => answers[i] !== null);
       const isCurrent = g.indices.includes(currentIndex);
-      const cls = isCurrent ? 'current' : allAns ? 'answered' : '';
-      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + g.indices[0] + ')">' + g.label + '</div>';
+      // 小問ごとにドットを生成
+      return g.indices.map((qIdx, si) => {
+        const isThisCurrent = qIdx === currentIndex;
+        const isThisAns = answers[qIdx] !== null;
+        const cls = isThisCurrent ? 'current' : isThisAns ? 'answered' : '';
+        const lbl = g.subLabels[si];
+        return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + qIdx + ')" style="min-width:36px;font-size:10px;">' + lbl + '</div>';
+      }).join('');
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
