@@ -1849,7 +1849,9 @@
     const questions = data.questions;
 
     try {
-      const user = auth.currentUser;
+      const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = window.__auth?.currentUser;
       if (user) {
         const snap = await getDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num));
         if (snap.exists() && snap.data().passed) {
@@ -1949,7 +1951,9 @@
 
   async function saveTestProgressAuto() {
     try {
-      const user = auth.currentUser;
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = window.__auth?.currentUser;
       if (!user) return;
       await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + testState.num),
         { answers: testState.answers, savedAt: new Date() }, { merge: true });
@@ -1964,7 +1968,9 @@
     const isPassed = pct >= 70;
     testState.results = results; testState.submitted = true;
     try {
-      const user = auth.currentUser;
+      const { getFirestore, doc, setDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = window.__auth?.currentUser;
       if (user) {
         await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
