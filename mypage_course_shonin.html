@@ -770,6 +770,7 @@
 
   const docId = new URLSearchParams(location.search).get('id');
   if (!docId) window.location.href = 'mypage.html';
+  window.__docId = docId;
 
   // ===== 学習テーマ定義 =====
   const LEARNING_THEMES = [
@@ -1975,7 +1976,7 @@
         await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
         if (isPassed) {
-          const appRef = doc(db, 'applications', docId);
+          const appRef = doc(db, 'applications', window.__docId);
           if (num === 1) {
             await updateDoc(appRef, { test1Passed: true, test1PassedAt: new Date() });
           } else {
