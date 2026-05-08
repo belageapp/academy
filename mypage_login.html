@@ -149,14 +149,12 @@
     <input type="password" id="password" placeholder="••••••••">
   </div>
 
-  <button class="login-btn" id="login-btn" onclick="doLogin()">マイページへログイン →</button>
+  <button class="login-btn" id="login-btn">マイページへログイン →</button>
   <div class="login-err" id="login-err">メールアドレスまたはパスワードが正しくありません</div>
 
-  <a href="#" class="forgot-link" onclick="doReset()">パスワードをお忘れの方はこちら</a>
+  <a href="#" class="forgot-link">パスワードをお忘れの方はこちら</a>
 
-  <hr class="divider">
 
-  <a href="shonin_online_form.html" class="back-link">← 申し込みフォームに戻る</a>
 </div>
 
 <div class="footer-note">
@@ -183,17 +181,12 @@
     if (user) window.location.href = 'mypage.html';
   });
 
-  window.__auth = auth;
-  window.__signIn = signInWithEmailAndPassword;
-  window.__resetPw = sendPasswordResetEmail;
-</script>
-
-<script>
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+    if (e.key === 'Enter') doLoginInternal();
   });
+  document.getElementById('login-btn').addEventListener('click', doLoginInternal);
 
-  async function doLogin() {
+  async function doLoginInternal() {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const btn = document.getElementById('login-btn');
@@ -208,7 +201,7 @@
     err.style.display = 'none';
 
     try {
-      await window.__signIn(window.__auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       window.location.href = 'mypage.html';
     } catch(e) {
       err.textContent = 'メールアドレスまたはパスワードが正しくありません';
@@ -216,22 +209,21 @@
       btn.disabled = false; btn.textContent = 'マイページへログイン →';
     }
   }
-  window.doLogin = doLogin;
 
-  async function doReset() {
+  document.querySelector('.forgot-link').addEventListener('click', async e => {
+    e.preventDefault();
     const email = document.getElementById('email').value.trim();
     if (!email) {
       alert('メールアドレスを入力してから「パスワードをお忘れの方はこちら」をクリックしてください');
       return;
     }
     try {
-      await window.__resetPw(window.__auth, email);
+      await sendPasswordResetEmail(auth, email);
       alert('パスワードリセット用のメールを送信しました。メールボックスをご確認ください。');
     } catch(e) {
       alert('メールの送信に失敗しました。メールアドレスをご確認ください。');
     }
-  }
-  window.doReset = doReset;
+  });
 </script>
 
 </body>
