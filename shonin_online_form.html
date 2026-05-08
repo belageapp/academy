@@ -78,20 +78,20 @@
     .hero-sub { color: rgba(255,255,255,0.85); font-size: 14px; }
 
     /* ===== STEP BAR ===== */
-    .step-bar { background: white; border-bottom: 1px solid var(--border); padding: 12px 16px; }
-    .step-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
-    .step-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-light); white-space: nowrap; }
+    .step-bar { background: white; border-bottom: 1px solid var(--border); padding: 10px 12px; }
+    .step-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
+    .step-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-light); white-space: nowrap; flex-shrink: 0; }
     .step-item.active { color: var(--teal-dark); font-weight: 700; }
     .step-item.done { color: var(--teal); }
     .step-circle {
-      width: 28px; height: 28px; border-radius: 50%;
+      width: 24px; height: 24px; border-radius: 50%;
       background: #E8E8E8; color: #999;
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; flex-shrink: 0;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
     }
     .step-item.active .step-circle { background: var(--teal); color: white; }
     .step-item.done .step-circle { background: var(--teal-light); color: var(--teal-dark); }
-    .step-line { width: 32px; height: 2px; background: #E8E8E8; margin: 0 6px; flex-shrink: 0; }
+    .step-line { width: 24px; height: 2px; background: #E8E8E8; margin: 0 4px; flex-shrink: 0; }
     .step-line.done { background: var(--teal-light); }
 
     /* ===== WRAP ===== */
