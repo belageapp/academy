@@ -770,7 +770,6 @@
 
   const docId = new URLSearchParams(location.search).get('id');
   if (!docId) window.location.href = 'mypage.html';
-  window.__docId = docId;
 
   // ===== 学習テーマ定義 =====
   const LEARNING_THEMES = [
@@ -1218,32 +1217,6 @@
     }
   };
 
-  function buildQuizGroups(questions) {
-    const groups = [];
-    questions.forEach((q, i) => {
-      // contextから【問題8】の番号を取得、なければquestionから取得
-      const ctxMatch = q.context && q.context.match(/【問題(\d+)】/);
-      const qMatch = !ctxMatch && q.question && q.question.match(/^【問題(\d+)】/);
-      const pdfNum = ctxMatch ? ctxMatch[1] : qMatch ? qMatch[1] : null;
-      const groupKey = pdfNum ? 'q' + pdfNum : 'q_single_' + i;
-      const last = groups[groups.length - 1];
-      if (last && last.key === groupKey) {
-        last.indices.push(i);
-      } else {
-        groups.push({ key: groupKey, pdfNum: pdfNum, indices: [i] });
-      }
-    });
-    groups.forEach(g => {
-      const n = g.pdfNum || String(g.indices[0] + 1);
-      if (g.indices.length === 1) {
-        g.subLabels = [n];
-      } else {
-        g.subLabels = g.indices.map((_, si) => n + '-' + (si + 1));
-      }
-    });
-    return groups;
-  }
-
   function renderQuizQuestion(content) {
     const { themeNum, themeName, questions, currentIndex, answers } = quizState;
     const q = questions[currentIndex];
@@ -1253,15 +1226,9 @@
     const isLast = currentIndex === total - 1;
     const allAnswered = answers.every(a => a !== null);
 
-    const groups = buildQuizGroups(questions);
-    const navDots = groups.map((g) => {
-      return g.indices.map((qIdx, si) => {
-        const isThisCurrent = qIdx === currentIndex;
-        const isThisAns = answers[qIdx] !== null;
-        const cls = isThisCurrent ? 'current' : isThisAns ? 'answered' : '';
-        const lbl = g.subLabels[si];
-        return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + qIdx + ')" style="min-width:36px;font-size:10px;">' + lbl + '</div>';
-      }).join('');
+    const navDots = questions.map((_, i) => {
+      const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + i + ')">' + (i+1) + '</div>';
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
@@ -1272,13 +1239,14 @@
 
     content.innerHTML =
       '<div class="quiz-theme-label">学習' + themeNum + '：' + themeName + '</div>' +
-      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み（大問 ' + groups.length + '問）</span>' +
+      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み</span>' +
       '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
       '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
-      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">大問番号で移動できます（紫：回答済み　青緑：現在）</div>' +
+      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
       '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
       (q.ref ? '<div class="quiz-ref-box">📖 <span>テキスト <strong>' + q.ref + '</strong> を学習してから答えてください</span></div>' : '') +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
+      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
       '<div class="quiz-question-text">' + q.question + '</div>' +
       '<div class="quiz-choices">' + choicesHtml + '</div>' +
       '<div class="quiz-btn-row">' +
@@ -1368,14 +1336,12 @@
     const listHtml = (() => {
       let html = '';
       let lastContextKey = null;
-      const qGroups = buildQuizGroups(questions);
-      const qGroupFlat = [];
-      qGroups.forEach(g => g.indices.forEach((idx, si) => { qGroupFlat[idx] = g.subLabels[si]; }));
       questions.forEach((q, i) => {
         const ok = results[i];
         const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
+        // contextがある場合、同じ問題グループの最初にのみ本文を表示
         if (q.context) {
-          const contextKey = q.context.split('\n')[0];
+          const contextKey = q.context.split('\n')[0]; // 1行目をキーに
           if (contextKey !== lastContextKey) {
             lastContextKey = contextKey;
             html += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
@@ -1385,7 +1351,7 @@
         }
         const displayQ = q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question;
         html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-          '<div class="quiz-result-row-body"><div>' + displayQ + '</div>' +
+          '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
           (ok
             ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
             : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>'
@@ -1415,11 +1381,8 @@
 
   function renderReviewMode(content, questions, themeNum) {
     const theme = LEARNING_THEMES[themeNum - 1];
-    const rGroups = buildQuizGroups(questions);
-    const rGroupFlat = [];
-    rGroups.forEach(g => g.indices.forEach((idx, si) => { rGroupFlat[idx] = g.subLabels[si]; }));
     const itemsHtml = questions.map((q, i) =>
-      '<div class="review-item"><div class="review-q">' + q.question + '</div>' +
+      '<div class="review-item"><div class="review-q">Q' + (i+1) + '. ' + q.question + '</div>' +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
       '<div class="review-ans">正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' +
       (q.ref ? '<div class="review-ref">📖 参照：テキスト ' + q.ref + '</div>' : '') + '</div>'
@@ -1475,10 +1438,7 @@
       });
       const data = await res.json();
       if (data.url) {
-        window.open(data.url, '_blank');
-        // 別ウィンドウで開いた後はボタンを元に戻す
-        const retryBtn = document.querySelector('[onclick*="__retryPayment"]');
-        if (retryBtn) { retryBtn.textContent = '💳 クレジット決済へ'; retryBtn.disabled = false; }
+        window.location.href = data.url;
       } else {
         throw new Error('決済URLの取得に失敗しました');
       }
@@ -1510,14 +1470,6 @@
 
     // テストセクション描画
     renderTestList(data, step2Done);
-
-    // test2Passed または step2Done の間はトグルをopen
-    if (step2Done && !data.test2Passed) {
-      const testBody = document.getElementById('test-body');
-      const testArrow = document.getElementById('arrow-test-body');
-      if (testBody) testBody.classList.add('open');
-      if (testArrow) testArrow.classList.add('open');
-    }
 
     function item(label, done, active, locked, extra) {
       const cls = done ? 'done' : locked ? 'locked' : 'active';
@@ -1584,8 +1536,8 @@
     html += '<div class="flow-connector"></div>';
 
     html += stepHeader('Step 3', 'テスト', 's3');
-    html += item('テスト１　介護技術に関する問題', test1Ok, step2Done, !step2Done);
-    html += item('テスト２　総合問題', test2Ok, step2Done && test1Ok, !step2Done || !test1Ok);
+    html += item('テスト１', test1Ok, step2Done, !step2Done);
+    html += item('テスト２（条件付き修了証発行）', test2Ok, step2Done && test1Ok, !step2Done || !test1Ok);
     html += '<div class="flow-connector"></div>';
 
     html += stepHeader('Step 4', '修了', 's4');
@@ -1799,252 +1751,10 @@
   }
   window.renderTestList = renderTestList;
 
-  let testState = {};
-
-  async function loadTestData(num) {
-    try {
-      const res = await fetch('quiz/test' + num + '.json');
-      if (res.ok) return await res.json();
-    } catch(e) {}
-    return null;
+  function openTestModal(num) {
+    alert(`テスト${num}は近日公開予定です`);
   }
-
-  function buildGroups(questions) {
-    const groups = [];
-    questions.forEach((q, i) => {
-      const ctxMatch = q.context && q.context.match(/【問題(\d+)】/);
-      const qMatch = !ctxMatch && q.text && q.text.match(/^【問題(\d+)】/);
-      const pdfNum = ctxMatch ? ctxMatch[1] : qMatch ? qMatch[1] : null;
-      const groupKey = pdfNum ? 'q' + pdfNum : 'q_single_' + i;
-      const last = groups[groups.length - 1];
-      if (last && last.key === groupKey) {
-        last.indices.push(i);
-      } else {
-        groups.push({ key: groupKey, pdfNum: pdfNum, indices: [i] });
-      }
-    });
-    groups.forEach(g => {
-      const n = g.pdfNum || String(g.indices[0] + 1);
-      if (g.indices.length === 1) {
-        g.subLabels = [n];
-      } else {
-        g.subLabels = g.indices.map((_, si) => n + '-' + (si + 1));
-      }
-    });
-    return groups;
-  }
-
-  window.openTestModal = async function(num) {
-    const modal = document.getElementById('task-modal');
-    const titleEl = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    titleEl.textContent = 'テスト' + num + (num === 1 ? '　介護技術に関する問題' : '　総合問題');
-    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
-    modal.classList.add('open');
-
-    const data = await loadTestData(num);
-    if (!data) {
-      content.innerHTML = '<div style="padding:30px;text-align:center;color:var(--red);">問題データの読み込みに失敗しました。</div>';
-      return;
-    }
-    const questions = data.questions;
-
-    try {
-      const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      const user = window.__auth?.currentUser;
-      if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num));
-        if (snap.exists() && snap.data().passed) {
-          const saved = snap.data();
-          testState = { num, questions, answers: saved.answers || [], results: saved.results, submitted: true, viewOnly: true };
-          renderTestResult(content);
-          return;
-        }
-        if (snap.exists() && snap.data().answers) {
-          const saved = snap.data();
-          testState = { num, questions, answers: saved.answers, submitted: false, currentIndex: 0 };
-          const lastIdx = saved.answers.reduce((acc, a, i) => a !== null ? i : acc, -1);
-          testState.currentIndex = Math.min(Math.max(lastIdx, 0), questions.length - 1);
-          renderTestQuestion(content);
-          return;
-        }
-      }
-    } catch(e) {}
-
-    testState = { num, questions, currentIndex: 0, answers: new Array(questions.length).fill(null), submitted: false };
-    renderTestQuestion(content);
-  };
-
-  function renderTestQuestion(content) {
-    const { num, questions, currentIndex, answers } = testState;
-    const q = questions[currentIndex];
-    const total = questions.length;
-    const answeredCount = answers.filter(a => a !== null).length;
-    const progressPct = Math.round((answeredCount / total) * 100);
-    const isLast = currentIndex === total - 1;
-    const allAnswered = answers.every(a => a !== null);
-
-    const groups = buildGroups(questions);
-
-    const navDots = groups.map((g) => {
-      const allAns = g.indices.every(i => answers[i] !== null);
-      const isCurrent = g.indices.includes(currentIndex);
-      // 小問ごとにドットを生成
-      return g.indices.map((qIdx, si) => {
-        const isThisCurrent = qIdx === currentIndex;
-        const isThisAns = answers[qIdx] !== null;
-        const cls = isThisCurrent ? 'current' : isThisAns ? 'answered' : '';
-        const lbl = g.subLabels[si];
-        return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + qIdx + ')" style="min-width:36px;font-size:10px;">' + lbl + '</div>';
-      }).join('');
-    }).join('');
-
-    const choicesHtml = q.choices.map((c, i) => {
-      return '<div class="quiz-choice ' + (answers[currentIndex] === i ? 'selected' : '') + '" onclick="window.testSelect(' + i + ')">' +
-        '<div class="quiz-choice-num">' + (i+1) + '</div><div>' + c + '</div></div>';
-    }).join('');
-
-    content.innerHTML =
-      '<div class="quiz-theme-label">テスト' + num + (num===1?'　介護技術に関する問題':'　総合問題') + '</div>' +
-      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answeredCount + '/' + total + '問 回答済み（大問 ' + groups.length + '問）</span>' +
-      '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
-      '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + progressPct + '%"></div></div></div>' +
-      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">大問番号で移動できます（紫：回答済み　青緑：現在）</div>' +
-      '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
-      (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
-      '<div class="quiz-question-text">' + q.text + '</div>' +
-      '<div class="quiz-choices">' + choicesHtml + '</div>' +
-      '<div class="quiz-btn-row">' +
-        '<button class="quiz-btn quiz-btn-prev" onclick="window.testPrev()" ' + (currentIndex === 0 ? 'disabled' : '') + '>← 前の問題</button>' +
-        '<button class="quiz-btn quiz-btn-pause" onclick="window.testPause()">💾 保存して中断</button>' +
-        (!isLast ? '<button class="quiz-btn quiz-btn-next" onclick="window.testNext()" ' + (answers[currentIndex] === null ? 'disabled' : '') + '>次の問題 →</button>' : '') +
-      '</div>' +
-      '<div style="margin-top:8px;">' +
-        '<button class="quiz-btn quiz-btn-submit" style="width:100%;" onclick="window.testSubmit()" ' + (allAnswered ? '' : 'disabled') + '>' +
-          '📊 採点する' + (allAnswered ? '' : '　（残り' + (total - answeredCount) + '問）') +
-        '</button>' +
-      '</div>' +
-      (!allAnswered ? '<p style="font-size:11px;color:var(--text-mid);margin-top:6px;text-align:center;">⚠️ 未回答の問題は上の番号ボタンから確認できます</p>' : '');
-  }
-
-  window.testSelect = function(i) {
-    testState.answers[testState.currentIndex] = i;
-    saveTestProgressAuto();
-    renderTestQuestion(document.getElementById('modal-content'));
-  };
-  window.testGoTo = function(i) {
-    testState.currentIndex = i;
-    renderTestQuestion(document.getElementById('modal-content'));
-  };
-  window.testPrev = function() {
-    if (testState.currentIndex > 0) { testState.currentIndex--; renderTestQuestion(document.getElementById('modal-content')); }
-  };
-  window.testNext = function() {
-    if (testState.answers[testState.currentIndex] === null) return;
-    if (testState.currentIndex < testState.questions.length - 1) { testState.currentIndex++; renderTestQuestion(document.getElementById('modal-content')); }
-  };
-  window.testPause = async function() {
-    await saveTestProgressAuto();
-    document.getElementById('task-modal').classList.remove('open');
-    location.reload();
-  };
-
-  async function saveTestProgressAuto() {
-    try {
-      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      const user = window.__auth?.currentUser;
-      if (!user) return;
-      await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + testState.num),
-        { answers: testState.answers, savedAt: new Date() }, { merge: true });
-    } catch(e) {}
-  }
-
-  window.testSubmit = async function() {
-    const { num, questions, answers } = testState;
-    const results = questions.map((q, i) => answers[i] === q.answer);
-    const correct = results.filter(r => r).length;
-    const pct = Math.round((correct / questions.length) * 100);
-    const isPassed = pct >= 70;
-    testState.results = results; testState.submitted = true;
-    try {
-      const { getFirestore, doc, setDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const db = getFirestore();
-      const user = window.__auth?.currentUser;
-      if (user) {
-        await setDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num),
-          { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
-        if (isPassed) {
-          const appRef = doc(db, 'applications', window.__docId);
-          if (num === 1) {
-            await updateDoc(appRef, { test1Passed: true, test1PassedAt: new Date() });
-          } else {
-            await updateDoc(appRef, { test2Passed: true, test2PassedAt: new Date() });
-          }
-        }
-      }
-    } catch(e) { console.error('testSubmitエラー:', e); }
-    renderTestResult(document.getElementById('modal-content'));
-  };
-
-  function renderTestResult(content) {
-    const modal = document.getElementById('task-modal');
-    if (modal) modal.scrollTop = 0;
-    const { num, questions, answers, results } = testState;
-    const total = questions.length;
-    const correct = results.filter(r => r).length;
-    const pct = Math.round((correct / total) * 100);
-    const isPassed = pct >= 70;
-
-    const listHtml = (() => {
-      let html = '';
-      let lastContextKey = null;
-      const tGroups = buildGroups(questions);
-      const tGroupFlat = [];
-      tGroups.forEach(g => g.indices.forEach((idx, si) => { tGroupFlat[idx] = g.subLabels[si]; }));
-      questions.forEach((q, i) => {
-        const ok = results[i];
-        if (q.context) {
-          const contextKey = q.context.split('\n')[0];
-          if (contextKey !== lastContextKey) {
-            lastContextKey = contextKey;
-            html += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
-          }
-        } else {
-          lastContextKey = null;
-        }
-        const chosenLabel = answers[i] != null ? (answers[i]+1) + '（' + q.choices[answers[i]] + '）' : '未回答';
-        const correctLabel = (q.answer+1) + '（' + q.choices[q.answer] + '）';
-        const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
-        html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-          '<div class="quiz-result-row-body"><div>' + displayQ + '</div>' +
-          (ok
-            ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
-            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + correctLabel + '</div>'
-          ) + '</div></div>';
-      });
-      return html;
-    })();
-
-    content.innerHTML =
-      '<div class="quiz-theme-label">テスト' + num + (num===1?'　介護技術に関する問題':'　総合問題') + '</div>' +
-      (testState.viewOnly ? '<div style="text-align:center;margin-bottom:8px;"><span style="background:linear-gradient(135deg,#4CAF72,#2E7D47);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;">✅ 合格済み</span></div>' : '') +
-      '<div class="quiz-result-header"><div class="quiz-result-score ' + (isPassed ? 'pass' : 'fail') + '">' + pct + '%</div>' +
-      '<div class="quiz-result-label">' + (isPassed ? '🎉 合格！' : '😢 不合格') + '</div>' +
-      '<div class="quiz-result-detail">全' + total + '問中 <strong>' + correct + '問</strong> 正解<br>' +
-      '<span style="font-size:11px;color:var(--text-mid);">正答率 ' + pct + '%（合格基準：70%以上）</span><br>' +
-      (isPassed
-        ? '<span style="color:#2E7D47;font-weight:700;">' + (num===1 ? '✅ 合格！テスト２が解放されました！' : '✅ 合格！全テスト合格おめでとうございます！') + '</span>'
-        : '<span style="color:var(--red);">不合格です。もう一度挑戦できます。</span>'
-      ) +
-      '</div></div>' +
-      '<div class="quiz-result-list"><div class="quiz-result-list-title">📋 全問 回答結果一覧</div>' + listHtml + '</div>' +
-      '<div class="quiz-result-btns">' +
-        '<button class="quiz-result-btn primary" onclick="document.getElementById(\'task-modal\').classList.remove(\'open\');location.reload();">✅ 講座ページに戻る</button>' +
-        (!isPassed ? '<button class="quiz-result-btn tertiary" onclick="window.openTestModal(' + num + ')">🔄 もう一度挑戦する</button>' : '') +
-      '</div>';
-  }
+  window.openTestModal = openTestModal;
 
 
   window.toggleNotice = function(id) {
