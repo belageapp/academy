@@ -294,13 +294,13 @@
       padding: 18px 0; border-bottom: 1px solid var(--border);
     }
 @media (max-width: 600px) {
-    #alt-fields .f-row { grid-template-columns: 1fr; }
+    #alt-fields .f-row { grid-template-columns: 1fr; gap: 8px; }
     .site-header { padding: 10px 16px; }
       .header-tel { display: none; }
       .page-wrap { padding: 24px 12px 60px; }
       .card-body { padding: 0 16px; }
-      .f-row { grid-template-columns: 1fr; gap: 6px; }
-      .f-label { padding-top: 0; }
+      .f-row { grid-template-columns: 1fr; gap: 8px; }
+      .f-label { padding-top: 0; margin-bottom: 2px; }
       .submit-btn { padding: 16px 40px; font-size: 15px; }
       .conf-actions { flex-direction: column-reverse; align-items: center; }
 .back-btn, .final-btn { width: 100%; text-align: center; }
@@ -545,10 +545,10 @@
           <div class="f-row">
             <div class="f-label">郵便番号<span class="req">必須</span></div>
             <div>
-              <div class="zip-row" style="flex-wrap:wrap; gap:8px;">
-                <span style="font-weight:500;">〒</span>
-                <input type="text" name="zip" id="zip" placeholder="730-0051" maxlength="8" style="width:150px;">
-                <button type="button" class="zip-btn" onclick="searchZip()">🔍 住所を自動入力</button>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:nowrap;">
+                <span style="font-weight:500; flex-shrink:0;">〒</span>
+                <input type="text" name="zip" id="zip" placeholder="730-0051" maxlength="8" style="width:130px; flex-shrink:0;">
+                <button type="button" class="zip-btn" onclick="searchZip()" style="flex-shrink:0;">🔍 住所を自動入力</button>
               </div>
               <div class="hint">7桁入力後にボタンを押すと住所が自動で入ります</div>
               <div class="err-msg" id="err-zip">郵便番号を入力してください</div>
@@ -585,10 +585,10 @@
             <div class="f-row">
               <div class="f-label">別途郵送先<span class="req">必須</span></div>
               <div>
-                <div class="zip-row" style="flex-wrap:wrap; gap:8px;">
-                  <span style="font-weight:500;">〒</span>
-                  <input type="text" name="alt_zip" id="alt_zip" placeholder="730-0051" maxlength="8" style="width:130px;">
-                  <button type="button" class="zip-btn" onclick="searchAltZip()">🔍 住所を自動入力</button>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <span style="font-weight:500; flex-shrink:0;">〒</span>
+                  <input type="text" name="alt_zip" id="alt_zip" placeholder="730-0051" maxlength="8" style="width:130px; flex-shrink:0;">
+                  <button type="button" class="zip-btn" onclick="searchAltZip()" style="flex-shrink:0;">🔍 住所を自動入力</button>
                 </div>
                 <div class="hint">7桁入力後にボタンを押すと住所が自動で入ります</div>
                 <div style="margin-top:8px;">
