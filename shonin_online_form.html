@@ -978,7 +978,6 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       altAddr:    fd.get('alt_addr'),
       altAddress: isAlt ? ('〒' + (fd.get('alt_zip')||'') + '　' + (fd.get('alt_addr1')||'') + (fd.get('alt_addr2') ? '　' + fd.get('alt_addr2') : '')) : '',
       workplace:  fd.get('workplace') || '（なし）',
-      coupon:     fd.get('coupon')    || '（なし）',
       message:    fd.get('message')   || '（なし）',
     };
   }
@@ -989,7 +988,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
     name:'お名前', kana:'ふりがな', gender:'性別',
     birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
     zip:'郵便番号', address:'ご住所', altAddr:'テキスト・書類の郵送先', altAddress:'別途郵送先住所',
-    workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
+    workplace:'お勤め先', message:'ご質問',
   };
 
   document.getElementById('the-form').addEventListener('submit', function(e) {
