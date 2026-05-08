@@ -1120,6 +1120,9 @@ const payment = window.__formVals.payment;
     const btn = document.querySelector('#complete-screen-credit button');
     if (btn) { btn.textContent = '決済ページへ移動中...'; btn.disabled = true; }
     try {
+      const recaptchaToken = typeof grecaptcha !== 'undefined'
+        ? await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'})
+        : '';
       const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createCheckoutSession', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1128,13 +1131,12 @@ const payment = window.__formVals.payment;
           textbook: (window.__creditFormVals?.textbook || '').includes('購入') ? 'purchase' : 'none',
           name: window.__creditFormVals?.name || '',
           email: window.__creditFormVals?.email || '',
-          recaptchaToken: await grecaptcha.execute('6Ld958osAAAAAJAXj8JXvtikA-OrpysjJ7c_MqxM', {action: 'submit'}),
+          recaptchaToken,
         })
       });
       const data = await res.json();
       if (data.url) {
-        window.open(data.url, '_blank');
-        if (btn) { btn.textContent = '💳 クレジット決済へ進む'; btn.disabled = false; }
+        window.location.href = data.url;
       } else {
         throw new Error('決済URLの取得に失敗しました');
       }
@@ -1223,13 +1225,10 @@ const payment = window.__formVals.payment;
     </div>
     <div style="padding:20px 24px;">
       <p style="font-size:14px;color:var(--text-mid);line-height:1.8;margin-bottom:16px;">ログイン情報をご登録のメールアドレスにお送りしました。マイページからいつでも受講状況をご確認いただけます。</p>
-      <div style="background:var(--teal-pale);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:var(--teal-dark);line-height:1.7;">
-        💳 続けてクレジット決済を行うことができます。<br>後から決済する場合はマイページの「講座の流れ」から行えます。
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="window.__creditModalClose()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:500;">閉じる</button>
-        <div style="font-size:11px;color:#1A9AB0;background:#E0F7FB;border:1px solid #7ECFD9;border-radius:8px;padding:7px 10px;margin-bottom:4px;">ℹ️ 中断してもお申し込みは完了しています。後からマイページで決済できます。</div>
-        <button onclick="window.__creditModalPay()" style="flex:1.5;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));font-size:14px;color:#fff;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:700;box-shadow:0 4px 12px rgba(43,188,212,0.3);">💳 クレジット決済へ</button>
+      <div style="font-size:12px;color:#1A9AB0;background:#E0F7FB;border:1px solid #7ECFD9;border-radius:8px;padding:8px 12px;margin-bottom:12px;">ℹ️ 決済を後から行う場合も、お申し込みは完了しています。<br>お申し込み確認メールをご覧のうえ、マイページにログインしてクレジット決済へお進みください。</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="window.__goStripeFromComplete()" style="padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));font-size:14px;color:#fff;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:700;box-shadow:0 4px 12px rgba(43,188,212,0.3);">💳 クレジット決済へ</button>
+        <button onclick="window.__creditModalClose()" style="padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:500;">後で決済する（マイページへ）</button>
       </div>
     </div>
   </div>
