@@ -910,7 +910,7 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc,
+    getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot,
     collection, query, orderBy, getDocs
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -966,9 +966,9 @@
     if (document.getElementById('header-name-pc')) document.getElementById('header-name-pc').textContent = name + ' さん';
     document.getElementById('doc-name').value = name;
 
-    try {
-      const snap = await getDoc(doc(db, 'applications', docId));
+    onSnapshot(doc(db, 'applications', docId), async (snap) => {
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
+      try {
       const data = snap.data();
       window.__appData = data;
       const appData = data;
@@ -1122,7 +1122,8 @@
         }
       }
 
-    } catch(e) { console.error(e); }
+      } catch(e) { console.error(e); }
+    }); // onSnapshot end
 
     // お知らせ
     const noticeList = document.getElementById('notice-list');
