@@ -1072,15 +1072,19 @@
         }
       });
 
-      // eラーニング進捗取得
-      const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
-      const progressData = progressSnap.exists() ? progressSnap.data() : {};
+      // eラーニング進捗取得（初回のみ）
+      if (!window.__taskListRendered) {
+        const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
+        const progressData = progressSnap.exists() ? progressSnap.data() : {};
+        renderTaskList(isActive, progressData, user.uid, status);
+        window.__taskListRendered = true;
+      }
 
-      renderTaskList(isActive, progressData, user.uid, status);
-
-      // 動画
+      // 動画（初回のみ）
       const videoList = document.getElementById('video-list');
       const lockHtml = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
+      if (!window.__videoRendered) {
+        window.__videoRendered = true;
       if (!isActive) {
         videoList.innerHTML = lockHtml;
         document.getElementById('edulio-section').innerHTML = lockHtml;
@@ -1121,6 +1125,7 @@
             </div>`;
         }
       }
+      } // end __videoRendered
 
       } catch(e) { console.error(e); }
     }); // onSnapshot end
