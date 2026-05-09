@@ -1721,6 +1721,8 @@
     if (data.taskAllDone) setCardStatus('elearn-card-status','完了','#EBF7EF','#166534');
     else if (step1Done) { setCardStatus('elearn-card-status','進行中','#FEF3E8','#9A3412'); }
     else setCardStatus('elearn-card-status','未解放','#F3F4F6','#6B7280');
+    // sessionStorageからelearn-cardの開閉状態を復元
+    if (sessionStorage.getItem('card-elearn-card') === 'open') { openStep('elearn-card'); }
 
     if (data.videoAllDone) setCardStatus('video-card-status','完了','#EBF7EF','#166534');
     else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
@@ -1979,6 +1981,8 @@
     const isOpen = body.classList.contains('open');
     body.classList.toggle('open', !isOpen);
     if (arrow) arrow.classList.toggle('open', !isOpen);
+    // 状態をsessionStorageに保存
+    sessionStorage.setItem('card-' + id, !isOpen ? 'open' : 'closed');
   };
 </script>
 <!-- 銀行振込情報モーダル -->
