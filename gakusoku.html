@@ -136,6 +136,21 @@
     .agree-btn.enabled { opacity: 1; pointer-events: auto; }
     .agree-btn.enabled:hover { background: var(--teal-dark); }
     .agree-btn.done { background: #4CAF50; opacity: 1; pointer-events: none; }
+    .nav-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid var(--border);
+      padding: 12px 16px; display: flex; gap: 10px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.08); z-index: 90;
+    }
+    .nav-footer-btn {
+      flex: 1; padding: 12px; border-radius: 10px; font-size: 14px;
+      font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      border: none; transition: opacity 0.15s;
+    }
+    .nav-footer-btn:hover { opacity: 0.85; }
+    .nav-footer-prev { background: #F3F4F6; color: #374151; }
+    .nav-footer-next { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white; }
+    .page-wrap { padding-bottom: 80px; }
 
     .already-agreed {
       background: #E8F5E9; border: 1.5px solid #A5D6A7;
@@ -164,6 +179,12 @@
       table.gakusoku td { display: block; width: 100%; border: none; }
     }
    /* ステップナビ */
+    .step-nav-wrap {
+      position: sticky; top: 58px; z-index: 90;
+      background: white; border-bottom: 1px solid var(--border);
+      margin: -20px -16px 20px; padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
     .step-nav {
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 28px; gap: 0;
@@ -200,7 +221,8 @@
   <div class="page-title">📋 学則・修了要件・受講誓約書</div>
   <div class="page-subtitle">オンライン初任者研修</div>
 
-  <!-- ステップインジケーター -->
+  <!-- ステップインジケーター（固定） -->
+  <div class="step-nav-wrap">
   <div class="step-nav">
     <div class="step-item active" id="step-ind-1" onclick="goToStep(1)">
       <div class="step-circle">1</div>
@@ -216,6 +238,7 @@
       <div class="step-circle">3</div>
       <div class="step-label">受講誓約書</div>
     </div>
+  </div>
   </div>
 
   <!-- STEP 1: 学則 -->
@@ -247,7 +270,7 @@
       </table>
     </div>
     <div style="text-align:right;margin-top:20px;">
-        <button onclick="goToStep(2)" style="background:var(--teal);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">修了要件へ →</button>
+
       </div>
   </div>
 
@@ -329,7 +352,7 @@
       <p style="font-size:13px;color:var(--text-mid);">未成年が受講する場合は、「未成年者受講承諾書」に署名・捺印し、弊社事務局宛てに提出してください。</p>
     </div>
   <div style="text-align:right;margin-top:20px;">
-        <button onclick="goToStep(3)" style="background:var(--teal);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">受講誓約書へ →</button>
+
       </div>  
   </div>
 
@@ -415,6 +438,12 @@
   </div>
 </div>
 
+<!-- 固定フッターナビ -->
+<div class="nav-footer" id="nav-footer">
+  <button class="nav-footer-btn nav-footer-prev" id="nav-prev" onclick="navPrev()">← 前へ</button>
+  <button class="nav-footer-btn nav-footer-next" id="nav-next" onclick="navNext()">次へ →</button>
+</div>
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -472,6 +501,43 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   window.goToStep = goToStep;
+
+  // 固定フッターのナビボタン制御
+  function updateNavFooter(step) {
+    const prev = document.getElementById('nav-prev');
+    const next = document.getElementById('nav-next');
+    const footer = document.getElementById('nav-footer');
+    if (!prev || !next) return;
+    if (step === 1) {
+      prev.style.display = 'none';
+      next.textContent = '次へ：修了要件 →';
+      next.style.display = 'block';
+    } else if (step === 2) {
+      prev.style.display = 'block';
+      prev.textContent = '← 前へ：学則';
+      next.textContent = '次へ：受講誓約書 →';
+      next.style.display = 'block';
+    } else if (step === 3) {
+      prev.style.display = 'block';
+      prev.textContent = '← 前へ：修了要件';
+      next.style.display = 'none';
+    }
+  }
+  window.navPrev = function() {
+    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','syuryo','pledge'][n-1])?.classList.contains('active'));
+    if (cur > 1) { goToStep(cur - 1); updateNavFooter(cur - 1); }
+  };
+  window.navNext = function() {
+    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','syuryo','pledge'][n-1])?.classList.contains('active'));
+    if (cur < 3) { goToStep(cur + 1); updateNavFooter(cur + 1); }
+  };
+  // goToStep時にフッターも更新
+  const origGoToStep = window.goToStep;
+  window.goToStep = function(num) {
+    origGoToStep(num);
+    updateNavFooter(num);
+  };
+  updateNavFooter(1);
 
   function updateBtn() {
     const c1 = document.getElementById('check1').checked;
