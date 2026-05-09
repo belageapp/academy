@@ -676,7 +676,7 @@
               <span class="card-toggle-icon">📚</span>
               <div class="card-toggle-main">
                 <div class="card-toggle-title">eラーニング</div>
-                <div class="card-toggle-sub" id="elearn-card-sub">全10テーマ</div>
+                <div class="card-toggle-sub" id="elearn-card-sub">全10科目</div>
               </div>
               <span class="card-toggle-status" id="elearn-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-elearn-card">›</span>
@@ -688,12 +688,12 @@
               </div>
             </div>
           </div>
-          <!-- 自社動画カード -->
+          <!-- ホリスケアアカデミー動画教材カード -->
           <div class="card-toggle">
             <button class="card-toggle-header" onclick="toggleCard('video-card')">
               <span class="card-toggle-icon">📹</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">自社動画</div>
+                <div class="card-toggle-title">ホリスケアアカデミー動画教材</div>
                 <div class="card-toggle-sub">講座動画の視聴</div>
               </div>
               <span class="card-toggle-status" id="video-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
@@ -705,19 +705,19 @@
               </div>
             </div>
           </div>
-          <!-- 外部動画カード -->
+          <!-- AEGISC-LMS動画教材カード -->
           <div class="card-toggle">
-            <button class="card-toggle-header" onclick="toggleCard('edulio-card')">
+            <button class="card-toggle-header" onclick="toggleCard('AEGISC-LMS-card')">
               <span class="card-toggle-icon">🎬</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">外部動画（edulio）</div>
-                <div class="card-toggle-sub" id="edulio-card-sub">外部動画教材</div>
+                <div class="card-toggle-title">AEGISC-LMS動画教材</div>
+                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">AEGISC-LMS動画教材教材</div>
               </div>
-              <span class="card-toggle-status" id="edulio-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
-              <span class="card-toggle-arrow" id="arrow-edulio-card">›</span>
+              <span class="card-toggle-status" id="AEGISC-LMS-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
+              <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
             </button>
-            <div class="card-toggle-body" id="edulio-card">
-              <div id="edulio-section">
+            <div class="card-toggle-body" id="AEGISC-LMS-card">
+              <div id="AEGISC-LMS-section">
                 <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
               </div>
             </div>
@@ -757,8 +757,8 @@
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#EEEDFE;">🏁</div>
             <div class="step-header-text">
-              <div class="step-label" style="color:#3C3489;">Step 4　OJT・修了</div>
-              <div class="step-title">OJT完了・修了証の郵送</div>
+              <div class="step-label" style="color:#3C3489;">Step 4　実習・修了証</div>
+              <div class="step-title">実習・修了証の郵送</div>
             </div>
           </div>
           <span class="step-tag step-tag-lock" id="step4-tag">未解放</span>
@@ -766,7 +766,7 @@
         </button>
         <div class="step-body" id="ojt-body">
           <div style="font-size:12px;color:var(--text-mid);margin-bottom:10px;">テスト２合格後に解放されます</div>
-          <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>OJT修了報告</div>
+          <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>実習修了報告</div>
           <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>管理者による承認</div>
           <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>修了証の郵送</div>
         </div>
@@ -956,7 +956,7 @@
   const statusLabel = {
     pending: '入金待ち（振込）', awaiting_payment: '入金待ち（カード）',
     confirmed: '受講確定', active: '受講中', completed: '修了',
-    task_done: '添削課題完了', ojt_done: 'OJT完了', cancelled: 'キャンセル',
+    task_done: '添削課題完了', ojt_done: '実習完了', cancelled: 'キャンセル',
   };
 
   onAuthStateChanged(auth, async user => {
@@ -1087,7 +1087,7 @@
         window.__videoRendered = true;
       if (!isActive) {
         videoList.innerHTML = lockHtml;
-        document.getElementById('edulio-section').innerHTML = lockHtml;
+        document.getElementById('AEGISC-LMS-section').innerHTML = lockHtml;
       } else {
         videoList.innerHTML = videos.map(v => `
           <div class="video-item">
@@ -1096,30 +1096,30 @@
             <button class="action-btn" onclick="alert('動画URLは管理者が設定します')">視聴する</button>
           </div>`).join('');
 
-        // edulio表示
-        const edulioSection = document.getElementById('edulio-section');
-        const edulioId = data.edulioId || '';
-        const edulioPw = data.edulioPassword || '';
-        if (!edulioId) {
-          edulioSection.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">📋 ログイン情報は管理者から発行されます</div>';
+        // AEGISC-LMS表示
+        const AEGISC-LMSSection = document.getElementById('AEGISC-LMS-section');
+        const AEGISC-LMSId = data.AEGISC-LMSId || '';
+        const AEGISC-LMSPw = data.AEGISC-LMSPassword || '';
+        if (!AEGISC-LMSId) {
+          AEGISC-LMSSection.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">📋 ログイン情報は管理者から発行されます</div>';
         } else {
-          edulioSection.innerHTML = `
+          AEGISC-LMSSection.innerHTML = `
             <div style="background:var(--teal-pale);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
-              <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">以下のID・パスワードでedulioにログインして動画を視聴してください。</div>
+              <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">以下のID・パスワードでAEGISC-LMSにログインして動画を視聴してください。</div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
                 <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">ログインID</span>
-                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioId}</span>
-                <button onclick="navigator.clipboard.writeText('${edulioId}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${AEGISC-LMSId}</span>
+                <button onclick="navigator.clipboard.writeText('${AEGISC-LMSId}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">パスワード</span>
-                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioPw}</span>
-                <button onclick="navigator.clipboard.writeText('${edulioPw}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${AEGISC-LMSPw}</span>
+                <button onclick="navigator.clipboard.writeText('${AEGISC-LMSPw}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <a href="https://tlp.edulio.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 edulioで視聴する →</a>
-              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
+              <a href="https://tlp.AEGISC-LMS.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 AEGISC-LMSで視聴する →</a>
+              <button onclick="window.__reportAEGISC-LMSComplete && window.__reportAEGISC-LMSComplete()" class="action-btn" id="AEGISC-LMS-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
                 ${data.externalVideoDone ? '✅ 視聴完了・承認済み' : data.externalVideoPending ? '⏳ 管理者の承認待ちです' : '✅ 視聴完了を報告する'}
               </button>
             </div>`;
@@ -1538,9 +1538,9 @@
       '<button class="quiz-result-btn primary" style="margin-top:16px;width:100%;" onclick="window.closeTask()">閉じる</button>';
   }
 // awaiting_payment時の再決済
-// edulio視聴完了報告
-  window.__reportEdulioComplete = async function() {
-    if (!confirm('edulioの動画を全て視聴しましたか？')) return;
+// AEGISC-LMS視聴完了報告
+  window.__reportAEGISC-LMSComplete = async function() {
+    if (!confirm('AEGISC-LMSの動画を全て視聴しましたか？')) return;
     try {
       const { getFirestore, doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = getFirestore();
@@ -1548,14 +1548,14 @@
         externalVideoPending: true,
         externalVideoPendingAt: serverTimestamp()
       });
-      document.getElementById('edulio-complete-btn').textContent = '⏳ 管理者の承認待ちです';
-      document.getElementById('edulio-complete-btn').disabled = true;
-      document.getElementById('edulio-complete-btn').style.opacity = '0.5';
+      document.getElementById('AEGISC-LMS-complete-btn').textContent = '⏳ 管理者の承認待ちです';
+      document.getElementById('AEGISC-LMS-complete-btn').disabled = true;
+      document.getElementById('AEGISC-LMS-complete-btn').style.opacity = '0.5';
       // お知らせ送信
       await addDoc(collection(db, 'notices'), {
         applicationId: docId,
-        title: '外部動画教材の視聴完了が報告されました',
-        body: '受講生がedulioの動画視聴完了を報告しました。管理者にて確認をお願いします。',
+        title: 'AEGISC-LMS動画教材教材の視聴完了が報告されました',
+        body: '受講生がAEGISC-LMSの動画視聴完了を報告しました。管理者にて確認をお願いします。',
         target: 'all',
         createdAt: serverTimestamp(),
         createdBy: 'system',
@@ -1728,10 +1728,10 @@
     else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
     else setCardStatus('video-card-status','未解放','#F3F4F6','#6B7280');
 
-    if (data.externalVideoDone) { setCardStatus('edulio-card-status','承認済み','#EBF7EF','#166534'); const s=document.getElementById('edulio-card-sub'); if(s) s.textContent='視聴完了・承認済み'; }
-    else if (data.externalVideoPending) { setCardStatus('edulio-card-status','承認待ち','#FEF3E8','#9A3412'); const s=document.getElementById('edulio-card-sub'); if(s) s.textContent='管理者確認中'; }
-    else if (step1Done) setCardStatus('edulio-card-status','未視聴','#FEF3E8','#9A3412');
-    else setCardStatus('edulio-card-status','未解放','#F3F4F6','#6B7280');
+    if (data.externalVideoDone) { setCardStatus('AEGISC-LMS-card-status','承認済み','#EBF7EF','#166534'); const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='視聴完了・承認済み'; }
+    else if (data.externalVideoPending) { setCardStatus('AEGISC-LMS-card-status','承認待ち','#FEF3E8','#9A3412'); const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='管理者確認中'; }
+    else if (step1Done) setCardStatus('AEGISC-LMS-card-status','未視聴','#FEF3E8','#9A3412');
+    else setCardStatus('AEGISC-LMS-card-status','未解放','#F3F4F6','#6B7280');
 
     // テスト描画
     renderTestList(data, step2Done);
