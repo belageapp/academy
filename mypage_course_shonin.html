@@ -1984,5 +1984,13 @@
     </div>
   </div>
 </div>
+<script>
+  // Stripeから戻った時にリロード（bfcache対応）
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+      window.location.reload();
+    }
+  });
+</script>
 </body>
 </html>
