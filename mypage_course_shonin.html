@@ -1662,13 +1662,13 @@
       const photoExtra = photoPending
         ? '<span style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;">確認中</span>'
         : photoRejected
-          ? '<span style="font-size:11px;background:#FFF1F2;color:#9F1239;padding:2px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('photo')" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:4px;">再提出</button>'
-          : (isConfirmed && !photoOk ? '<button onclick="openUpload('photo')" class="action-btn" style="font-size:11px;padding:4px 10px;">提出する</button>' : '');
+          ? '<span style="font-size:11px;background:#FFF1F2;color:#9F1239;padding:2px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload(&quot;photo&quot;)" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:4px;">再提出</button>'
+          : (isConfirmed && !photoOk ? '<button onclick="openUpload(&quot;photo&quot;)" class="action-btn" style="font-size:11px;padding:4px 10px;">提出する</button>' : '');
       const idExtra = idPending
         ? '<span style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;">確認中</span>'
         : idRejected
-          ? '<span style="font-size:11px;background:#FFF1F2;color:#9F1239;padding:2px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload('id')" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:4px;">再提出</button>'
-          : (isConfirmed && !idOk ? '<button onclick="openUpload('id')" class="action-btn" style="font-size:11px;padding:4px 10px;">提出する</button>' : '');
+          ? '<span style="font-size:11px;background:#FFF1F2;color:#9F1239;padding:2px 8px;border-radius:10px;">要再提出</span><button onclick="openUpload(&quot;id&quot;)" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:4px;">再提出</button>'
+          : (isConfirmed && !idOk ? '<button onclick="openUpload(&quot;id&quot;)" class="action-btn" style="font-size:11px;padding:4px 10px;">提出する</button>' : '');
       const pledgeExtra = (isConfirmed && !pledgeOk)
         ? '<a href="gakusoku.html?id=' + window.__docId + '" class="action-btn" style="font-size:11px;padding:4px 10px;text-decoration:none;">確認・同意する</a>' : '';
 
