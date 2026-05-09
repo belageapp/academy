@@ -640,7 +640,7 @@
             <div class="step-icon-wrap" style="background:#FAEEDA;">📄</div>
             <div class="step-header-text">
               <div class="step-label" style="color:#633806;">Step 1　受講準備</div>
-              <div class="step-title">書類提出・誓約書</div>
+              <div class="step-title">ご入金・書類提出・誓約書</div>
             </div>
           </div>
           <span class="step-tag step-tag-lock" id="step1-tag">読み込み中...</span>
@@ -1633,8 +1633,9 @@
 
     // Step1
     if (step1Done) { setDot(1,'done'); setTag('step1-tag','完了','done'); }
+    else if (isActive) { setDot(1,'done'); setTag('step1-tag','完了','done'); }
     else if (isConfirmed) { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
-    else { setDot(1,'lock'); setTag('step1-tag','未解放','lock'); }
+    else { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
 
     // Step2
     if (step2Done) { setDot(2,'done'); setTag('step2-tag','完了','done'); }
