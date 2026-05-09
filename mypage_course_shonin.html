@@ -947,11 +947,7 @@
     { num: 10, name: 'こころとからだのしくみと生活支援技術③' },
   ];
 
-  const videos = [
-    { title: '第1章：介護の基本理念と尊厳の保持', duration: '約45分' },
-    { title: '第2章：介護保険制度と福祉サービス', duration: '約50分' },
-    { title: '第3章：コミュニケーション技術', duration: '約40分' },
-  ];
+  // 動画データはFirestoreから取得
 
   const statusLabel = {
     pending: '入金待ち（振込）', awaiting_payment: '入金待ち（カード）',
@@ -1089,12 +1085,28 @@
         videoList.innerHTML = lockHtml;
         document.getElementById('edulio-section').innerHTML = lockHtml;
       } else {
-        videoList.innerHTML = videos.map(v => `
-          <div class="video-item">
-            <div class="video-thumb">▶</div>
-            <div style="flex:1;"><div class="video-title">${v.title}</div><div class="video-duration">${v.duration}</div></div>
-            <button class="action-btn" onclick="alert('動画URLは管理者が設定します')">視聴する</button>
-          </div>`).join('');
+        // Firestoreから動画リストを取得
+        videoList.innerHTML = '<div style="color:var(--text-light);font-size:13px;">読み込み中...</div>';
+        try {
+          const videosSnap = await getDocs(query(collection(db, 'videos'), orderBy('order')));
+          const videoData = videosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          // 視聴済み進捗取得
+          const watchedSnap = await getDoc(doc(db, 'users', user.uid, 'videoProgress', 'watched'));
+          const watched = watchedSnap.exists() ? (watchedSnap.data().ids || []) : [];
+          window.__watchedVideos = watched;
+          window.__videoData = videoData;
+          window.__userId = user.uid;
+          if (videoData.length === 0) {
+            videoList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">動画は準備中です</div>';
+          } else {
+            renderVideoList(videoData, watched);
+          }
+          // 全動画視聴済み確認
+          checkAllVideosWatched(videoData, watched);
+        } catch(e) {
+          console.error('動画取得エラー:', e);
+          videoList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;">動画の読み込みに失敗しました</div>';
+        }
 
         // AEGISC-LMS表示
         const edulioSection = document.getElementById('edulio-section');
@@ -1750,6 +1762,95 @@
     if (step2Done && !data.test2Passed) { openStep('test-body'); }
   }
 
+
+  // ===== 動画機能 =====
+  function renderVideoList(videoData, watched) {
+    const videoList = document.getElementById('video-list');
+    if (!videoList) return;
+    videoList.innerHTML = videoData.map(v => {
+      const isWatched = watched.includes(v.id);
+      return `<div class="video-item" style="flex-wrap:wrap;">
+        <div class="video-thumb">▶</div>
+        <div style="flex:1;min-width:120px;">
+          <div class="video-title">${v.title}</div>
+          <div class="video-duration">${v.duration}</div>
+        </div>
+        ${isWatched
+          ? '<span style="font-size:11px;background:var(--green-light);color:#166534;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0;">✅ 視聴済み</span>'
+          : `<button class="action-btn" onclick="window.openVideo('${v.id}','${v.url}','${v.title}','${v.duration}')" style="flex-shrink:0;">視聴する</button>`
+        }
+      </div>`;
+    }).join('');
+  }
+
+  window.openVideo = function(id, url, title, duration) {
+    const modal = document.getElementById('task-modal');
+    const titleEl = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    titleEl.textContent = title;
+    modal.classList.add('open');
+    content.innerHTML = `
+      <div style="background:#000;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+        <video id="course-video-player" controls playsinline style="width:100%;max-height:300px;display:block;"
+          src="${url}"
+          onended="window.markVideoWatched('${id}')">
+          お使いのブラウザは動画再生に対応していません。
+        </video>
+      </div>
+      <div style="font-size:12px;color:var(--text-mid);text-align:center;">▶ 最後まで視聴すると「視聴済み」になります</div>
+      <div style="margin-top:12px;text-align:center;">
+        <button onclick="document.getElementById('task-modal').classList.remove('open')" class="quiz-result-btn primary" style="width:100%;">閉じる</button>
+      </div>`;
+  };
+
+  window.markVideoWatched = async function(id) {
+    try {
+      const uid = window.__userId;
+      if (!uid) return;
+      const watched = window.__watchedVideos || [];
+      if (watched.includes(id)) return;
+      watched.push(id);
+      window.__watchedVideos = watched;
+      const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      await setDoc(doc(db, 'users', uid, 'videoProgress', 'watched'),
+        { ids: watched }, { merge: true });
+      // UI更新
+      renderVideoList(window.__videoData, watched);
+      checkAllVideosWatched(window.__videoData, watched);
+      // モーダルを閉じる
+      setTimeout(() => {
+        document.getElementById('task-modal').classList.remove('open');
+      }, 1500);
+    } catch(e) { console.error('視聴済み保存エラー:', e); }
+  };
+
+  function checkAllVideosWatched(videoData, watched) {
+    if (!videoData || videoData.length === 0) return;
+    const allWatched = videoData.every(v => watched.includes(v.id));
+    // カードステータス更新
+    const vidStatus = document.getElementById('video-card-status');
+    if (vidStatus) {
+      if (allWatched) {
+        vidStatus.textContent = '完了';
+        vidStatus.style.background = '#EBF7EF';
+        vidStatus.style.color = '#166534';
+      } else {
+        const cnt = watched.length;
+        vidStatus.textContent = cnt + '/' + videoData.length + '本';
+        vidStatus.style.background = '#FEF3E8';
+        vidStatus.style.color = '#9A3412';
+      }
+    }
+    // videoAllDone更新
+    if (allWatched && window.__appData && !window.__appData.videoAllDone) {
+      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ getFirestore, doc, updateDoc }) => {
+        const db = getFirestore();
+        updateDoc(doc(db, 'applications', window.__docId), { videoAllDone: true })
+          .catch(e => console.error('videoAllDone更新エラー:', e));
+      });
+    }
+  }
 
   // アップロード機能
   let currentUploadType = '';
