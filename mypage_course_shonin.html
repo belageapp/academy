@@ -676,13 +676,13 @@
               <span class="card-toggle-icon">📚</span>
               <div class="card-toggle-main">
                 <div class="card-toggle-title">eラーニング</div>
-                <div class="card-toggle-sub" id="elearn-card-sub">全10科目</div>
+                <div class="card-toggle-sub" id="elearn-card-sub">全10科目のテキスト学習と問題への回答</div>
               </div>
               <span class="card-toggle-status" id="elearn-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-elearn-card">›</span>
             </button>
             <div class="card-toggle-body" id="elearn-card">
-              <p style="font-size:12px;color:var(--text-mid);margin:0 0 10px;line-height:1.7;">どのテーマからでも学習を始められます。</p>
+              <p style="font-size:12px;color:var(--text-mid);margin:0 0 10px;line-height:1.7;">どの科目からでも学習を始められます。</p>
               <div id="task-list">
                 <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
               </div>
@@ -694,7 +694,7 @@
               <span class="card-toggle-icon">📹</span>
               <div class="card-toggle-main">
                 <div class="card-toggle-title">ホリスケアアカデミー動画教材</div>
-                <div class="card-toggle-sub">講座動画の視聴</div>
+                <div class="card-toggle-sub">14本の動画を視聴</div>
               </div>
               <span class="card-toggle-status" id="video-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-video-card">›</span>
@@ -711,7 +711,7 @@
               <span class="card-toggle-icon">🎬</span>
               <div class="card-toggle-main">
                 <div class="card-toggle-title">AEGISC-LMS動画教材</div>
-                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">AEGISC-LMS動画教材教材</div>
+                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">100本の動画を視聴</div>
               </div>
               <span class="card-toggle-status" id="AEGISC-LMS-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
@@ -735,7 +735,7 @@
             <div class="step-icon-wrap" style="background:#FBEAF0;">📝</div>
             <div class="step-header-text">
               <div class="step-label" style="color:#72243E;">Step 3　テスト</div>
-              <div class="step-title">テスト１・テスト２・仮修了証</div>
+              <div class="step-title">テスト１・テスト２・仮修了証の発行（PDF）</div>
             </div>
           </div>
           <span class="step-tag step-tag-lock" id="step3-tag">未解放</span>
@@ -757,7 +757,7 @@
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#EEEDFE;">🏁</div>
             <div class="step-header-text">
-              <div class="step-label" style="color:#3C3489;">Step 4　実習・修了証</div>
+              <div class="step-label" style="color:#3C3489;">Step 4　実習</div>
               <div class="step-title">実習・修了証の郵送</div>
             </div>
           </div>
@@ -1554,7 +1554,7 @@
       // お知らせ送信
       await addDoc(collection(db, 'notices'), {
         applicationId: docId,
-        title: 'AEGISC-LMS動画教材教材の視聴完了が報告されました',
+        title: '100本の動画を視聴の視聴完了が報告されました',
         body: '受講生がAEGISC-LMSの動画視聴完了を報告しました。管理者にて確認をお願いします。',
         target: 'all',
         createdAt: serverTimestamp(),
