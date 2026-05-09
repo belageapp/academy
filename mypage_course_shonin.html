@@ -717,7 +717,7 @@
               <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
             </button>
             <div class="card-toggle-body" id="AEGISC-LMS-card">
-              <div id="AEGISC-LMS-section">
+              <div id="edulio-section">
                 <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
               </div>
             </div>
@@ -1087,7 +1087,7 @@
         window.__videoRendered = true;
       if (!isActive) {
         videoList.innerHTML = lockHtml;
-        document.getElementById('AEGISC-LMS-section').innerHTML = lockHtml;
+        document.getElementById('edulio-section').innerHTML = lockHtml;
       } else {
         videoList.innerHTML = videos.map(v => `
           <div class="video-item">
@@ -1097,24 +1097,24 @@
           </div>`).join('');
 
         // AEGISC-LMS表示
-        const AEGISC-LMSSection = document.getElementById('AEGISC-LMS-section');
-        const AEGISC-LMSId = data.AEGISC-LMSId || '';
-        const AEGISC-LMSPw = data.AEGISC-LMSPassword || '';
-        if (!AEGISC-LMSId) {
-          AEGISC-LMSSection.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">📋 ログイン情報は管理者から発行されます</div>';
+        const edulioSection = document.getElementById('edulio-section');
+        const edulioId = data.edulioId || '';
+        const edulioPw = data.edulioPassword || '';
+        if (!edulioId) {
+          edulioSection.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">📋 ログイン情報は管理者から発行されます</div>';
         } else {
-          AEGISC-LMSSection.innerHTML = `
+          edulioSection.innerHTML = `
             <div style="background:var(--teal-pale);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
               <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">以下のID・パスワードでAEGISC-LMSにログインして動画を視聴してください。</div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
                 <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">ログインID</span>
-                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${AEGISC-LMSId}</span>
-                <button onclick="navigator.clipboard.writeText('${AEGISC-LMSId}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioId}</span>
+                <button onclick="navigator.clipboard.writeText('${edulioId}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:12px;color:var(--text-mid);width:90px;flex-shrink:0;">パスワード</span>
-                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${AEGISC-LMSPw}</span>
-                <button onclick="navigator.clipboard.writeText('${AEGISC-LMSPw}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
+                <span style="font-size:14px;font-weight:700;color:var(--text);flex:1;">${edulioPw}</span>
+                <button onclick="navigator.clipboard.writeText('${edulioPw}').then(()=>alert('コピーしました'))" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;">コピー</button>
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
