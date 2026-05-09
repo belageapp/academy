@@ -1119,7 +1119,7 @@
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <a href="https://tlp.AEGISC-LMS.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 AEGISC-LMSで視聴する →</a>
-              <button onclick="window.__reportAEGISC-LMSComplete && window.__reportAEGISC-LMSComplete()" class="action-btn" id="AEGISC-LMS-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
+              <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
                 ${data.externalVideoDone ? '✅ 視聴完了・承認済み' : data.externalVideoPending ? '⏳ 管理者の承認待ちです' : '✅ 視聴完了を報告する'}
               </button>
             </div>`;
@@ -1539,7 +1539,7 @@
   }
 // awaiting_payment時の再決済
 // AEGISC-LMS視聴完了報告
-  window.__reportAEGISC-LMSComplete = async function() {
+  window.__reportEdulioComplete = async function() {
     if (!confirm('AEGISC-LMSの動画を全て視聴しましたか？')) return;
     try {
       const { getFirestore, doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -1548,9 +1548,9 @@
         externalVideoPending: true,
         externalVideoPendingAt: serverTimestamp()
       });
-      document.getElementById('AEGISC-LMS-complete-btn').textContent = '⏳ 管理者の承認待ちです';
-      document.getElementById('AEGISC-LMS-complete-btn').disabled = true;
-      document.getElementById('AEGISC-LMS-complete-btn').style.opacity = '0.5';
+      document.getElementById('edulio-complete-btn').textContent = '⏳ 管理者の承認待ちです';
+      document.getElementById('edulio-complete-btn').disabled = true;
+      document.getElementById('edulio-complete-btn').style.opacity = '0.5';
       // お知らせ送信
       await addDoc(collection(db, 'notices'), {
         applicationId: docId,
