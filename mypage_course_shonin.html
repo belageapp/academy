@@ -775,6 +775,8 @@
 
   </div><!-- /timeline-wrap -->
 
+  <div style="margin-top:20px;"></div>
+
   <!-- ⑦ 書類発行 -->
   <div class="toggle-section">
     <button class="toggle-header" onclick="toggleSection('doc-body')">
@@ -1062,7 +1064,8 @@
         const isReceipt = btn.getAttribute('onclick')?.includes('領収書');
         if (isReceipt && !isConfirmed) {
           btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
-          btn.querySelector('.doc-sub').textContent = isAwaitingPayment ? '決済完了後' : '受講確定後';
+          const sub = btn.querySelector('.doc-sub');
+          if (sub) sub.textContent = (isAwaitingPayment || status === 'pending') ? '決済完了後' : '受講確定後';
         }
       });
 
@@ -1074,11 +1077,10 @@
 
       // 動画
       const videoList = document.getElementById('video-list');
+      const lockHtml = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
       if (!isActive) {
-        const _status = window.__appData?.status || '';
-        const lockMsg = '受講開始後に解放されます';
-        videoList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
-        document.getElementById('edulio-section').innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;text-align:center;">🔒 受講開始後に解放されます</div>';
+        videoList.innerHTML = lockHtml;
+        document.getElementById('edulio-section').innerHTML = lockHtml;
       } else {
         videoList.innerHTML = videos.map(v => `
           <div class="video-item">
@@ -1655,7 +1657,7 @@
       const payBtn = (status === 'awaiting_payment')
         ? '<button onclick="window.__retryPayment&&window.__retryPayment()" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;">💳 クレジット決済へ</button>'
         : isBankPending
-          ? '<button onclick="document.getElementById('bank-modal').style.display='flex'" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;background:linear-gradient(135deg,#F5A623,#E8823A);">🏦 振込情報</button>'
+          ? '<button onclick="document.getElementById(&quot;bank-modal&quot;).style.display=&quot;flex&quot;" class="action-btn" style="font-size:11px;padding:4px 10px;white-space:nowrap;background:linear-gradient(135deg,#F5A623,#E8823A);">🏦 振込情報</button>'
           : '';
       const photoExtra = photoPending
         ? '<span style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;">確認中</span>'
