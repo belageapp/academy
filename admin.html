@@ -1287,6 +1287,21 @@ document.getElementById('m-status').value = a.status || 'pending';
     const appData = appSnap.data();
     const label = type === 'photo' ? '顔写真' : '本人確認書類';
     await sendNotice(appData, `${label}が差し戻されました`, `提出いただいた${label}を確認しましたが、再提出が必要です。\n理由：${reason}\nマイページから再提出してください。`, docId);
+
+    // メール送信
+    try {
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendDocRejectedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: appData.name || (appData.sei + ' ' + appData.mei) || '',
+          email: appData.email,
+          docType: type,
+          reason: reason
+        })
+      });
+    } catch(e) { console.warn('差し戻しメール送信失敗:', e); }
+
     alert('差し戻しました');
     loadDocuments();
   }

@@ -1125,11 +1125,11 @@
       } catch(e) { console.error(e); }
     }); // onSnapshot end
 
-    // お知らせ
+    // お知らせ（リアルタイム更新）
     const noticeList = document.getElementById('notice-list');
     try {
       const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+      onSnapshot(q, async (snap) => {
       const uid = user.uid;
       const email = user.email;
       const notices = snap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -1193,6 +1193,7 @@
         };
         renderNotices();
       }
+      }); // notices onSnapshot end
     } catch(e) {
       console.error('お知らせ取得エラー:', e);
       noticeList.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">お知らせの取得に失敗しました</div>';
