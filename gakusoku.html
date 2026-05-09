@@ -218,11 +218,9 @@
 </header>
 
 <div class="page-wrap">
-  <div class="page-title">📋 学則・修了要件・受講誓約書</div>
-  <div class="page-subtitle">オンライン初任者研修</div>
-
   <!-- ステップインジケーター（固定） -->
   <div class="step-nav-wrap">
+  <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">📋 学則・修了要件・受講誓約書</div>
   <div class="step-nav">
     <div class="step-item active" id="step-ind-1" onclick="goToStep(1)">
       <div class="step-circle">1</div>
@@ -524,11 +522,11 @@
     }
   }
   window.navPrev = function() {
-    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','syuryo','pledge'][n-1])?.classList.contains('active'));
+    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','ryoken','pledge'][n-1])?.classList.contains('active'));
     if (cur > 1) { goToStep(cur - 1); updateNavFooter(cur - 1); }
   };
   window.navNext = function() {
-    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','syuryo','pledge'][n-1])?.classList.contains('active'));
+    const cur = [1,2,3].find(n => document.getElementById('tab-' + ['gakusoku','ryoken','pledge'][n-1])?.classList.contains('active'));
     if (cur < 3) { goToStep(cur + 1); updateNavFooter(cur + 1); }
   };
   // goToStep時にフッターも更新
