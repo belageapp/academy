@@ -1641,6 +1641,13 @@
     else if (isActive) { setDot(1,'done'); setTag('step1-tag','完了','done'); }
     else if (isConfirmed) { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
     else { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
+    // active以降はStep1を強制close
+    if (isActive) {
+      const s1 = document.getElementById('step1-body');
+      const a1 = document.getElementById('arrow-step1-body');
+      if (s1) s1.classList.remove('open');
+      if (a1) a1.classList.remove('open');
+    }
 
     // Step2
     if (step2Done) { setDot(2,'done'); setTag('step2-tag','完了','done'); }
@@ -1707,7 +1714,7 @@
       el.style.background = bg; el.style.color = color;
     }
     if (data.taskAllDone) setCardStatus('elearn-card-status','完了','#EBF7EF','#166534');
-    else if (step1Done) { setCardStatus('elearn-card-status','進行中','#FEF3E8','#9A3412'); openStep('elearn-card'); }
+    else if (step1Done) { setCardStatus('elearn-card-status','進行中','#FEF3E8','#9A3412'); }
     else setCardStatus('elearn-card-status','未解放','#F3F4F6','#6B7280');
 
     if (data.videoAllDone) setCardStatus('video-card-status','完了','#EBF7EF','#166534');
