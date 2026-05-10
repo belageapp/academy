@@ -1863,13 +1863,26 @@
       setCardStatus('elearn-card-status','未解放','#F3F4F6','#6B7280');
     }
 
-    if (data.videoAllDone) setCardStatus('video-card-status','完了','#EBF7EF','#166534');
-    else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
+    if (data.videoAllDone) {
+      setCardStatus('video-card-status','完了','#EBF7EF','#166534');
+      const vc = document.getElementById('video-card');
+      const va = document.getElementById('arrow-video-card');
+      if (vc) vc.classList.remove('open');
+      if (va) va.classList.remove('open');
+    } else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
     else setCardStatus('video-card-status','未解放','#F3F4F6','#6B7280');
 
-    if (data.externalVideoDone) { setCardStatus('AEGISC-LMS-card-status','承認済み','#EBF7EF','#166534'); const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='視聴完了・承認済み'; }
-    else if (data.externalVideoPending) { setCardStatus('AEGISC-LMS-card-status','承認待ち','#FEF3E8','#9A3412'); const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='管理者確認中'; }
-    else if (step1Done) setCardStatus('AEGISC-LMS-card-status','未視聴','#FEF3E8','#9A3412');
+    if (data.externalVideoDone) {
+      setCardStatus('AEGISC-LMS-card-status','承認済み','#EBF7EF','#166534');
+      const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='視聴完了・承認済み';
+      const ec = document.getElementById('edulio-card');
+      const ea = document.getElementById('arrow-edulio-card');
+      if (ec) ec.classList.remove('open');
+      if (ea) ea.classList.remove('open');
+    } else if (data.externalVideoPending) {
+      setCardStatus('AEGISC-LMS-card-status','承認待ち','#FEF3E8','#9A3412');
+      const s=document.getElementById('AEGISC-LMS-card-sub'); if(s) s.textContent='管理者確認中';
+    } else if (step1Done) setCardStatus('AEGISC-LMS-card-status','未視聴','#FEF3E8','#9A3412');
     else setCardStatus('AEGISC-LMS-card-status','未解放','#F3F4F6','#6B7280');
 
     // テスト描画
