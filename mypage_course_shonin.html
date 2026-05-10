@@ -2265,10 +2265,11 @@
     const allAnswered = answered === total;
     const isLast = currentIndex === total - 1;
 
-    // ナビドット（eラーニングと同じスタイル）
-    const navDots = questions.map((_, i) => {
+    // ナビドット：IDから番号を生成（例: t1-1-1→1-1, t1-2→2）
+    const navDots = questions.map((q, i) => {
       const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
-      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + i + ')">' + (i+1) + '</div>';
+      const dotLabel = (q.id || '').replace(/^t\d+-/, ''); // t1-1-1 → 1-1, t1-2 → 2
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + i + ')" style="min-width:28px;font-size:10px;">' + dotLabel + '</div>';
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
