@@ -2372,15 +2372,18 @@
       } else {
         lastContextKey = null;
       }
-      const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
-      const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
+      const qText = q.text || q.question || '';
+      const displayQ = qText.length > 50 ? qText.slice(0,50) + '…' : qText;
+      const chosenIdx = answers[i] != null ? answers[i] - 1 : -1;
+      const chosenLabel = chosenIdx >= 0 ? answers[i] + '（' + (q.choices[chosenIdx] || '') + '）' : '未回答';
+      const correctIdx = (q.answer || 1) - 1;
       listHtml += '<div class="quiz-result-row">' +
         '<div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
         '<div class="quiz-result-row-body">' +
           '<div>' + displayQ + '</div>' +
           (ok
             ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
-            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>'
+            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + (q.choices[correctIdx] || '') + '）</div>'
           ) +
         '</div></div>';
     });
@@ -2388,8 +2391,8 @@
     content.innerHTML =
       '<div style="text-align:center;padding:20px 0 16px;">' +
         '<div style="font-size:48px;margin-bottom:8px;">' + (isPassed ? '🎉' : '😢') + '</div>' +
-        '<div style="font-size:24px;font-weight:700;color:' + (isPassed ? 'var(--green)' : 'var(--red)') + ';">' + pct + '点</div>' +
-        '<div style="font-size:14px;color:var(--text-mid);margin-top:4px;">' + correct + ' / ' + questions.length + '問正解</div>' +
+        '<div style="font-size:24px;font-weight:700;color:' + (isPassed ? 'var(--green)' : 'var(--red)') + ';">' + pct + '%</div>' +
+        '<div style="font-size:14px;color:var(--text-mid);margin-top:4px;">' + correct + ' / ' + questions.length + '問正解（正答率' + pct + '%）</div>' +
         '<div style="margin-top:10px;padding:8px 20px;border-radius:20px;display:inline-block;background:' + (isPassed ? 'var(--green-light)' : 'var(--orange-light)') + ';color:' + (isPassed ? '#166534' : '#9A3412') + ';font-weight:700;font-size:14px;">' +
           (isPassed ? '✅ 合格' : '❌ 不合格　（70点以上で合格）') +
         '</div>' +
