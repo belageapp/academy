@@ -1316,7 +1316,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       externalVideoDoneAt: window.__serverTs(),
       externalVideoPending: false,
     });
-    try { await sendNotice(appData, '外部動画教材の視聴が承認されました', '外部動画教材（edulio）の視聴完了が承認されました。次のステップに進んでください。', docId); } catch(e) { console.warn('notice失敗:', e); }
+    try { await sendNotice(appData, 'AEGISC-LMS動画の視聴が承認されました', 'AEGISC-LMS動画の視聴完了が承認されました。引き続き学習を進めてください。', docId); } catch(e) { console.warn('notice失敗:', e); }
     try {
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioApprovedMail', {
         method: 'POST',
@@ -1324,6 +1324,20 @@ document.getElementById('m-status').value = a.status || 'pending';
         body: JSON.stringify({ name: appData.name, email: appData.email })
       });
     } catch(e) { console.warn('外部動画承認メール送信失敗:', e); }
+    // 全完了チェック（taskAllDone && videoAllDone && externalVideoDone）
+    const updatedSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+    const updatedData = updatedSnap.data();
+    if (updatedData.taskAllDone && updatedData.videoAllDone) {
+      try {
+        await sendNotice(updatedData, '全ての受講が完了しました！テストを受験できます',
+          'eラーニング・動画教材（事例検討）・AEGISC-LMS動画の全てが完了しました。テストセクションからテストを受験してください。', docId);
+        await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendAllCompleteMail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: appData.name, email: appData.email })
+        });
+      } catch(e) { console.warn('全完了通知失敗:', e); }
+    }
     alert('承認しました');
     loadDocuments();
   }

@@ -688,13 +688,13 @@
               </div>
             </div>
           </div>
-          <!-- ホリスケアアカデミー動画教材カード -->
+          <!-- 動画教材（事例検討）カード -->
           <div class="card-toggle">
             <button class="card-toggle-header" onclick="toggleCard('video-card')">
               <span class="card-toggle-icon">📹</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">ホリスケアアカデミー動画教材</div>
-                <div class="card-toggle-sub">14本の動画を視聴</div>
+                <div class="card-toggle-title">動画教材（事例検討）</div>
+                <div class="card-toggle-sub">補助教材を使った事例検討（14本）</div>
               </div>
               <span class="card-toggle-status" id="video-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-video-card">›</span>
@@ -705,13 +705,13 @@
               </div>
             </div>
           </div>
-          <!-- AEGISC-LMS動画教材カード -->
+          <!-- 動画教材（AEGISC-LMS）カード -->
           <div class="card-toggle">
             <button class="card-toggle-header" onclick="toggleCard('AEGISC-LMS-card')">
               <span class="card-toggle-icon">🎬</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">AEGISC-LMS動画教材</div>
-                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">100本の動画を視聴</div>
+                <div class="card-toggle-title">動画教材（AEGISC-LMS）</div>
+                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">介護の基本と技術（100本）</div>
               </div>
               <span class="card-toggle-status" id="AEGISC-LMS-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
               <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
@@ -1229,6 +1229,69 @@
     }
   });
 
+  // ===== 完了通知関数 =====
+  async function sendCompletionNotice(type) {
+    try {
+      const { getFirestore, doc, addDoc, collection, serverTimestamp, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const docId = window.__docId;
+      const appSnap = await getDoc(doc(db, 'applications', docId));
+      const appData = appSnap.data();
+      const name = appData.name || (appData.sei + ' ' + appData.mei) || '';
+      const email = appData.email || '';
+
+      const notices = {
+        elearning: {
+          title: 'eラーニング全科目修了おめでとうございます！',
+          body: 'eラーニング全10科目の学習が完了しました。引き続き動画教材の視聴を進めてください。',
+        },
+        video: {
+          title: '動画教材（事例検討）全14本の視聴が完了しました！',
+          body: '動画教材（事例検討）全14本の視聴が完了しました。引き続きAEGISC-LMS動画の視聴を進めてください。',
+        },
+        aegisc: {
+          title: 'AEGISC-LMS動画の視聴が承認されました！',
+          body: 'AEGISC-LMS動画の視聴完了が承認されました。引き続き学習を進めてください。',
+        },
+        allDone: {
+          title: '全ての受講が完了しました！テストを受験できます',
+          body: 'eラーニング・動画教材（事例検討）・AEGISC-LMS動画の全てが完了しました。テストセクションからテストを受験してください。',
+        },
+      };
+
+      const n = notices[type];
+      if (!n) return;
+
+      // お知らせ追加
+      await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
+        title: n.title,
+        body: n.body,
+        target: 'specific',
+        emails: [email],
+        createdAt: serverTimestamp(),
+        createdBy: 'system',
+      });
+
+      // メール送信
+      const mailEndpoints = {
+        elearning: 'sendElearningCompleteMail',
+        video: 'sendVideoCompleteMail',
+        aegisc: 'sendAegiscCompleteMail',
+        allDone: 'sendAllCompleteMail',
+      };
+      const endpoint = mailEndpoints[type];
+      if (endpoint) {
+        fetch(`https://asia-northeast1-holiscare-academy.cloudfunctions.net/${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, title: n.title, body: n.body })
+        }).catch(e => console.warn('メール送信失敗:', e));
+      }
+    } catch(e) { console.error('通知エラー:', e); }
+  }
+  window.__sendCompletionNotice = sendCompletionNotice;
+
   // ===== eラーニング リスト描画 =====
   function renderTaskList(isActive, progressData, uid, status) {
     const taskList = document.getElementById('task-list');
@@ -1473,6 +1536,23 @@
           }
           await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
             { ['theme' + themeNum]: true }, { merge: true });
+          // 全10テーマ完了チェック
+          const summarySnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
+          const summaryData = summarySnap.exists() ? summarySnap.data() : {};
+          const allThemesPassed = [1,2,3,4,5,6,7,8,9,10].every(n => summaryData['theme' + n] === true);
+          if (allThemesPassed) {
+            const appSnap = await getDoc(doc(db, 'applications', window.__docId));
+            if (appSnap.exists() && !appSnap.data().taskAllDone) {
+              await updateDoc(doc(db, 'applications', window.__docId), { taskAllDone: true });
+              window.__sendCompletionNotice && window.__sendCompletionNotice('elearning');
+              // 全完了チェック
+              const appSnap2 = await getDoc(doc(db, 'applications', window.__docId));
+              const d2 = appSnap2.data();
+              if (d2.taskAllDone && d2.videoAllDone && d2.externalVideoDone) {
+                window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+              }
+            }
+          }
         } else {
           await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
             { ['theme' + themeNum + '_failed']: true }, { merge: true });
@@ -1578,7 +1658,7 @@
       // お知らせ送信
       await addDoc(collection(db, 'notices'), {
         applicationId: docId,
-        title: '100本の動画を視聴の視聴完了が報告されました',
+        title: '介護の基本と技術（100本）の視聴完了が報告されました',
         body: '受講生がAEGISC-LMSの動画視聴完了を報告しました。管理者にて確認をお願いします。',
         target: 'all',
         createdAt: serverTimestamp(),
@@ -1759,7 +1839,15 @@
 
     // テスト描画
     renderTestList(data, step2Done);
-    if (step2Done && !data.test2Passed) { openStep('test-body'); }
+    if (step2Done) {
+      // Step3（テスト）をopen
+      if (!data.test2Passed) { openStep('test-body'); }
+      // Step2（受講）をclose
+      const s2 = document.getElementById('step2-body');
+      const a2 = document.getElementById('arrow-step2-body');
+      if (s2) s2.classList.remove('open');
+      if (a2) a2.classList.remove('open');
+    }
   }
 
 
@@ -1775,10 +1863,10 @@
           <div class="video-title">${v.title}</div>
           <div class="video-duration">${v.duration}</div>
         </div>
-        ${isWatched
-          ? '<span style="font-size:11px;background:var(--green-light);color:#166534;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0;">✅ 視聴済み</span>'
-          : `<button class="action-btn" onclick="window.openVideo('${v.id}','${v.url}','${v.title}','${v.duration}')" style="flex-shrink:0;">視聴する</button>`
-        }
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          ${isWatched ? '<span style="font-size:11px;background:var(--green-light);color:#166534;padding:2px 8px;border-radius:10px;font-weight:700;">✅ 視聴済み</span>' : ''}
+          <button class="action-btn" onclick="window.openVideo('${v.id}','${v.url}','${v.title}','${v.duration}')" style="flex-shrink:0;">${isWatched ? '再視聴' : '視聴する'}</button>
+        </div>
       </div>`;
     }).join('');
   }
@@ -1844,11 +1932,17 @@
     }
     // videoAllDone更新
     if (allWatched && window.__appData && !window.__appData.videoAllDone) {
-      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ getFirestore, doc, updateDoc }) => {
+      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(async ({ getFirestore, doc, updateDoc, getDoc }) => {
         const db = getFirestore();
-        updateDoc(doc(db, 'applications', window.__docId), { videoAllDone: true })
-          .catch(e => console.error('videoAllDone更新エラー:', e));
-      });
+        await updateDoc(doc(db, 'applications', window.__docId), { videoAllDone: true });
+        window.__sendCompletionNotice && window.__sendCompletionNotice('video');
+        // 全完了チェック
+        const appSnap = await getDoc(doc(db, 'applications', window.__docId));
+        const d = appSnap.data();
+        if (d.taskAllDone && d.videoAllDone && d.externalVideoDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+        }
+      }).catch(e => console.error('videoAllDone更新エラー:', e));
     }
   }
 
