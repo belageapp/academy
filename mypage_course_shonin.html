@@ -2263,41 +2263,44 @@
     const total = questions.length;
     const answered = answers.filter(a => a !== null).length;
     const allAnswered = answered === total;
+    const isLast = currentIndex === total - 1;
 
-    // ナビドット
-    const dots = questions.map((_, i) => {
+    // ナビドット（eラーニングと同じスタイル）
+    const navDots = questions.map((_, i) => {
       const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
-      return `<span class="test-dot ${cls}" onclick="window.testGoTo(${i})" title="${i+1}"></span>`;
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.testGoTo(' + i + ')">' + (i+1) + '</div>';
     }).join('');
 
-    content.innerHTML = `
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px;color:var(--text-mid);margin-bottom:6px;">問題 ${currentIndex+1} / ${total}　（回答済み：${answered}/${total}）</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">${dots}</div>
-      </div>
-      ${q.context ? `<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:12px;white-space:pre-wrap;">${q.context}</div>` : ''}
-      <div style="font-size:14px;font-weight:500;margin-bottom:14px;">${q.text}</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-        ${q.choices.map((c, i) => `
-          <button onclick="window.testAnswer(${i+1})" style="text-align:left;padding:10px 14px;border-radius:8px;border:1.5px solid ${answers[currentIndex] === i+1 ? 'var(--teal)' : 'var(--border)'};background:${answers[currentIndex] === i+1 ? 'var(--teal-pale)' : 'white'};font-size:13px;cursor:pointer;font-family:inherit;">
-            ${i+1}. ${c}
-          </button>`).join('')}
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="window.testGoTo(${currentIndex-1})" ${currentIndex === 0 ? 'disabled' : ''} style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:white;cursor:pointer;font-size:13px;">← 前へ</button>
-        ${currentIndex < total - 1
-          ? `<button onclick="window.testGoTo(${currentIndex+1})" style="flex:2;padding:10px;background:var(--teal);color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">次へ →</button>`
-          : `<button onclick="window.testSubmit()" ${!allAnswered ? 'disabled' : ''} style="flex:2;padding:10px;background:${allAnswered ? 'linear-gradient(135deg,var(--teal),var(--teal-dark))' : '#ccc'};color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">採点する</button>`
-        }
-      </div>
-      <div style="margin-top:10px;text-align:center;">
-        <button onclick="window.testSaveAndClose()" style="font-size:12px;color:var(--text-mid);background:none;border:none;cursor:pointer;">💾 保存して中断</button>
-      </div>`;
+    const choicesHtml = q.choices.map((c, i) => {
+      const num2 = i + 1;
+      return '<div class="quiz-choice ' + (answers[currentIndex] === num2 ? 'selected' : '') + '" onclick="window.testAnswer(' + num2 + ')">' +
+        '<div class="quiz-choice-num">' + num2 + '</div><div>' + c + '</div></div>';
+    }).join('');
+
+    content.innerHTML =
+      '<div class="quiz-progress-bar-wrap"><div class="quiz-progress-meta"><span>' + answered + '/' + total + '問 回答済み</span>' +
+      '<span style="color:var(--teal);font-size:10px;">✅ 自動保存されています</span></div>' +
+      '<div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:' + Math.round(answered/total*100) + '%"></div></div></div>' +
+      '<div class="quiz-nav-wrap"><div class="quiz-nav-label">問題番号で移動できます（紫：回答済み　青緑：現在）</div>' +
+      '<div class="quiz-nav-dots">' + navDots + '</div></div>' +
+      (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
+      '<div class="quiz-question-num">問題 ' + (currentIndex+1) + ' / ' + total + '</div>' +
+      '<div class="quiz-question-text">' + q.text + '</div>' +
+      '<div class="quiz-choices">' + choicesHtml + '</div>' +
+      '<div class="quiz-btn-row">' +
+        '<button class="quiz-btn quiz-btn-prev" onclick="window.testGoTo(' + (currentIndex-1) + ')" ' + (currentIndex===0?'disabled':'') + '>← 前へ</button>' +
+        (isLast
+          ? '<button class="quiz-btn quiz-btn-submit" onclick="window.testSubmit()" ' + (!allAnswered?'disabled':'') + '>📊 採点する</button>'
+          : '<button class="quiz-btn quiz-btn-next" onclick="window.testGoTo(' + (currentIndex+1) + ')">次へ →</button>'
+        ) +
+      '</div>' +
+      '<div style="margin-top:10px;text-align:center;">' +
+        '<button onclick="window.testSaveAndClose()" style="font-size:12px;color:var(--text-mid);background:none;border:none;cursor:pointer;">💾 保存して中断</button>' +
+      '</div>';
   }
 
   window.testAnswer = function(choice) {
-    const { currentIndex, questions } = testState;
-    testState.answers[currentIndex] = choice;
+    testState.answers[testState.currentIndex] = choice;
     renderTestQuestion(document.getElementById('modal-content'));
   };
 
@@ -2354,33 +2357,45 @@
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
 
-    const listHtml = questions.map((q, i) => {
+    // 穴埋め問題のcontext重複を避けて表示（eラーニングと同じロジック）
+    let listHtml = '';
+    let lastContextKey = null;
+    questions.forEach((q, i) => {
       const ok = results[i];
+      if (q.context) {
+        const contextKey = q.context.split('\n')[0];
+        if (contextKey !== lastContextKey) {
+          lastContextKey = contextKey;
+          listHtml += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
+        }
+      } else {
+        lastContextKey = null;
+      }
       const displayQ = q.text.length > 50 ? q.text.slice(0,50) + '…' : q.text;
-      return `<div class="quiz-result-row">
-        <div class="quiz-result-row-icon">${ok ? '✅' : '❌'}</div>
-        <div class="quiz-result-row-body">
-          <div>${displayQ}</div>
-          ${ok
-            ? `<div style="font-size:11px;color:#2E7D47;">回答：${answers[i]}（${q.choices[answers[i]-1]}）</div>`
-            : `<div class="quiz-result-row-wrong">あなた：${answers[i] != null ? answers[i]+'（'+q.choices[answers[i]-1]+'）' : '未回答'} ／ 正解：${q.answer}（${q.choices[q.answer-1]}）</div>`
-          }
-        </div>
-      </div>`;
-    }).join('');
+      const chosenLabel = answers[i] != null ? answers[i] + '（' + q.choices[answers[i]-1] + '）' : '未回答';
+      listHtml += '<div class="quiz-result-row">' +
+        '<div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
+        '<div class="quiz-result-row-body">' +
+          '<div>' + displayQ + '</div>' +
+          (ok
+            ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
+            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>'
+          ) +
+        '</div></div>';
+    });
 
-    content.innerHTML = `
-      <div style="text-align:center;padding:20px 0 16px;">
-        <div style="font-size:48px;margin-bottom:8px;">${isPassed ? '🎉' : '😢'}</div>
-        <div style="font-size:24px;font-weight:700;color:${isPassed ? 'var(--green)' : 'var(--red)'};">${pct}点</div>
-        <div style="font-size:14px;color:var(--text-mid);margin-top:4px;">${correct} / ${questions.length}問正解</div>
-        <div style="margin-top:10px;padding:8px 20px;border-radius:20px;display:inline-block;background:${isPassed ? 'var(--green-light)' : 'var(--orange-light)'};color:${isPassed ? '#166534' : '#9A3412'};font-weight:700;font-size:14px;">
-          ${isPassed ? '✅ 合格' : '❌ 不合格　（70点以上で合格）'}
-        </div>
-      </div>
-      <div style="margin-bottom:16px;">${listHtml}</div>
-      <button onclick="document.getElementById('task-modal').classList.remove('open');location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>
-      ${!isPassed ? `<button onclick="window.openTestModal(${num})" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>` : ''}`;
+    content.innerHTML =
+      '<div style="text-align:center;padding:20px 0 16px;">' +
+        '<div style="font-size:48px;margin-bottom:8px;">' + (isPassed ? '🎉' : '😢') + '</div>' +
+        '<div style="font-size:24px;font-weight:700;color:' + (isPassed ? 'var(--green)' : 'var(--red)') + ';">' + pct + '点</div>' +
+        '<div style="font-size:14px;color:var(--text-mid);margin-top:4px;">' + correct + ' / ' + questions.length + '問正解</div>' +
+        '<div style="margin-top:10px;padding:8px 20px;border-radius:20px;display:inline-block;background:' + (isPassed ? 'var(--green-light)' : 'var(--orange-light)') + ';color:' + (isPassed ? '#166534' : '#9A3412') + ';font-weight:700;font-size:14px;">' +
+          (isPassed ? '✅ 合格' : '❌ 不合格　（70点以上で合格）') +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-bottom:16px;">' + listHtml + '</div>' +
+      '<button onclick="document.getElementById('task-modal').classList.remove('open');location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>' +
+      (!isPassed ? '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>' : '');
   }
 
 
