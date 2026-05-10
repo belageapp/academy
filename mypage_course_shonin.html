@@ -1811,7 +1811,10 @@
 
     // Step4
     if (ojtOk) { setDot(4,'done'); setTag('step4-tag','完了','done'); }
-    else if (test2Ok) { setDot(4,'active'); setTag('step4-tag','進行中','active'); }
+    else if (test2Ok) {
+      setDot(4,'active'); setTag('step4-tag','進行中','active');
+      openStep('ojt-body');
+    }
     else { setDot(4,'lock'); setTag('step4-tag','未解放','lock'); }
 
     // Step1コンテンツ描画
