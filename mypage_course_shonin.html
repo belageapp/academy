@@ -962,30 +962,35 @@
     if (document.getElementById('header-name-pc')) document.getElementById('header-name-pc').textContent = name + ' さん';
     document.getElementById('doc-name').value = name;
 
+    let __isFirstSnapshot = true;
     onSnapshot(doc(db, 'applications', docId), async (snap) => {
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       try {
       const data = snap.data();
       const prevData = window.__appData || {};
-      // 各完了フラグが今回初めてtrueになった時に通知
-      if (!prevData.taskAllDone && data.taskAllDone) {
-        window.__sendCompletionNotice && window.__sendCompletionNotice('elearning');
-        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
-          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+      // 初回発火はスキップ（リロード時の誤発動防止）
+      if (!__isFirstSnapshot) {
+        // 各完了フラグが今回初めてtrueになった時に通知
+        if (!prevData.taskAllDone && data.taskAllDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('elearning');
+          if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+            window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+          }
+        }
+        if (!prevData.videoAllDone && data.videoAllDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('video');
+          if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+            window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+          }
+        }
+        if (!prevData.externalVideoDone && data.externalVideoDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('aegisc');
+          if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+            window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+          }
         }
       }
-      if (!prevData.videoAllDone && data.videoAllDone) {
-        window.__sendCompletionNotice && window.__sendCompletionNotice('video');
-        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
-          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
-        }
-      }
-      if (!prevData.externalVideoDone && data.externalVideoDone) {
-        window.__sendCompletionNotice && window.__sendCompletionNotice('aegisc');
-        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
-          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
-        }
-      }
+      __isFirstSnapshot = false;
       window.__appData = data;
       const appData = data;
       const status = data.status || 'pending';
