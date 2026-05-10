@@ -2200,8 +2200,12 @@
             </div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
-            ${passed ? '<button class="action-btn" style="background:var(--border);cursor:not-allowed;opacity:0.5;" disabled>合格済み</button>' : ''}
-            ${!locked ? `<button class="action-btn" onclick="window.openTestModal(${num})" style="white-space:nowrap;">${passed ? '🔄 再挑戦' : '受験する'}</button>` : '<button class="action-btn" style="background:#ccc;cursor:not-allowed;" disabled>ロック中</button>'}
+            ${passed
+              ? '<span style="font-size:12px;font-weight:700;color:#166534;">✅ 合格済み</span>'
+              : locked
+                ? '<button class="action-btn" style="background:#ccc;cursor:not-allowed;" disabled>🔒 ロック中</button>'
+                : `<button class="action-btn" onclick="window.openTestModal(${num})">受験する</button>`
+            }
           </div>
         </div>
       </div>`;
@@ -2385,7 +2389,7 @@
       '</div>' +
       '<div style="margin-bottom:16px;">' + listHtml + '</div>' +
       '<button onclick="document.getElementById(&quot;task-modal&quot;).classList.remove(&quot;open&quot;);location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>' +
-      '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>';
+      (!isPassed ? '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>' : '');
   }
 
 
