@@ -1927,18 +1927,7 @@
 
   // ===== 補助資料ビューワー =====
   window.openPdfViewer = function() {
-    const modal = document.getElementById('task-modal');
-    const titleEl = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    titleEl.textContent = '補助資料集';
-    modal.classList.add('open');
-    // Firebase StorageのPDF URL（Firestoreから取得またはハードコード）
-    const pdfUrl = 'https://firebasestorage.googleapis.com/v0/b/holiscare-academy.firebasestorage.app/o/documents%2Fhosho_shiryo.pdf?alt=media&token=1a398808-033b-4e7f-a698-267f9da5ea2f';
-    content.innerHTML =
-      '<div style="width:100%;height:70vh;">' +
-        '<iframe src="' + pdfUrl + '" style="width:100%;height:100%;border:none;border-radius:8px;" title="補助資料集"></iframe>' +
-      '</div>' +
-      '<button onclick="document.getElementById(&quot;task-modal&quot;).classList.remove(&quot;open&quot;)" class="quiz-result-btn primary" style="width:100%;margin-top:12px;">閉じる</button>';
+    window.open('https://firebasestorage.googleapis.com/v0/b/holiscare-academy.firebasestorage.app/o/documents%2Fhosho_shiryo.pdf?alt=media&token=1a398808-033b-4e7f-a698-267f9da5ea2f', '_blank');
   };
 
   // ===== 動画機能 =====
