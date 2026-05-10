@@ -2198,8 +2198,46 @@
   }
   window.renderTestList = renderTestList;
 
-  function openTestModal(num) {
-    alert(`テスト${num}は近日公開予定です`);
+  async function openTestModal(num) {
+    const modal = document.getElementById('task-modal');
+    const titleEl = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    titleEl.textContent = `テスト${num === 1 ? '１　介護技術に関する問題' : '２　総合問題'}`;
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">読み込み中...</div>';
+    modal.classList.add('open');
+
+    try {
+      const res = await fetch(`quiz/test${num}.json`);
+      const data = await res.json();
+      const questions = data.questions;
+
+      // 既存の回答・結果を確認
+      const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = getFirestore();
+      const user = window.__auth?.currentUser;
+      if (user) {
+        const snap = await getDoc(doc(db, 'users', user.uid, 'testProgress', 'test' + num));
+        if (snap.exists() && snap.data().passed) {
+          const saved = snap.data();
+          testState = { num, questions, answers: saved.answers || [], results: saved.results, submitted: true, viewOnly: true };
+          renderTestResult(content);
+          return;
+        }
+        if (snap.exists() && snap.data().answers) {
+          const saved = snap.data();
+          testState = { num, questions, answers: saved.answers, submitted: false, currentIndex: 0 };
+          const lastIdx = saved.answers.reduce((acc, a, i) => a !== null ? i : acc, -1);
+          testState.currentIndex = Math.min(Math.max(lastIdx, 0), questions.length - 1);
+          renderTestQuestion(content);
+          return;
+        }
+      }
+      testState = { num, questions, answers: new Array(questions.length).fill(null), submitted: false, currentIndex: 0 };
+      renderTestQuestion(content);
+    } catch(e) {
+      content.innerHTML = '<div style="padding:20px;text-align:center;color:red;">テストの読み込みに失敗しました</div>';
+      console.error('テスト読み込みエラー:', e);
+    }
   }
   window.openTestModal = openTestModal;
 
