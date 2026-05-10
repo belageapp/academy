@@ -966,6 +966,26 @@
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       try {
       const data = snap.data();
+      const prevData = window.__appData || {};
+      // 各完了フラグが今回初めてtrueになった時に通知
+      if (!prevData.taskAllDone && data.taskAllDone) {
+        window.__sendCompletionNotice && window.__sendCompletionNotice('elearning');
+        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+        }
+      }
+      if (!prevData.videoAllDone && data.videoAllDone) {
+        window.__sendCompletionNotice && window.__sendCompletionNotice('video');
+        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+        }
+      }
+      if (!prevData.externalVideoDone && data.externalVideoDone) {
+        window.__sendCompletionNotice && window.__sendCompletionNotice('aegisc');
+        if (data.taskAllDone && data.videoAllDone && data.externalVideoDone) {
+          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
+        }
+      }
       window.__appData = data;
       const appData = data;
       const status = data.status || 'pending';
@@ -1822,11 +1842,21 @@
       el.textContent = text;
       el.style.background = bg; el.style.color = color;
     }
-    if (data.taskAllDone) setCardStatus('elearn-card-status','完了','#EBF7EF','#166534');
-    else if (step1Done) { setCardStatus('elearn-card-status','進行中','#FEF3E8','#9A3412'); }
-    else setCardStatus('elearn-card-status','未解放','#F3F4F6','#6B7280');
-    // sessionStorageからelearn-cardの開閉状態を復元
-    if (sessionStorage.getItem('card-elearn-card') === 'open') { openStep('elearn-card'); }
+    if (data.taskAllDone) {
+      setCardStatus('elearn-card-status','完了','#EBF7EF','#166534');
+      // 完了時はeラーニングカードをclose
+      const elCard = document.getElementById('elearn-card');
+      const elArrow = document.getElementById('arrow-elearn-card');
+      if (elCard) elCard.classList.remove('open');
+      if (elArrow) elArrow.classList.remove('open');
+      sessionStorage.removeItem('card-elearn-card');
+    } else if (step1Done) {
+      setCardStatus('elearn-card-status','進行中','#FEF3E8','#9A3412');
+      // sessionStorageからelearn-cardの開閉状態を復元
+      if (sessionStorage.getItem('card-elearn-card') === 'open') { openStep('elearn-card'); }
+    } else {
+      setCardStatus('elearn-card-status','未解放','#F3F4F6','#6B7280');
+    }
 
     if (data.videoAllDone) setCardStatus('video-card-status','完了','#EBF7EF','#166534');
     else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
