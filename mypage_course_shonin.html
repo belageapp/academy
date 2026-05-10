@@ -2191,19 +2191,19 @@
     const test2Passed = data.test2Passed === true;
 
     const testItem = (num, label, passed, locked) => `
-      <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;${locked ? 'opacity:0.5;' : ''}">
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${label}</div>
-          <div style="font-size:12px;color:var(--text-light);">
-            ${passed ? '✅ 合格済み' : locked ? '🔒 テスト１合格後に解放' : '受験可能'}
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;${locked ? 'opacity:0.5;' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${label}</div>
+            <div style="font-size:12px;color:var(--text-light);">
+              ${passed ? '✅ 合格済み' : locked ? '🔒 テスト１合格後に解放' : '受験可能'}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            ${passed ? '<button class="action-btn" style="background:var(--border);cursor:not-allowed;opacity:0.5;" disabled>合格済み</button>' : ''}
+            ${!locked ? `<button class="action-btn" onclick="window.openTestModal(${num})" style="white-space:nowrap;">${passed ? '🔄 再挑戦' : '受験する'}</button>` : '<button class="action-btn" style="background:#ccc;cursor:not-allowed;" disabled>ロック中</button>'}
           </div>
         </div>
-        <button class="action-btn"
-          style="background:${passed ? 'var(--border)' : locked ? '#ccc' : 'linear-gradient(135deg,#2BBCD4,#1A9AB0)'};cursor:${locked || passed ? 'not-allowed' : 'pointer'};opacity:${passed ? '0.5' : '1'};"
-          ${locked || passed ? 'disabled' : ''}
-          onclick="${locked || passed ? '' : `openTestModal(${num})`}">
-          ${passed ? '合格済み' : locked ? 'ロック中' : '受験する'}
-        </button>
       </div>`;
 
     el.innerHTML =
@@ -2358,33 +2358,19 @@
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
 
-    // 穴埋め問題のcontext重複を避けて表示（eラーニングと同じロジック）
+    // ○×のみ表示（正解は非表示）
     let listHtml = '';
-    let lastContextKey = null;
     questions.forEach((q, i) => {
       const ok = results[i];
-      if (q.context) {
-        const contextKey = q.context.split('\n')[0];
-        if (contextKey !== lastContextKey) {
-          lastContextKey = contextKey;
-          listHtml += '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:10px 14px;margin:10px 0 4px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>';
-        }
-      } else {
-        lastContextKey = null;
-      }
       const qText = q.text || q.question || '';
       const displayQ = qText.length > 50 ? qText.slice(0,50) + '…' : qText;
       const chosenIdx = answers[i] != null ? answers[i] - 1 : -1;
       const chosenLabel = chosenIdx >= 0 ? answers[i] + '（' + (q.choices[chosenIdx] || '') + '）' : '未回答';
-      const correctIdx = (q.answer || 1) - 1;
       listHtml += '<div class="quiz-result-row">' +
         '<div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
         '<div class="quiz-result-row-body">' +
           '<div>' + displayQ + '</div>' +
-          (ok
-            ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
-            : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + (q.choices[correctIdx] || '') + '）</div>'
-          ) +
+          '<div style="font-size:11px;color:' + (ok ? '#2E7D47' : 'var(--red)') + ';margin-top:2px;">あなたの回答：' + chosenLabel + '</div>' +
         '</div></div>';
     });
 
@@ -2394,12 +2380,12 @@
         '<div style="font-size:24px;font-weight:700;color:' + (isPassed ? 'var(--green)' : 'var(--red)') + ';">' + pct + '%</div>' +
         '<div style="font-size:14px;color:var(--text-mid);margin-top:4px;">' + correct + ' / ' + questions.length + '問正解（正答率' + pct + '%）</div>' +
         '<div style="margin-top:10px;padding:8px 20px;border-radius:20px;display:inline-block;background:' + (isPassed ? 'var(--green-light)' : 'var(--orange-light)') + ';color:' + (isPassed ? '#166534' : '#9A3412') + ';font-weight:700;font-size:14px;">' +
-          (isPassed ? '✅ 合格' : '❌ 不合格　（70点以上で合格）') +
+          (isPassed ? '✅ 合格' : '❌ 不合格　（70%以上で合格）') +
         '</div>' +
       '</div>' +
       '<div style="margin-bottom:16px;">' + listHtml + '</div>' +
       '<button onclick="document.getElementById(&quot;task-modal&quot;).classList.remove(&quot;open&quot;);location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>' +
-      (!isPassed ? '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>' : '');
+      '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>';
   }
 
 
