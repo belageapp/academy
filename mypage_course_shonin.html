@@ -641,7 +641,7 @@
     <div class="tl-item">
       <div class="tl-dot tl-dot-lock" id="tl-dot-1">1</div>
       <div class="step-section">
-        <button class="step-header" onclick="toggleStep('step1-body')">
+        <button class="step-header" onclick="window.toggleStep && window.toggleStep('step1-body')">
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#FAEEDA;">📄</div>
             <div class="step-header-text">
@@ -664,7 +664,7 @@
     <div class="tl-item">
       <div class="tl-dot tl-dot-lock" id="tl-dot-2">2</div>
       <div class="step-section">
-        <button class="step-header" onclick="toggleStep('step2-body')">
+        <button class="step-header" onclick="window.toggleStep && window.toggleStep('step2-body')">
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#E6F1FB;">🎓</div>
             <div class="step-header-text">
@@ -736,7 +736,7 @@
     <div class="tl-item">
       <div class="tl-dot tl-dot-lock" id="tl-dot-3">3</div>
       <div class="step-section" id="test-section">
-        <button class="step-header" onclick="toggleStep('test-body')">
+        <button class="step-header" onclick="window.toggleStep && window.toggleStep('test-body')">
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#FBEAF0;">📝</div>
             <div class="step-header-text">
@@ -759,7 +759,7 @@
     <div class="tl-item">
       <div class="tl-dot tl-dot-lock" id="tl-dot-4">4</div>
       <div class="step-section">
-        <button class="step-header" onclick="toggleStep('ojt-body')">
+        <button class="step-header" onclick="window.toggleStep && window.toggleStep('ojt-body')">
           <div class="step-header-left">
             <div class="step-icon-wrap" style="background:#EEEDFE;">🏁</div>
             <div class="step-header-text">
@@ -1900,7 +1900,7 @@
     else setCardStatus('AEGISC-LMS-card-status','未解放','#F3F4F6','#6B7280');
 
     // テスト描画
-    renderTestList(data, step2Done);
+    window.renderTestList && window.renderTestList(data, step2Done);
     if (step2Done) {
       // Step3（テスト）をopen
       if (!data.test2Passed) { openStep('test-body'); }
@@ -2394,7 +2394,7 @@
         '</div>' +
       '</div>' +
       '<div style="margin-bottom:16px;">' + listHtml + '</div>' +
-      '<button onclick="document.getElementById('task-modal').classList.remove('open');location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>' +
+      '<button onclick="document.getElementById(&quot;task-modal&quot;).classList.remove(&quot;open&quot;);location.reload();" class="quiz-result-btn primary" style="width:100%;">✅ 講座ページに戻る</button>' +
       (!isPassed ? '<button onclick="window.openTestModal(' + num + ')" class="quiz-result-btn" style="width:100%;margin-top:8px;">🔄 再挑戦する</button>' : '');
   }
 
