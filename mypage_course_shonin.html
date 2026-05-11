@@ -1683,7 +1683,7 @@
       '<div class="quiz-result-header"><div class="quiz-result-score ' + (isPassed ? 'pass' : 'fail') + '">' + pct + '%</div>' +
       '<div class="quiz-result-label">' + (isPassed ? '🎉 合格！' : '😢 不合格') + '</div>' +
       '<div class="quiz-result-detail">全' + total + '問中 <strong>' + correct + '問</strong> 正解（合格基準：70%以上）<br>' +
-      (isPassed ? '<span style="color:#2E7D47;font-weight:700;">次のテーマが解放されました！</span>' : '<span style="color:var(--red);">もう一度挑戦できます。何度でも挑戦してください。</span>') +
+      (isPassed ? '' : '<span style="color:var(--red);">もう一度挑戦できます。何度でも挑戦してください。</span>') +
       '</div></div>' +
       '<div class="quiz-result-list"><div class="quiz-result-list-title">📋 全問 回答結果一覧</div>' + listHtml + '</div>' +
       '<div class="quiz-result-btns">' +
