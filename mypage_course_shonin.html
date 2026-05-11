@@ -917,7 +917,83 @@
     </div>
   </div>
 </div>
+<!-- 実習先届出モーダル -->
+<div id="venue-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:520px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">🏥 介護実習先の届出</div>
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:20px;line-height:1.7;">実習は、現在勤務中の介護施設か、実習受け入れの同意を得ている場合に限り、ご希望に添えます。該当する施設がある場合は届け出てください。</p>
 
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+      <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-none-label">
+        <input type="radio" name="venue-choice" value="none" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
+        <div>
+          <div style="font-weight:700;font-size:14px;">届け出る施設はない（当校指定）</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">当校が指定する実習先で実習を行います</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-have-label">
+        <input type="radio" name="venue-choice" value="have" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
+        <div>
+          <div style="font-weight:700;font-size:14px;">届け出る施設がある</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設情報を入力してください</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- 施設情報フォーム -->
+    <div id="venue-form" style="display:none;">
+      <div style="background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;">施設情報</div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text-mid);">施設名 <span style="color:red;">*</span></label>
+          <input id="venue-name" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <label style="font-size:12px;color:var(--text-mid);">郵便番号 <span style="color:red;">*</span></label>
+            <input id="venue-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          </div>
+          <div style="flex:2;">
+            <label style="font-size:12px;color:var(--text-mid);">住所 <span style="color:red;">*</span></label>
+            <input id="venue-address" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text-mid);">電話番号 <span style="color:red;">*</span></label>
+          <input id="venue-phone" type="tel" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <label style="font-size:12px;color:var(--text-mid);">担当者 部署</label>
+            <input id="venue-dept" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;color:var(--text-mid);">担当者 氏名 <span style="color:red;">*</span></label>
+            <input id="venue-contact" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text-mid);">届出の理由 <span style="color:red;">*</span></label>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;" id="venue-reason-group">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務中"> 現在勤務している</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務予定" onchange="onReasonChange()"> 勤務予定</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="受け入れ同意済み"> 受け入れの同意を得ている</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="その他" onchange="onReasonChange()"> その他</label>
+          </div>
+        </div>
+        <div id="venue-reason-detail-wrap" style="display:none;margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text-mid);" id="venue-reason-detail-label">詳細</label>
+          <input id="venue-reason-detail" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeVenueModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button id="venue-submit-btn" onclick="submitVenue()" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;opacity:0.4;pointer-events:none;">届出を送信する</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -2183,6 +2259,90 @@
       alert('アップロードに失敗しました：' + e.message);
     }
   };
+  // 実習先届出モーダル
+  function openVenueModal() {
+    document.getElementById('venue-modal').style.display = 'block';
+    document.querySelectorAll('input[name="venue-choice"]').forEach(r => r.checked = false);
+    document.getElementById('venue-form').style.display = 'none';
+    document.getElementById('venue-submit-btn').style.opacity = '0.4';
+    document.getElementById('venue-submit-btn').style.pointerEvents = 'none';
+  }
+  function closeVenueModal() {
+    document.getElementById('venue-modal').style.display = 'none';
+  }
+  function onVenueChoiceChange() {
+    const val = document.querySelector('input[name="venue-choice"]:checked')?.value;
+    document.getElementById('venue-form').style.display = val === 'have' ? 'block' : 'none';
+    document.getElementById('venue-submit-btn').style.opacity = val ? '1' : '0.4';
+    document.getElementById('venue-submit-btn').style.pointerEvents = val ? 'auto' : 'none';
+  }
+  function onReasonChange() {
+    const reason = document.querySelector('input[name="venue-reason"]:checked')?.value;
+    const wrap = document.getElementById('venue-reason-detail-wrap');
+    const lbl = document.getElementById('venue-reason-detail-label');
+    if (reason === '勤務予定') {
+      wrap.style.display = 'block';
+      lbl.textContent = 'いつからの予定ですか？';
+    } else if (reason === 'その他') {
+      wrap.style.display = 'block';
+      lbl.textContent = '詳細を入力してください';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+  async function submitVenue() {
+    const choice = document.querySelector('input[name="venue-choice"]:checked')?.value;
+    if (!choice) return;
+    const btn = document.getElementById('venue-submit-btn');
+    btn.textContent = '送信中...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const docId = window.__docId;
+      let venueData = { practiceVenueReported: true, practiceVenueReportedAt: serverTimestamp() };
+
+      if (choice === 'have') {
+        const reason = document.querySelector('input[name="venue-reason"]:checked')?.value;
+        const detail = document.getElementById('venue-reason-detail').value.trim();
+        if (!document.getElementById('venue-name').value.trim() ||
+            !document.getElementById('venue-zip').value.trim() ||
+            !document.getElementById('venue-address').value.trim() ||
+            !document.getElementById('venue-phone').value.trim() ||
+            !document.getElementById('venue-contact').value.trim() || !reason) {
+          alert('必須項目を入力してください');
+          btn.textContent = '届出を送信する';
+          btn.style.pointerEvents = 'auto';
+          return;
+        }
+        venueData.practiceVenue = {
+          name: document.getElementById('venue-name').value.trim(),
+          zip: document.getElementById('venue-zip').value.trim(),
+          address: document.getElementById('venue-address').value.trim(),
+          phone: document.getElementById('venue-phone').value.trim(),
+          dept: document.getElementById('venue-dept').value.trim(),
+          contact: document.getElementById('venue-contact').value.trim(),
+          reason: reason + (detail ? '：' + detail : ''),
+        };
+      } else {
+        venueData.practiceVenue = { name: '当校指定' };
+      }
+
+      await updateDoc(doc(db, 'applications', docId), venueData);
+      closeVenueModal();
+      location.reload();
+    } catch(e) {
+      alert('送信に失敗しました：' + e.message);
+      btn.textContent = '届出を送信する';
+      btn.style.pointerEvents = 'auto';
+    }
+  }
+  window.openVenueModal = openVenueModal;
+  window.closeVenueModal = closeVenueModal;
+  window.onVenueChoiceChange = onVenueChoiceChange;
+  window.onReasonChange = onReasonChange;
+  window.submitVenue = submitVenue;
 </script>
 
 <script>
