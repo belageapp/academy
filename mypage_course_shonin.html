@@ -1507,7 +1507,8 @@
 
     const navDots = questions.map((_, i) => {
       const cls = i === currentIndex ? 'current' : answers[i] !== null ? 'answered' : '';
-      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + i + ')">' + (i+1) + '</div>';
+      const dotNum = (questions[i].id || '').replace(/^\d+-/, '') || String(i+1);
+      return '<div class="quiz-nav-dot ' + cls + '" onclick="window.goToQuestion(' + i + ')" style="min-width:28px;font-size:10px;">' + dotNum + '</div>';
     }).join('');
 
     const choicesHtml = q.choices.map((c, i) => {
@@ -1564,7 +1565,26 @@
   };
   window.submitQuiz = async function() {
     const { questions, answers, themeNum } = quizState;
-    const results = questions.map((q, i) => answers[i] === q.answer);
+        // 順不同グループの採点
+        const groupAnswers = {};
+        questions.forEach((q, i) => {
+          if (q.unordered_group) {
+            if (!groupAnswers[q.unordered_group]) groupAnswers[q.unordered_group] = { answers: [], correct: [] };
+            groupAnswers[q.unordered_group].answers.push(answers[i]);
+            groupAnswers[q.unordered_group].correct.push(q.answer);
+          }
+        });
+        const groupResults = {};
+        Object.keys(groupAnswers).forEach(grp => {
+          const ga = groupAnswers[grp];
+          const ansSet = [...ga.answers].sort((a,b)=>a-b);
+          const corSet = [...ga.correct].sort((a,b)=>a-b);
+          groupResults[grp] = ansSet.length === corSet.length && ansSet.every((v,i2) => v === corSet[i2]);
+        });
+        const results = questions.map((q, i) => {
+          if (q.unordered_group) return groupResults[q.unordered_group] || false;
+          return answers[i] === q.answer;
+        });
     const correct = results.filter(r => r).length;
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
@@ -1647,7 +1667,7 @@
         }
         const displayQ = q.question.length > 50 ? q.question.slice(0,50) + '…' : q.question;
         html += '<div class="quiz-result-row"><div class="quiz-result-row-icon">' + (ok ? '✅' : '❌') + '</div>' +
-          '<div class="quiz-result-row-body"><div>Q' + (i+1) + '. ' + displayQ + '</div>' +
+          '<div class="quiz-result-row-body"><div>' + displayQ + '</div>' +
           (ok
             ? '<div style="font-size:11px;color:#2E7D47;margin-top:2px;">回答：' + chosenLabel + '</div>'
             : '<div class="quiz-result-row-wrong">あなた：' + chosenLabel + ' ／ 正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>'
@@ -1678,7 +1698,7 @@
   function renderReviewMode(content, questions, themeNum) {
     const theme = LEARNING_THEMES[themeNum - 1];
     const itemsHtml = questions.map((q, i) =>
-      '<div class="review-item"><div class="review-q">Q' + (i+1) + '. ' + q.question + '</div>' +
+      '<div class="review-item"><div class="review-q">' + q.question + '</div>' +
       (q.context ? '<div style="background:#F0FBFD;border-left:3px solid var(--teal);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;">' + q.context + '</div>' : '') +
       '<div class="review-ans">正解：' + q.answer + '（' + q.choices[q.answer-1] + '）</div>' +
       (q.ref ? '<div class="review-ref">📖 参照：テキスト ' + q.ref + '</div>' : '') + '</div>'
@@ -2347,7 +2367,25 @@
 
   window.testSubmit = async function() {
     const { num, questions, answers } = testState;
-    const results = questions.map((q, i) => answers[i] === q.answer);
+    const groupAnswers2 = {};
+    questions.forEach((q, i) => {
+      if (q.unordered_group) {
+        if (!groupAnswers2[q.unordered_group]) groupAnswers2[q.unordered_group] = { answers: [], correct: [] };
+        groupAnswers2[q.unordered_group].answers.push(answers[i]);
+        groupAnswers2[q.unordered_group].correct.push(q.answer);
+      }
+    });
+    const groupResults2 = {};
+    Object.keys(groupAnswers2).forEach(grp => {
+      const ga = groupAnswers2[grp];
+      const ansSet = [...ga.answers].sort((a,b)=>a-b);
+      const corSet = [...ga.correct].sort((a,b)=>a-b);
+      groupResults2[grp] = ansSet.length === corSet.length && ansSet.every((v,i2) => v === corSet[i2]);
+    });
+    const results = questions.map((q, i) => {
+      if (q.unordered_group) return groupResults2[q.unordered_group] || false;
+      return answers[i] === q.answer;
+    });
     const correct = results.filter(r => r).length;
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
