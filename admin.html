@@ -1246,7 +1246,8 @@ document.getElementById('m-status').value = a.status || 'pending';
     const photoOk = type === 'photo' ? true : docStatus.photo === 'approved';
     const idOk = type === 'id' ? true : docStatus.idDocument === 'approved';
     const pledgeOk = appData.pledgeSigned === true;
-    if (photoOk && idOk && pledgeOk) {
+    const venueOk = appData.practiceVenueReported === true;
+    if (photoOk && idOk && pledgeOk && venueOk) {
       const counterRef = window.__doc(window.__db, 'counters', 'edulio');
       const counterSnap = await window.__getDoc(counterRef);
       const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;

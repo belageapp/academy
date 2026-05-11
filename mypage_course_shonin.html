@@ -1780,7 +1780,8 @@
     const test1Ok = data.test1Passed === true;
     const test2Ok = data.test2Passed === true;
     const ojtOk = data.ojtPassed === true;
-    const step1Done = photoOk && idOk && pledgeOk;
+    const venueOk = data.practiceVenueReported === true;
+    const step1Done = photoOk && idOk && pledgeOk && venueOk;
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
 
     // 銀行振込情報
@@ -1880,6 +1881,8 @@
       html += sfi('顔写真の提出', photoOk, isConfirmed && !photoOk, photoExtra);
       html += sfi('本人確認書類の提出', idOk, isConfirmed && !idOk, idExtra);
       html += sfi('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, pledgeExtra);
+      const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">届け出る</button>' : '';
+      html += sfi('介護実習先の届出', venueOk, isConfirmed && !venueOk, venueExtra);
       if (isConfirmed) {
         const pledgeLabel = pledgeOk ? '📖 学則・修了要件・誓約書を確認する' : '📖 学則・修了要件・誓約書を確認・同意する';
         html += '<div style="margin-top:10px;"><a href="gakusoku.html?id=' + window.__docId + '" style="font-size:12px;color:var(--teal-dark);text-decoration:none;">' + pledgeLabel + '</a></div>';
