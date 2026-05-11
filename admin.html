@@ -369,6 +369,7 @@
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -558,6 +559,11 @@
           </div>
         </div>
       </div><!-- /section-documents -->
+
+      <div id="section-venue" style="display:none;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🏥 実習先届出一覧</div>
+        <div id="venue-list">読み込み中...</div>
+      </div><!-- /section-venue -->
 
     </div>
   </div>
@@ -902,13 +908,16 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('section-applications').style.display = section === 'applications' ? 'block' : 'none';
     document.getElementById('section-notices').style.display      = section === 'notices'      ? 'block' : 'none';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
+    document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
+    if (section === 'venue') loadVenueList();
     document.getElementById('topbar-title').textContent = 
       section === 'applications' ? '📋 申し込み管理' : 
       section === 'notices' ? '📢 お知らせ管理' : 
-      section === 'documents' ? '🪪 書類確認' : '';
+      section === 'documents' ? '🪪 書類確認' :
+      section === 'venue'     ? '🏥 実習先届出' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
@@ -1396,6 +1405,49 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('image-modal').style.display = 'none';
   }
   window.closeImageModal = closeImageModal;
+  async function loadVenueList() {
+    const el = document.getElementById('venue-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(
+        collection(window.__db, 'applications'),
+        where('practiceVenueReported', '==', true),
+        orderBy('practiceVenueReportedAt', 'desc')
+      ));
+      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
+      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+      html += '<thead><tr style="background:var(--sidebar);color:white;">' +
+        '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
+        '<th style="padding:10px 12px;text-align:left;">施設名</th>' +
+        '<th style="padding:10px 12px;text-align:left;">住所</th>' +
+        '<th style="padding:10px 12px;text-align:left;">電話番号</th>' +
+        '<th style="padding:10px 12px;text-align:left;">担当者</th>' +
+        '<th style="padding:10px 12px;text-align:left;">届出理由</th>' +
+        '<th style="padding:10px 12px;text-align:left;">届出日</th>' +
+        '</tr></thead><tbody>';
+      snap.docs.forEach(d => {
+        const a = d.data();
+        const v = a.practiceVenue || {};
+        const date = a.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isSchool = v.name === '当校指定';
+        html += `<tr style="border-bottom:1px solid #eee;">
+          <td style="padding:10px 12px;">${a.sei || ''}${a.mei || ''}<br><span style="font-size:11px;color:#888;">${a.email || ''}</span></td>
+          <td style="padding:10px 12px;">${isSchool ? '<span style="color:#888;">当校指定</span>' : (v.name || '—')}</td>
+          <td style="padding:10px 12px;">${isSchool ? '—' : ((v.zip ? '〒' + v.zip + ' ' : '') + (v.address || '—'))}</td>
+          <td style="padding:10px 12px;">${isSchool ? '—' : (v.phone || '—')}</td>
+          <td style="padding:10px 12px;">${isSchool ? '—' : ((v.dept ? v.dept + '<br>' : '') + (v.contact || '—'))}</td>
+          <td style="padding:10px 12px;">${isSchool ? '—' : (v.reason || '—')}</td>
+          <td style="padding:10px 12px;">${date}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadVenueList = loadVenueList;
 </script>
 
 <!-- 画像拡大モーダル -->
