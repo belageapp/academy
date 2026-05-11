@@ -619,8 +619,8 @@
         <div class="app-row"><span class="app-label">郵便番号</span><span class="app-value" id="app-zip">—</span></div>
         <div class="app-row"><span class="app-label">住所</span><span class="app-value" id="app-address">—</span></div>
         <div class="app-row" id="app-address2-row" style="display:none;"><span class="app-label">建物名等</span><span class="app-value" id="app-address2">—</span></div>
-        <div class="app-row" id="app-altaddr-row" style="display:none;"><span class="app-label">別途郵送先</span><span class="app-value" id="app-altaddr">—</span></div>
-        <div class="app-row" id="app-workplace-row" style="display:none;"><span class="app-label">お勤め先</span><span class="app-value" id="app-workplace">—</span></div>
+        <div class="app-row" id="app-altaddr-row"><span class="app-label">別途郵送先</span><span class="app-value" id="app-altaddr" style="font-size:12px;line-height:1.6;">—</span></div>
+        <div class="app-row" id="app-workplace-row" style="display:none;"><span class="app-label">お勤め先</span><span class="app-value" id="app-workplace" style="font-size:12px;line-height:1.6;">—</span></div>
         <div class="app-row" id="app-message-row" style="display:none;"><span class="app-label">ご質問等</span><span class="app-value" id="app-message" style="font-size:12px;line-height:1.6;">—</span></div>
         <div class="app-section-label">📅 受講日程</div>
         <div class="app-row"><span class="app-label">申込日</span><span class="app-value" id="app-applied">—</span></div>
@@ -1056,8 +1056,9 @@
         document.getElementById('app-address2').textContent = data.address2;
       }
       if (data.alt_addr === '別の住所に送る' && (data.alt_addr1 || data.alt_zip)) {
-        document.getElementById('app-altaddr-row').style.display = '';
         document.getElementById('app-altaddr').textContent = (data.alt_zip ? '〒' + data.alt_zip + '　' : '') + (data.alt_addr1 || '') + (data.alt_addr2 ? '　' + data.alt_addr2 : '');
+      } else {
+        document.getElementById('app-altaddr').textContent = '（なし）';
       }
       if (data.workplace) {
         document.getElementById('app-workplace-row').style.display = '';
