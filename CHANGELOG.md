@@ -2,6 +2,26 @@
 
 ---
 
+## v1.11.0 - 2026/05/11（構築１１）
+
+### eラーニング 採点・問題修正
+- 合格時の「次のテーマが解放されました！」メッセージを削除
+  （全テーマが最初から開放されているため不要）
+- 順不同グループ採点に対応
+  - theme4：問題11-1〜11-4、11-5〜11-8
+  - theme8：問題10-1〜10-5
+  - theme9：問題2-2〜2-3
+  - グループ内の回答セットが正解セットと一致すれば全問正解
+- theme1 問題1：正解を3→1に修正
+- theme9 問題2-2：正解を1→4に、問題2-3：正解を4→8に修正
+- 採点結果・復習画面の「Q1.」プレフィックスを削除
+
+### 受講内容セクション 表示改善
+- 「別途郵送先」を常に表示するよう変更（入力なしの場合は「（なし）」と表示）
+- お勤め先・ご質問等・別途郵送先の値テキストサイズを `font-size:12px; line-height:1.6` に統一
+
+---
+
 ## v1.10.0 - 2026/05/06（構築１０）
 
 ### テスト機能 実装
@@ -36,25 +56,17 @@
 - `externalVideoDone`：外部動画完了フラグ
 - 3つすべて `true` で `step2Done` が成立しテスト解放
 
----
+### 外部動画（edulio）承認フロー
+- ユーザーが「視聴完了を報告する」→ `externalVideoPending: true`
+- admin.html の書類確認一覧に外部動画承認欄を追加（承認・差し戻し・承認取消）
+- 承認時：`externalVideoDone: true` に更新 + ユーザーへメール送信（sendEdulioApprovedMail）
+- 差し戻し時：理由をユーザーへメール送信（sendEdulioRejectedMail）
+- Cloud Functions に `sendEdulioApprovedMail`・`sendEdulioRejectedMail` を追加・デプロイ
 
-## v1.11.0 - 2026/05/11（構築１１）
-
-### eラーニング 採点・問題修正
-- 合格時の「次のテーマが解放されました！」メッセージを削除
-  （全テーマが最初から開放されているため不要）
-- 順不同グループ採点に対応
-  - theme4：問題11-1〜11-4、11-5〜11-8
-  - theme8：問題10-1〜10-5
-  - theme9：問題2-2〜2-3
-  - グループ内の回答セットが正解セットと一致すれば全問正解
-- theme1 問題1：正解を3→1に修正
-- theme9 問題2-2：正解を1→4に、問題2-3：正解を4→8に修正
-- 採点結果・復習画面の「Q1.」プレフィックスを削除
-
-### 受講内容セクション 表示改善
-- 「別途郵送先」を常に表示するよう変更（入力なしの場合は「（なし）」と表示）
-- お勤め先・ご質問等・別途郵送先の値テキストサイズを `font-size:12px; line-height:1.6` に統一
+### バグ修正
+- `admin.html` の `saveStatus()` 内のブラケット不整合（SyntaxError）を修正
+- `active` ステータス変更時に edulio ID が発行されない問題を修正
+- `sendNotice` のエラーで後続のメール送信が止まっていた問題を修正（try/catch）
 
 ---
 
@@ -74,21 +86,31 @@
 - mypage.html：カードに受講開始日・仮修了期限・正式修了期限・仮修了日・修了日を追加
 - mypage.html：セクション幅をcourseと統一（max-width: 680px）
 - mypage.html：statusLabelにactive追加
+- 申し込みフローをクレジット案２に変更（保存→メール送信→完了画面→決済）
+- ステータス表示統一（pending→入金待ち（振込）、awaiting_payment→入金待ち（カード））
+- awaiting_payment状態のcourse画面対応（再決済ボタン・ロック表示）
+- 銀行振込完了画面・payment_success.htmlにマイページへボタン追加
+- 振込情報モーダル新設（Step0「🏦 振込情報」ボタン）
+- admin.html振込確認・saveStatus時にメール・お知らせ自動送信
+- 誓約書同意時のメール送信（sendPledgeSignedMail）
+- edulio ID・パスワード表示・コピーボタン・視聴完了報告ボタン追加
+- active変更時にedulio IDを自動発行（hca001〜連番、counters/edulioで管理）
+- noticesにapplicationIdを保存・applicationId/applicationIds両方で削除対応
 
 ### セキュリティ
 - admin.htmlのログインをinfo@holiscare.or.jpのみに制限
 
 ### バグ修正
-- gakusoku.html：誓約書送信時のエラー処理改善
-
-### データ設計
-- notices作成時にapplicationIdを保存するよう変更
-- applicationId/applicationIds両方でnotices削除に対応
-- admin.htmlの受講生選択をステータスフィルター・名前/メール検索付きに改善
-- mypage_course_shonin.html：noticesをapplication作成日以降のもののみ表示
+- gakusoku.html：誓約書送信エラーの修正
+- __serverTimestamp → __serverTs のバグ修正
+- mypage.html：markReadのnullチェック追加
 
 ### Cloud Functions
-- onApplicationDeletedトリガー追加
+- sendConfirmationEmailHttp 追加
+- sendPledgeSignedMail 追加
+- sendActiveNotifyMail 追加
+- onApplicationDeleted トリガー追加
+- onNoticeCreated 削除（不要な通知メールを廃止）
 
 ---
 
@@ -108,7 +130,6 @@
 - 復習ボタン：オレンジ系グラデーション
 - 再挑戦ボタン：明るいカラー
 - 学習するボタン：ブルー系に統一
-- 不合格後「不合格」ステータス表示
 
 ---
 
@@ -117,24 +138,18 @@
 ### 外部動画（edulio）機能
 - 外部動画セクション追加
 - edulio視聴完了報告ボタン実装
-- 管理者承認フロー（externalVideoPending → externalVideoDone）
-- 承認後お知らせ送信
-
-### 自社動画機能
-- 動画セクションのトグル制御改善
 - videoAllDoneフラグ管理
 
 ### テストセクション（準備）
 - テストセクションのロックデザイン実装
 - step2Done条件（taskAllDone && videoAllDone && externalVideoDone）設定
-- テスト解放時のUI表示
 
 ---
 
 ## v1.6.0 - 2026/05/02（構築６）
 
 ### eラーニング基盤
-- quiz/theme1〜10.json 生成スクリプト作成（questions_r1〜5_final.jsonから変換）
+- quiz/theme1〜10.json 生成スクリプト作成
 - task-modalのHTML・CSS実装
 - openTask関数・closeTask関数実装
 - FirestoreへのquizProgress保存
@@ -153,7 +168,6 @@
 - mypage.html TOP：お知らせ・受講講座一覧・パスワード変更
 - mypage_course_shonin.html 詳細ページ新規作成
 - 既存ユーザーも毎回パスワード再発行する仕様に変更
-- 申し込み履歴表示
 
 ---
 
@@ -182,7 +196,6 @@
 - Firestore・Firebase Auth・Storage設定
 - shonin_online_form.html 申し込みフォーム作成
 - Stripe決済連携（createCheckoutSession）
-- Apple Pay・Link対応
 
 ---
 
