@@ -1075,11 +1075,12 @@
     document.getElementById('doc-name').value = name;
 
     let __isFirstSnapshot = true;
+    let __prevData = null;
     onSnapshot(doc(db, 'applications', docId), async (snap) => {
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       try {
       const data = snap.data();
-      const prevData = window.__appData || {};
+      const prevData = __prevData || {};
       // 初回発火はスキップ（リロード時の誤発動防止）
       if (!__isFirstSnapshot) {
         // 各完了フラグが今回初めてtrueになった時に通知
@@ -1103,6 +1104,7 @@
         }
       }
       __isFirstSnapshot = false;
+      __prevData = data;
       window.__appData = data;
       const appData = data;
       const status = data.status || 'pending';
