@@ -1647,7 +1647,7 @@ document.getElementById('m-status').value = a.status || 'pending';
         createdAt: serverTimestamp(),
         createdBy: 'info@holiscare.or.jp',
       });
-      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendOjtApprovedMail', {
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email })
