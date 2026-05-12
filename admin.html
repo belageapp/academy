@@ -1538,8 +1538,8 @@ document.getElementById('m-status').value = a.status || 'pending';
       });
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
-        title: '実習修了が承認されました',
-        body: '実習修了が承認されました。正式な修了証明書を郵送します。今後ともよろしくお願いいたします。',
+        title: '実習修了報告が承認されました',
+        body: '実習修了報告が承認されました。修了レポートの承認も完了次第、正式な修了証明書を発行します。',
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -1550,7 +1550,12 @@ document.getElementById('m-status').value = a.status || 'pending';
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email })
       });
-      alert('承認しました。「正式修了証発行」メニューから発行手続きを行ってください。');
+      // 修了レポートも承認済みなら完了メール
+      const appSnap2 = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+      if (appSnap2.data().reportApproved === true) {
+        await sendBothApprovedNotice(docId, email, name);
+      }
+      alert('承認しました。');
       loadOjtList();
     } catch(e) {
       alert('エラー：' + e.message);
@@ -1740,6 +1745,16 @@ document.getElementById('m-status').value = a.status || 'pending';
         createdAt: serverTimestamp(),
         createdBy: 'info@holiscare.or.jp',
       });
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendOjtApprovedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+      // 実習修了報告も承認済みなら完了メール
+      const appSnap3 = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+      if (appSnap3.data().ojtPassed === true) {
+        await sendBothApprovedNotice(docId, email, name);
+      }
       alert('承認しました');
       loadReportList();
     } catch(e) {
@@ -1775,6 +1790,26 @@ document.getElementById('m-status').value = a.status || 'pending';
   window.loadReportList = loadReportList;
   window.approveReport = approveReport;
   window.rejectReport = rejectReport;
+  async function sendBothApprovedNotice(docId, email, name) {
+    try {
+      const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await addDoc(collection(window.__db, 'notices'), {
+        applicationId: docId,
+        title: '全ての課程が完了しました',
+        body: '実習修了報告と修了レポートの承認が完了しました。正式な修了証明書を発行し、ご登録のご住所に郵送します。',
+        target: 'specific',
+        emails: [email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+    } catch(e) { console.warn('完了メール送信失敗:', e); }
+  }
+  window.sendBothApprovedNotice = sendBothApprovedNotice;
 </script>
 
 <!-- 画像拡大モーダル -->
