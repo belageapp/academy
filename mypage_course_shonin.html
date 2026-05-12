@@ -994,7 +994,33 @@
     </div>
   </div>
 </div>
-
+<!-- 実習修了報告モーダル -->
+<div id="ojt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:480px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">🏥 実習修了報告</div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;line-height:1.7;">介護施設での実習が修了しましたら、以下を入力して報告してください。確認後、正式な修了証明書を発行・郵送します。</p>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--text-mid);">実習施設名 <span style="color:red;">*</span></label>
+      <input id="ojt-facility" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--text-mid);">実習期間 <span style="color:red;">*</span></label>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+        <input id="ojt-date-from" type="date" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        <span style="font-size:13px;color:var(--text-mid);">〜</span>
+        <input id="ojt-date-to" type="date" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:var(--text-mid);">備考・特記事項</label>
+      <textarea id="ojt-note" rows="3" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeOjtReport()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button onclick="submitOjtReport()" id="ojt-submit-btn" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">報告する</button>
+    </div>
+  </div>
+</div>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -1922,6 +1948,20 @@
     }
     else { setDot(4,'lock'); setTag('step4-tag','未解放','lock'); }
 
+    // Step4コンテンツ描画
+    const step4El = document.getElementById('ojt-body');
+    if (step4El) {
+      if (ojtOk) {
+        step4El.innerHTML = '<div style="padding:12px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#2E7D32;font-weight:700;">✅ 実習修了報告が完了しています</div>';
+      } else if (test2Ok) {
+        step4El.innerHTML = `
+          <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">実習が修了したら、以下のボタンから修了報告を行ってください。</p>
+          <button onclick="openOjtReport()" style="padding:10px 20px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🏥 実習修了を報告する</button>`;
+      } else {
+        step4El.innerHTML = '<div style="padding:12px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--text-light);">🔒 テスト２合格後に解放されます</div>';
+      }
+    }
+
     // Step1コンテンツ描画
     const step1El = document.getElementById('step1-content');
     if (step1El) {
@@ -2343,6 +2383,63 @@
   window.onVenueChoiceChange = onVenueChoiceChange;
   window.onReasonChange = onReasonChange;
   window.submitVenue = submitVenue;
+  // 実習修了報告モーダル
+  function openOjtReport() {
+    document.getElementById('ojt-modal').style.display = 'block';
+    document.getElementById('ojt-facility').value = '';
+    document.getElementById('ojt-date-from').value = '';
+    document.getElementById('ojt-date-to').value = '';
+    document.getElementById('ojt-note').value = '';
+  }
+  function closeOjtReport() {
+    document.getElementById('ojt-modal').style.display = 'none';
+  }
+  async function submitOjtReport() {
+    const facility = document.getElementById('ojt-facility').value.trim();
+    const dateFrom = document.getElementById('ojt-date-from').value;
+    const dateTo = document.getElementById('ojt-date-to').value;
+    const note = document.getElementById('ojt-note').value.trim();
+    if (!facility || !dateFrom || !dateTo) {
+      alert('実習施設名と実習期間を入力してください');
+      return;
+    }
+    const btn = document.getElementById('ojt-submit-btn');
+    btn.textContent = '送信中...';
+    btn.style.pointerEvents = 'none';
+    try {
+      const { doc, updateDoc, serverTimestamp, addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const docId = window.__docId;
+      await updateDoc(doc(db, 'applications', docId), {
+        ojtPassed: true,
+        ojtPassedAt: serverTimestamp(),
+        ojtReport: { facility, dateFrom, dateTo, note }
+      });
+      // お知らせ送信
+      try {
+        const appSnap = await getDoc(doc(db, 'applications', docId));
+        const appData = appSnap.data();
+        await addDoc(collection(db, 'notices'), {
+          applicationId: docId,
+          title: '実習修了報告を受け付けました',
+          body: '実習修了報告を受け付けました。内容を確認の上、正式な修了証明書を発行・郵送します。',
+          target: 'specific',
+          emails: [appData.email],
+          createdAt: serverTimestamp(),
+          createdBy: 'info@holiscare.or.jp',
+        });
+      } catch(e) { console.warn('お知らせ送信失敗:', e); }
+      closeOjtReport();
+      location.reload();
+    } catch(e) {
+      alert('送信に失敗しました：' + e.message);
+      btn.textContent = '報告する';
+      btn.style.pointerEvents = 'auto';
+    }
+  }
+  window.openOjtReport = openOjtReport;
+  window.closeOjtReport = closeOjtReport;
+  window.submitOjtReport = submitOjtReport;
 </script>
 
 <script>
