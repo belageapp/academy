@@ -2397,6 +2397,32 @@
       }
 
       await updateDoc(doc(db, 'applications', docId), venueData);
+      // active判定
+      try {
+        const appSnap = await getDoc(doc(db, 'applications', docId));
+        const appData = appSnap.data();
+        const docStatus = appData.documentStatus || {};
+        const photoOk = docStatus.photo === 'approved';
+        const idOk = docStatus.idDocument === 'approved';
+        const pledgeOk = appData.pledgeSigned === true;
+        if (photoOk && idOk && pledgeOk) {
+          const { runTransaction, doc: docRef } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          const counterRef = docRef(db, 'counters', 'edulio');
+          let edulioId, edulioPassword;
+          await runTransaction(db, async (tx) => {
+            const counterSnap = await tx.get(counterRef);
+            const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
+            const newNum = currentNum + 1;
+            edulioId = 'hca' + String(newNum).padStart(3, '0');
+            const map = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+            edulioPassword = edulioId + map[(newNum - 1) % map.length];
+            tx.update(counterRef, { count: newNum });
+          });
+          await updateDoc(doc(db, 'applications', docId), {
+            status: 'active', activeAt: serverTimestamp(), edulioId, edulioPassword, edulioIssuedAt: serverTimestamp()
+          });
+        }
+      } catch(e) { console.warn('active判定失敗:', e); }
       closeVenueModal();
       location.reload();
     } catch(e) {
