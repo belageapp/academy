@@ -1122,7 +1122,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     let approvedCount = 0;
     let html = '';
 
-    snap.docs.forEach(d => {
+    docs.forEach(d => {
       const data = d.data();
       const docStatus = data.documentStatus || {};
       const photoPending = docStatus.photo === 'pending';
@@ -1415,7 +1415,8 @@ document.getElementById('m-status').value = a.status || 'pending';
         where('practiceVenueReported', '==', true),
         orderBy('practiceVenueReportedAt', 'desc')
       ));
-      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
+      const docs = snap.docs.filter(d => d.data().practiceVenue?.name !== '当校指定');
+      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
       let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
       html += '<thead><tr style="background:var(--sidebar);color:white;">' +
         '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
@@ -1426,7 +1427,7 @@ document.getElementById('m-status').value = a.status || 'pending';
         '<th style="padding:10px 12px;text-align:left;">届出理由</th>' +
         '<th style="padding:10px 12px;text-align:left;">届出日</th>' +
         '</tr></thead><tbody>';
-      snap.docs.forEach(d => {
+      docs.forEach(d => {
         const a = d.data();
         const v = a.practiceVenue || {};
         const date = a.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
