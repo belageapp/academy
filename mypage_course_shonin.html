@@ -1018,6 +1018,46 @@
     </div>
   </div>
 </div>
+
+<!-- 修了レポートモーダル -->
+<div id="report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:560px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📝 修了レポート</div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.7;">自分の言葉で記述してください。具体例を含め、それぞれ100〜200文字で記述してください。</p>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">①介護における「尊厳」とは何か <span style="color:red;">*</span></label>
+        <textarea id="rpt-q1" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <div id="rpt-q1-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">②利用者理解で大切なこと <span style="color:red;">*</span></label>
+        <textarea id="rpt-q2" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <div id="rpt-q2-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">③コミュニケーションで大切にしたいこと <span style="color:red;">*</span></label>
+        <textarea id="rpt-q3" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <div id="rpt-q3-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">④介護実技における安全と配慮 <span style="color:red;">*</span></label>
+        <textarea id="rpt-q4" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <div id="rpt-q4-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">⑤今後の目標 <span style="color:red;">*</span></label>
+        <textarea id="rpt-q5" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <div id="rpt-q5-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeReportModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button id="rpt-submit-btn" onclick="submitReport()" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">レポートを提出する</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -1882,6 +1922,8 @@
     const test2Ok = data.test2Passed === true;
     const ojtOk = data.ojtPassed === true;
     const ojtReported = data.ojtReported === true;
+    const reportSubmitted = data.reportSubmitted === true;
+    const reportApproved = data.reportApproved === true;
     const certIssued = data.certificateIssued === true;
     const venueOk = data.practiceVenueReported === true;
     const step1Done = photoOk && idOk && pledgeOk && venueOk;
@@ -1943,8 +1985,8 @@
 
     // Step4
     if (certIssued) { setDot(4,'done'); setTag('step4-tag','完了','done'); }
-    else if (ojtOk) { setDot(4,'active'); setTag('step4-tag','承認済み','active'); openStep('ojt-body'); }
-    else if (ojtReported) { setDot(4,'active'); setTag('step4-tag','確認中','active'); }
+    else if (ojtOk && reportApproved) { setDot(4,'active'); setTag('step4-tag','発行待ち','active'); openStep('ojt-body'); }
+    else if (ojtOk || ojtReported || reportSubmitted) { setDot(4,'active'); setTag('step4-tag','進行中','active'); openStep('ojt-body'); }
     else if (test2Ok) {
       setDot(4,'active'); setTag('step4-tag','進行中','active');
       openStep('ojt-body');
@@ -1962,22 +2004,9 @@
         return '';
       }
 
-      const reportState = certIssued ? 'done' : ojtOk ? 'done' : ojtReported ? 'active' : '';
-      const approveState = certIssued ? 'done' : ojtOk ? 'pending' : '';
-      const issueState = certIssued ? 'done' : '';
-
-      const reportCls = ojtReported || ojtOk || certIssued ? 'sfi-done' : test2Ok ? 'sfi-active' : 'sfi-lock';
-      const approveCls = ojtOk || certIssued ? 'sfi-done' : ojtReported ? 'sfi-active' : 'sfi-lock';
-      const issueCls = certIssued ? 'sfi-done' : ojtOk ? 'sfi-active' : 'sfi-lock';
-
-      const reportBtn = test2Ok && !ojtReported && !ojtOk && !certIssued
-        ? '<button onclick="openOjtReport()" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:8px;">報告する</button>'
-        : '';
-
-      step4El.innerHTML =
-        `<div class="step-flow-item ${reportCls}"><div class="sfi-dot"></div>実習修了報告${ojtBadge(reportState)}${reportBtn}</div>` +
-        `<div class="step-flow-item ${approveCls}"><div class="sfi-dot"></div>実習修了報告の承認${ojtBadge(approveState)}</div>` +
-        `<div class="step-flow-item ${issueCls}"><div class="sfi-dot"></div>正式修了証の発行${ojtBadge(issueState)}</div>`;
+      if (certIssued) { setDot(4,'done'); setTag('step4-tag','完了','done'); }
+    else if (ojtOk && reportApproved) { setDot(4,'active'); setTag('step4-tag','発行待ち','active'); openStep('ojt-body'); }
+    else if (ojtOk || ojtReported || reportSubmitted) { setDot(4,'active'); setTag('step4-tag','進行中','active'); openStep('ojt-body'); }
 
       if (!test2Ok) {
         step4El.insertAdjacentHTML('afterbegin', '<div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">テスト２合格後に解放されます</div>');
@@ -2811,6 +2840,63 @@
     // 状態をsessionStorageに保存
     sessionStorage.setItem('card-' + id, !isOpen ? 'open' : 'closed');
   };
+// 修了レポートモーダル
+  function openReportModal() {
+    document.getElementById('report-modal').style.display = 'block';
+    ['q1','q2','q3','q4','q5'].forEach(q => {
+      const el = document.getElementById('rpt-' + q);
+      el.value = '';
+      el.oninput = () => {
+        document.getElementById('rpt-' + q + '-count').textContent = el.value.length + '字';
+        const len = el.value.length;
+        document.getElementById('rpt-' + q + '-count').style.color = len < 100 || len > 200 ? '#e53935' : '#2E7D47';
+      };
+      document.getElementById('rpt-' + q + '-count').textContent = '0字';
+    });
+  }
+  function closeReportModal() {
+    document.getElementById('report-modal').style.display = 'none';
+  }
+  async function submitReport() {
+    const vals = ['q1','q2','q3','q4','q5'].map(q => document.getElementById('rpt-' + q).value.trim());
+    const labels = ['①尊厳','②利用者理解','③コミュニケーション','④安全と配慮','⑤今後の目標'];
+    for (let i = 0; i < vals.length; i++) {
+      if (!vals[i]) { alert(labels[i] + 'を入力してください'); return; }
+      if (vals[i].length < 100 || vals[i].length > 200) { alert(labels[i] + 'は100〜200文字で入力してください（現在' + vals[i].length + '字）'); return; }
+    }
+    const btn = document.getElementById('rpt-submit-btn');
+    btn.textContent = '送信中...'; btn.style.pointerEvents = 'none';
+    try {
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const docId = window.__docId;
+      await updateDoc(doc(db, 'applications', docId), {
+        reportSubmitted: true,
+        reportSubmittedAt: serverTimestamp(),
+        report: {
+          q1: vals[0], q2: vals[1], q3: vals[2], q4: vals[3], q5: vals[4]
+        }
+      });
+      await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
+        title: '修了レポートを受け付けました',
+        body: '修了レポートを受け付けました。当校で確認後、承認いたします。',
+        target: 'specific',
+        emails: [window.__appData?.email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+      closeReportModal();
+      location.reload();
+    } catch(e) {
+      alert('送信に失敗しました：' + e.message);
+      btn.textContent = 'レポートを提出する'; btn.style.pointerEvents = 'auto';
+    }
+  }
+  window.openReportModal = openReportModal;
+  window.closeReportModal = closeReportModal;
+  window.submitReport = submitReport;
+
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
