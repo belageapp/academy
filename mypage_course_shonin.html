@@ -1883,6 +1883,7 @@
     const test2Ok = data.test2Passed === true;
     const ojtOk = data.ojtPassed === true;
     const ojtReported = data.ojtReported === true;
+    const certIssued = data.certificateIssued === true;
     const venueOk = data.practiceVenueReported === true;
     const step1Done = photoOk && idOk && pledgeOk && venueOk;
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
@@ -1942,7 +1943,8 @@
     else { setDot(3,'lock'); setTag('step3-tag','未解放','lock'); }
 
     // Step4
-    if (ojtOk) { setDot(4,'done'); setTag('step4-tag','完了','done'); }
+    if (certIssued) { setDot(4,'done'); setTag('step4-tag','完了','done'); }
+    else if (ojtOk) { setDot(4,'active'); setTag('step4-tag','承認済み','active'); openStep('ojt-body'); }
     else if (ojtReported) { setDot(4,'active'); setTag('step4-tag','確認中','active'); }
     else if (test2Ok) {
       setDot(4,'active'); setTag('step4-tag','進行中','active');
@@ -1953,7 +1955,9 @@
     // Step4コンテンツ描画
     const step4El = document.getElementById('ojt-body');
     if (step4El) {
-      if (ojtOk) {
+      if (certIssued) {
+        step4El.innerHTML = '<div style="padding:12px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#2E7D32;font-weight:700;">✅ 正式な修了証明書を発行・郵送しました。修了おめでとうございます！</div>';
+      } else if (ojtOk) {
         step4El.innerHTML = '<div style="padding:12px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#2E7D32;font-weight:700;">✅ 実習修了が承認されました。修了証明書を郵送します。</div>';
       } else if (ojtReported) {
         step4El.innerHTML = '<div style="padding:12px;background:#FFF8E1;border-radius:8px;font-size:13px;color:#F57C00;font-weight:700;">🔄 実習修了報告を受け付けました。当校で確認中です。</div>';
