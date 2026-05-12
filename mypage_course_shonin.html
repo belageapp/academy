@@ -778,10 +778,7 @@
           <span class="toggle-arrow" id="arrow-ojt-body">›</span>
         </button>
         <div class="step-body" id="ojt-body">
-          <div style="font-size:12px;color:var(--text-mid);margin-bottom:10px;">テスト２合格後に解放されます</div>
-          <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>実習修了報告</div>
-          <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>管理者による承認</div>
-          <div class="step-flow-item sfi-lock"><div class="sfi-dot"></div>修了証の郵送</div>
+          <div id="step4-content"></div>
         </div>
       </div>
     </div>
@@ -1953,20 +1950,35 @@
     else { setDot(4,'lock'); setTag('step4-tag','未解放','lock'); }
 
     // Step4コンテンツ描画
-    const step4El = document.getElementById('ojt-body');
+    const step4El = document.getElementById('step4-content');
     if (step4El) {
-      if (certIssued) {
-        step4El.innerHTML = '<div style="padding:12px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#2E7D32;font-weight:700;">✅ 正式な修了証明書を発行・郵送しました。修了おめでとうございます！</div>';
-      } else if (ojtOk) {
-        step4El.innerHTML = '<div style="padding:12px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#2E7D32;font-weight:700;">✅ 実習修了が承認されました。修了証明書を郵送します。</div>';
-      } else if (ojtReported) {
-        step4El.innerHTML = '<div style="padding:12px;background:#FFF8E1;border-radius:8px;font-size:13px;color:#F57C00;font-weight:700;">🔄 実習修了報告を受け付けました。当校で確認中です。</div>';
-      } else if (test2Ok) {
-        step4El.innerHTML = `
-          <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">実習が修了したら、以下のボタンから修了報告を行ってください。</p>
-          <button onclick="openOjtReport()" style="padding:10px 20px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🏥 実習修了を報告する</button>`;
-      } else {
-        step4El.innerHTML = '<div style="padding:12px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--text-light);">🔒 テスト２合格後に解放されます</div>';
+      // 各タスクのバッジ生成
+      function ojtBadge(state) {
+        if (state === 'done') return '<span style="margin-left:auto;font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;">完了</span>';
+        if (state === 'active') return '<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;font-weight:700;">確認中</span>';
+        if (state === 'pending') return '<span style="margin-left:auto;font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;">承認済み</span>';
+        return '';
+      }
+
+      const reportState = certIssued ? 'done' : ojtOk ? 'done' : ojtReported ? 'active' : '';
+      const approveState = certIssued ? 'done' : ojtOk ? 'pending' : '';
+      const issueState = certIssued ? 'done' : '';
+
+      const reportCls = ojtReported || ojtOk || certIssued ? 'sfi-done' : test2Ok ? 'sfi-active' : 'sfi-lock';
+      const approveCls = ojtOk || certIssued ? 'sfi-done' : ojtReported ? 'sfi-active' : 'sfi-lock';
+      const issueCls = certIssued ? 'sfi-done' : ojtOk ? 'sfi-active' : 'sfi-lock';
+
+      const reportBtn = test2Ok && !ojtReported && !ojtOk && !certIssued
+        ? '<button onclick="openOjtReport()" class="action-btn" style="font-size:11px;padding:4px 10px;margin-left:8px;">報告する</button>'
+        : '';
+
+      step4El.innerHTML =
+        `<div class="step-flow-item ${reportCls}"><div class="sfi-dot"></div>実習修了報告${ojtBadge(reportState)}${reportBtn}</div>` +
+        `<div class="step-flow-item ${approveCls}"><div class="sfi-dot"></div>実習修了報告の承認${ojtBadge(approveState)}</div>` +
+        `<div class="step-flow-item ${issueCls}"><div class="sfi-dot"></div>正式修了証の発行${ojtBadge(issueState)}</div>`;
+
+      if (!test2Ok) {
+        step4El.insertAdjacentHTML('afterbegin', '<div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">テスト２合格後に解放されます</div>');
       }
     }
 
