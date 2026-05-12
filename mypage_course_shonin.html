@@ -2023,7 +2023,7 @@
       html += sfi('顔写真の提出', photoOk, isConfirmed && !photoOk, photoExtra);
       html += sfi('本人確認書類の提出', idOk, isConfirmed && !idOk, idExtra);
       html += sfi('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, pledgeExtra);
-      const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">届け出る</button>' : '';
+      const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" class="action-btn" style="font-size:11px;padding:4px 10px;">届け出る</button>' : '';
       html += sfi('介護実習先の有無届出', venueOk, isConfirmed && !venueOk, venueExtra);
       if (isConfirmed) {
         const pledgeLabel = pledgeOk ? '📖 学則・修了要件・誓約書を確認する' : '📖 学則・修了要件・誓約書を確認・同意する';
