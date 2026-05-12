@@ -2026,8 +2026,9 @@
       const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" class="action-btn" style="font-size:11px;padding:4px 10px;">届け出る</button>' : '';
       html += sfi('介護実習先の有無届出', venueOk, isConfirmed && !venueOk, venueExtra);
       if (isConfirmed) {
-        const pledgeLabel = pledgeOk ? '📖 学則・修了要件・誓約書を確認する' : '📖 学則・修了要件・誓約書を確認・同意する';
-        html += '<div style="margin-top:10px;"><a href="gakusoku.html?id=' + window.__docId + '" style="font-size:12px;color:var(--teal-dark);text-decoration:none;">' + pledgeLabel + '</a></div>';
+        if (pledgeOk) {
+          html += '<div style="margin-top:10px;"><a href="gakusoku.html?id=' + window.__docId + '" style="font-size:12px;color:var(--teal-dark);text-decoration:none;">📖 学則・修了要件・誓約書を確認する</a></div>';
+        }
       }
       step1El.innerHTML = html;
     }
