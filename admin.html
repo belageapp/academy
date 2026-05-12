@@ -803,10 +803,11 @@ document.getElementById('m-status').value = a.status || 'pending';
           const counterSnap = await window.__getDoc(counterRef);
           const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
           const newNum = currentNum + 1;
-          const edulioId = 'hca' + String(newNum).padStart(3, '0');
+          const edulioPasswordMap = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+          const edulioPassword = edulioId + edulioPasswordMap[(newNum - 1) % edulioPasswordMap.length];
           const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-          let edulioPassword = '';
-          for (let i = 0; i < 8; i++) edulioPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+          const edulioPasswordMap = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+          const edulioPassword = edulioId + edulioPasswordMap[(newNum - 1) % edulioPasswordMap.length];
           await window.__updateDoc(counterRef, { count: newNum });
           await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
             edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
@@ -1279,7 +1280,8 @@ document.getElementById('m-status').value = a.status || 'pending';
       const counterSnap = await window.__getDoc(counterRef);
       const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
       const newNum = currentNum + 1;
-      const edulioId = 'hca' + String(newNum).padStart(3, '0');
+      const edulioPasswordMap = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+          const edulioPassword = edulioId + edulioPasswordMap[(newNum - 1) % edulioPasswordMap.length];
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
       let edulioPassword = '';
       for (let i = 0; i < 8; i++) edulioPassword += chars.charAt(Math.floor(Math.random() * chars.length));
