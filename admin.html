@@ -1135,6 +1135,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     const q = window.__query(window.__col(window.__db, 'applications'), window.__orderBy('createdAt', 'desc'));
     const snap = await window.__getDocs(q);
 
+    const docs = snap.docs;
     let pendingCount = 0;
     let approvedCount = 0;
     let html = '';
