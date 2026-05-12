@@ -1279,6 +1279,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       const counterSnap = await window.__getDoc(counterRef);
       const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
       const newNum = currentNum + 1;
+      const edulioId = 'hca' + String(newNum).padStart(3, '0');
       const edulioPasswordMap2 = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
       const edulioPassword = edulioId + edulioPasswordMap2[(newNum - 1) % edulioPasswordMap2.length];
       await window.__updateDoc(counterRef, { count: newNum });

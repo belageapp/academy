@@ -629,7 +629,8 @@
         const docStatus = latestData.documentStatus || {};
         const photoOk = docStatus.photo === 'approved';
         const idOk = docStatus.idDocument === 'approved';
-        if (photoOk && idOk) {
+        const venueOk = latestData.practiceVenueReported === true;
+        if (photoOk && idOk && venueOk) {
           await updateDoc(doc(db, 'applications', docId), {
             status: 'active',
             activeAt: serverTimestamp()
