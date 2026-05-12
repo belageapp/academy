@@ -2005,9 +2005,15 @@
 
       function sfi(label, done, active, extra) {
         const cls = done ? 'sfi-done' : active ? 'sfi-active' : 'sfi-lock';
+        const badge = done
+          ? '<span style="margin-left:auto;font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;">完了</span>'
+          : active
+            ? '<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;font-weight:700;">対応中</span>'
+            : '';
         return '<div class="step-flow-item ' + cls + '" style="justify-content:space-between;">' +
           '<div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>' + label + '</div>' +
-          (extra ? '<div>' + extra + '</div>' : '') + '</div>';
+          '<div style="display:flex;align-items:center;gap:6px;">' + (extra ? extra : '') + badge + '</div>' +
+          '</div>';
       }
       let html = '';
       const nyukinExtra = isConfirmed
