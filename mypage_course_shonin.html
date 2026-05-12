@@ -975,8 +975,8 @@
         <div style="margin-bottom:10px;">
           <label style="font-size:12px;color:var(--text-mid);">届出の理由 <span style="color:red;">*</span></label>
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;" id="venue-reason-group">
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務中"> 現在勤務している</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務予定" onchange="onReasonChange()"> 勤務予定</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="現在勤務中"> 現在勤務している</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務予定" onchange="onReasonChange()"> 勤務予定（いつからか入力）</label>
             <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="受け入れ同意済み"> 受け入れの同意を得ている</label>
             <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="その他" onchange="onReasonChange()"> その他</label>
           </div>
@@ -1893,7 +1893,7 @@
 
     // Step1
     if (step1Done) { setDot(1,'done'); setTag('step1-tag','完了','done'); }
-    else if (isActive) { setDot(1,'done'); setTag('step1-tag','完了','done'); }
+    
     else if (isConfirmed) { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
     else { setDot(1,'active'); setTag('step1-tag','対応中','active'); openStep('step1-body'); }
     // active以降はStep1を強制close
@@ -1958,7 +1958,7 @@
       html += sfi('本人確認書類の提出', idOk, isConfirmed && !idOk, idExtra);
       html += sfi('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, pledgeExtra);
       const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" style="margin-left:auto;padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">届け出る</button>' : '';
-      html += sfi('介護実習先の届出', venueOk, isConfirmed && !venueOk, venueExtra);
+      html += sfi('介護実習先の有無届出', venueOk, isConfirmed && !venueOk, venueExtra);
       if (isConfirmed) {
         const pledgeLabel = pledgeOk ? '📖 学則・修了要件・誓約書を確認する' : '📖 学則・修了要件・誓約書を確認・同意する';
         html += '<div style="margin-top:10px;"><a href="gakusoku.html?id=' + window.__docId + '" style="font-size:12px;color:var(--teal-dark);text-decoration:none;">' + pledgeLabel + '</a></div>';
