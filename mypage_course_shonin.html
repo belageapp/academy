@@ -2021,9 +2021,9 @@
       const issueState = certIssued ? 'done' : (ojtOk && reportApproved) ? 'pending' : '';
 
       step4El.innerHTML =
-        `<div class="step-flow-item ${ojtReportCls}"><div class="sfi-dot"></div>実習修了報告${ojtBadge(ojtReportState)}${ojtReportBtn}</div>` +
-        `<div class="step-flow-item ${rptCls}"><div class="sfi-dot"></div>修了レポート${ojtBadge(rptState)}${rptBtn}</div>` +
-        `<div class="step-flow-item ${issueCls}"><div class="sfi-dot"></div>正式修了証の発行${ojtBadge(issueState)}</div>`;
+        `<div class="step-flow-item ${ojtReportCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>実習修了報告</div><div style="display:flex;align-items:center;gap:6px;">${ojtReportBtn}${ojtBadge(ojtReportState)}</div></div>` +
+        `<div class="step-flow-item ${rptCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>修了レポート</div><div style="display:flex;align-items:center;gap:6px;">${rptBtn}${ojtBadge(rptState)}</div></div>` +
+        `<div class="step-flow-item ${issueCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>正式修了証の発行</div><div style="display:flex;align-items:center;gap:6px;">${ojtBadge(issueState)}</div></div>`;
 
       if (!test2Ok) {
         step4El.insertAdjacentHTML('afterbegin', '<div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">テスト２合格後に解放されます</div>');
