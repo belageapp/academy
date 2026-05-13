@@ -3401,7 +3401,7 @@
   function openWithdrawModal() {
     const data = window.__appData || {};
     document.getElementById('wd-student-no').textContent = data.studentNo || '—';
-    document.getElementById('wd-name').textContent = (data.sei || '') + '　' + (data.mei || '');
+    document.getElementById('wd-name').textContent = data.name || ((data.sei || '') + '　' + (data.mei || '')) || '—';
     document.getElementById('wd-address').textContent = (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || '');
     document.getElementById('wd-phone').textContent = data.phone || '—';
     document.getElementById('wd-confirm1').checked = false;
@@ -3426,7 +3426,7 @@
       await addDoc(collection(db, 'applications', docId, 'todoke'), {
         type: '退講届',
         studentNo: data.studentNo || '',
-        name: (data.sei || '') + '　' + (data.mei || ''),
+        name: data.name || ((data.sei || '') + '　' + (data.mei || '')),
         address: (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || ''),
         phone: data.phone || '',
         status: 'pending',
