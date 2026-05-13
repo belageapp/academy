@@ -2164,7 +2164,7 @@
     window.renderTestList && window.renderTestList(data, step2Done);
     if (step2Done) {
       // Step3（テスト）をopen
-      if (!data.test2Passed) { openStep('test-body'); }
+      if (!data.test2Passed || !data.tempCertIssued) { openStep('test-body'); }
       // Step2（受講）をclose
       const s2 = document.getElementById('step2-body');
       const a2 = document.getElementById('arrow-step2-body');
