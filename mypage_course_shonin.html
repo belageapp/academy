@@ -859,7 +859,7 @@
         </div>
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div></div>
-          <button onclick="alert('近日公開予定です')" class="action-btn todoke-btn" style="opacity:0.4;pointer-events:none;background:linear-gradient(135deg,#e53935,#c62828);">提出する</button>
+          <button onclick="openWithdrawModal()" class="action-btn todoke-btn" style="background:linear-gradient(135deg,#e53935,#c62828);">提出する</button>
         </div>
       </div>
     </div>
@@ -1127,6 +1127,55 @@
     <div style="display:flex;gap:10px;">
       <button onclick="closeChangeModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
       <button onclick="submitChange()" id="change-submit-btn" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">変更届を送信する</button>
+    </div>
+  </div>
+</div>
+<!-- 退講届モーダル -->
+<div id="withdraw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:520px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:#e53935;">⚠️ 退講届</div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;line-height:1.7;">受講の中止を申し出る届出です。退講後、受講料の返還請求はできません。内容をよくご確認の上、提出してください。</p>
+
+    <div style="background:#FFF8E1;border-radius:8px;padding:16px;margin-bottom:20px;font-size:13px;line-height:2;color:#333;">
+      <p>私は、特定非営利活動法人 Social Care Good が行う介護職員初任者研修課程を、この度一身上の都合により受講途中ではありますが、受講の中止を申し出致します。</p>
+      <p style="margin-top:8px;">この受講中止による受講料の返還請求は一切致しません。</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <div style="display:flex;gap:8px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="width:100px;color:#888;flex-shrink:0;">生徒番号</span>
+        <span id="wd-student-no" style="font-weight:700;"></span>
+      </div>
+      <div style="display:flex;gap:8px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="width:100px;color:#888;flex-shrink:0;">氏名</span>
+        <span id="wd-name"></span>
+      </div>
+      <div style="display:flex;gap:8px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="width:100px;color:#888;flex-shrink:0;">住所</span>
+        <span id="wd-address"></span>
+      </div>
+      <div style="display:flex;gap:8px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="width:100px;color:#888;flex-shrink:0;">電話番号</span>
+        <span id="wd-phone"></span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;">
+        <input type="checkbox" id="wd-confirm1" style="margin-top:3px;accent-color:#e53935;width:16px;height:16px;flex-shrink:0;">
+        <span>受講の中止により、受講料の返還請求を一切行いません。</span>
+      </label>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;">
+        <input type="checkbox" id="wd-confirm2" style="margin-top:3px;accent-color:#e53935;width:16px;height:16px;flex-shrink:0;">
+        <span>上記の内容を理解し、退講届を提出します。</span>
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeWithdrawModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button onclick="submitWithdraw()" id="withdraw-submit-btn" style="flex:2;padding:12px;background:linear-gradient(135deg,#e53935,#c62828);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">退講届を提出する</button>
     </div>
   </div>
 </div>
@@ -3348,6 +3397,61 @@
   window.openChangeModal = openChangeModal;
   window.closeChangeModal = closeChangeModal;
   window.submitChange = submitChange;
+  // 退講届
+  function openWithdrawModal() {
+    const data = window.__appData || {};
+    document.getElementById('wd-student-no').textContent = data.studentNo || '—';
+    document.getElementById('wd-name').textContent = (data.sei || '') + '　' + (data.mei || '');
+    document.getElementById('wd-address').textContent = (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || '');
+    document.getElementById('wd-phone').textContent = data.phone || '—';
+    document.getElementById('wd-confirm1').checked = false;
+    document.getElementById('wd-confirm2').checked = false;
+    document.getElementById('withdraw-modal').style.display = 'block';
+  }
+  function closeWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'none';
+  }
+  async function submitWithdraw() {
+    if (!document.getElementById('wd-confirm1').checked || !document.getElementById('wd-confirm2').checked) {
+      alert('両方の確認事項にチェックを入れてください'); return;
+    }
+    if (!confirm('退講届を提出します。提出後は取り消せません。よろしいですか？')) return;
+    const btn = document.getElementById('withdraw-submit-btn');
+    btn.textContent = '送信中...'; btn.style.pointerEvents = 'none';
+    try {
+      const { doc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const docId = window.__docId;
+      const data = window.__appData || {};
+      await addDoc(collection(db, 'applications', docId, 'todoke'), {
+        type: '退講届',
+        studentNo: data.studentNo || '',
+        name: (data.sei || '') + '　' + (data.mei || ''),
+        address: (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || ''),
+        phone: data.phone || '',
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
+      await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
+        title: '退講届を受け付けました',
+        body: '退講届を受け付けました。内容を確認後、対応いたします。',
+        target: 'specific',
+        emails: [data.email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+      closeWithdrawModal();
+      alert('退講届を提出しました。確認後、ご連絡いたします。');
+      location.reload();
+    } catch(e) {
+      alert('送信に失敗しました：' + e.message);
+      btn.textContent = '退講届を提出する'; btn.style.pointerEvents = 'auto';
+    }
+  }
+  window.openWithdrawModal = openWithdrawModal;
+  window.closeWithdrawModal = closeWithdrawModal;
+  window.submitWithdraw = submitWithdraw;
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
