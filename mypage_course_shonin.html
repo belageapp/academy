@@ -991,6 +991,38 @@
     </div>
   </div>
 </div>
+<!-- 仮修了証モーダル -->
+<div id="temp-cert-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:560px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📄 仮修了証</div>
+    <div id="temp-cert-content" style="border:2px solid #333;padding:40px;margin-bottom:20px;font-family:'Noto Sans JP',sans-serif;position:relative;min-height:400px;">
+      <!-- 印影 -->
+      <img src="assets/seal.png" style="position:absolute;right:40px;bottom:60px;width:80px;height:80px;opacity:0.75;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="font-size:22px;font-weight:700;letter-spacing:0.15em;margin-bottom:8px;">仮　修　了　証　明　書</div>
+        <div style="width:60px;height:2px;background:#333;margin:0 auto;"></div>
+      </div>
+      <div style="margin-bottom:24px;">
+        <div style="font-size:18px;font-weight:700;border-bottom:1px solid #333;padding-bottom:4px;margin-bottom:4px;" id="cert-name"></div>
+        <div style="font-size:12px;color:#555;" id="cert-no"></div>
+      </div>
+      <p style="font-size:13px;line-height:2;margin-bottom:24px;">あなたは、ホリスケアアカデミー介護職員初任者研修の所定の課程（eラーニング・動画教材・テスト）を修了したことを証明します。</p>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;margin-bottom:32px;">
+        <div style="display:flex;gap:16px;"><span style="width:80px;color:#555;">仮修了日</span><span id="cert-date"></span></div>
+        <div style="display:flex;gap:16px;"><span style="width:80px;color:#555;">有効期限</span><span id="cert-expire"></span></div>
+      </div>
+      <div style="text-align:right;font-size:13px;">
+        <div style="font-weight:700;">ホリスケアアカデミー</div>
+        <div style="font-size:11px;color:#555;">特定非営利活動法人 Social Care Good</div>
+        <div style="font-size:11px;color:#555;">〒730-0051 広島市中区大手町3-1-7-302</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeTempCert()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">閉じる</button>
+      <button onclick="downloadTempCert()" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📥 PDFをダウンロード</button>
+    </div>
+  </div>
+</div>
 <!-- 実習修了報告モーダル -->
 <div id="ojt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
   <div style="background:white;border-radius:16px;margin:20px auto;max-width:480px;padding:28px 24px;">
@@ -2609,9 +2641,38 @@
         </div>
       </div>`;
 
+    const tempCertIssued = data.tempCertIssued === true;
+    const tempCertBtn = !test2Passed
+      ? '<button class="action-btn" style="background:#ccc;cursor:not-allowed;" disabled>🔒 ロック中</button>'
+      : tempCertIssued
+        ? '<button class="action-btn" onclick="openTempCert()">表示する</button>'
+        : '<button class="action-btn" onclick="openTempCert()">発行する</button>';
+
+    const tempCertItem = `
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;${!test2Passed ? 'opacity:0.5;' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">仮修了証の発行（PDF）</div>
+            <div style="font-size:12px;color:var(--text-light);">
+              ${tempCertIssued ? '✅ 発行済み' : test2Passed ? '発行できます' : '🔒 テスト２合格後に発行できます'}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">${tempCertBtn}</div>
+        </div>
+      </div>`;
+
     el.innerHTML =
       testItem(1, 'テスト１　介護技術に関する問題', test1Passed, false) +
-      testItem(2, 'テスト２　総合問題', test2Passed, !test1Passed);
+      testItem(2, 'テスト２　総合問題', test2Passed, !test1Passed) +
+      tempCertItem;
+
+    // 仮修了証発行済みならテストセクションをclose・実習セクションを解放
+    if (tempCertIssued) {
+      const testBody = document.getElementById('test-body');
+      const testArrow = document.getElementById('arrow-test-body');
+      if (testBody) testBody.classList.remove('open');
+      if (testArrow) testArrow.classList.remove('open');
+    }
   }
   window.renderTestList = renderTestList;
 
@@ -2913,7 +2974,82 @@
   window.openReportModal = openReportModal;
   window.closeReportModal = closeReportModal;
   window.submitReport = submitReport;
+// 仮修了証
+  async function openTempCert() {
+    const data = window.__appData || {};
+    const name = (data.sei || '') + '　' + (data.mei || '');
+    const studentNo = data.studentNo || '—';
+    const today = new Date();
+    const toDateStr = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+    const certDate = toDateStr(today);
 
+    // 有効期限：正式修了期限
+    let expireStr = '—';
+    if (data.startedAt) {
+      const start = data.startedAt.toDate ? data.startedAt.toDate() : new Date(data.startedAt);
+      const expire = new Date(start);
+      expire.setMonth(expire.getMonth() + 8);
+      expireStr = toDateStr(expire);
+    } else if (data.tempLimit) {
+      expireStr = data.tempLimit;
+    }
+
+    document.getElementById('cert-name').textContent = name + '　殿';
+    document.getElementById('cert-no').textContent = '受講番号：' + studentNo;
+    document.getElementById('cert-date').textContent = certDate;
+    document.getElementById('cert-expire').textContent = expireStr;
+    document.getElementById('temp-cert-modal').style.display = 'block';
+
+    // 初回発行時のみFirestore更新・通知
+    if (!data.tempCertIssued) {
+      try {
+        const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const db = window.__db;
+        const docId = window.__docId;
+        await updateDoc(doc(db, 'applications', docId), {
+          tempCertIssued: true,
+          tempCertIssuedAt: serverTimestamp(),
+        });
+        await addDoc(collection(db, 'notices'), {
+          applicationId: docId,
+          title: '仮修了証明書を発行しました',
+          body: '仮修了証明書を発行しました。マイページのテストセクションからダウンロードできます。引き続き介護施設での実習にお進みください。',
+          target: 'specific',
+          emails: [data.email],
+          createdAt: serverTimestamp(),
+          createdBy: 'info@holiscare.or.jp',
+        });
+        await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendTempCertMail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: data.name || name, email: data.email })
+        }).catch(e => console.warn('メール送信失敗:', e));
+        window.__appData.tempCertIssued = true;
+        window.renderTestList && window.renderTestList(window.__appData, true);
+      } catch(e) { console.error('仮修了証発行エラー:', e); }
+    }
+  }
+
+  function closeTempCert() {
+    document.getElementById('temp-cert-modal').style.display = 'none';
+  }
+
+  async function downloadTempCert() {
+    const { jsPDF } = await import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const element = document.getElementById('temp-cert-content');
+    const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')).default;
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const w = pdf.internal.pageSize.getWidth();
+    const h = (canvas.height * w) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+    pdf.save('仮修了証明書.pdf');
+  }
+
+  window.openTempCert = openTempCert;
+  window.closeTempCert = closeTempCert;
+  window.downloadTempCert = downloadTempCert;
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
