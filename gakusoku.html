@@ -439,9 +439,6 @@
       <!-- 同意済みの場合 -->
       <div id="already-agreed" style="display:none;" class="already-agreed">
         ✅ 誓約書への同意が完了しています
-        <div style="margin-top:12px;text-align:center;">
-          <button onclick="window.history.back()" style="padding:10px 24px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:13px;color:var(--text-mid);cursor:pointer;font-family:inherit;">← マイページに戻る</button>
-        </div>
       </div>
 
       <!-- 同意フォーム -->
@@ -460,7 +457,7 @@
           <span class="agree-check-text">本誓約書への同意が電子署名として有効であることを理解しました。</span>
         </label>
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button onclick="window.history.back()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">← マイページに戻る</button>
+          <button onclick="window.history.back()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">同意せずに戻る</button>
           <button class="agree-btn" id="agree-btn" onclick="submitPledge()" style="flex:2;">上記に同意して送信する</button>
         </div>
         </div>
