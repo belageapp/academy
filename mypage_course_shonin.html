@@ -2977,7 +2977,7 @@
 // 仮修了証
   async function openTempCert() {
     const data = window.__appData || {};
-    const name = (data.sei || '') + '　' + (data.mei || '');
+    const name = data.name || ((data.sei || '') + '　' + (data.mei || '')) || '—';
     const studentNo = data.studentNo || '—';
     const today = new Date();
     const toDateStr = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
@@ -3035,11 +3035,25 @@
   }
 
   async function downloadTempCert() {
-    const { jsPDF } = await import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
     const element = document.getElementById('temp-cert-content');
-    const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')).default;
-    const canvas = await html2canvas(element, { scale: 2 });
+    // html2canvasをscriptタグで読み込み
+    await new Promise((resolve, reject) => {
+      if (window.html2canvas) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    await new Promise((resolve, reject) => {
+      if (window.jspdf) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    const canvas = await window.html2canvas(element, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const w = pdf.internal.pageSize.getWidth();
     const h = (canvas.height * w) / canvas.width;
