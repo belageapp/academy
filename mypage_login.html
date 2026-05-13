@@ -219,7 +219,10 @@
       return;
     }
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email, {
+        url: 'https://belageapp.github.io/academy/mypage_login.html',
+        handleCodeInApp: false
+      });
       alert('パスワードリセット用のメールを送信しました。メールボックスをご確認ください。');
     } catch(e) {
       alert('メールの送信に失敗しました。メールアドレスをご確認ください。');
