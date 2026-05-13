@@ -3051,7 +3051,7 @@
       s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
-    const canvas = await window.html2canvas(element, { scale: 2, useCORS: true });
+    const canvas = await window.html2canvas(element, { scale: 2, useCORS: true, ignoreElements: el => el.tagName === 'VIDEO' });
     const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
