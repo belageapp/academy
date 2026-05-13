@@ -998,7 +998,7 @@
     <div id="temp-cert-content" style="padding:40px;margin-bottom:20px;font-family:'Noto Sans JP',sans-serif;position:relative;min-height:400px;display:flex;flex-direction:column;justify-content:center;">
       <div style="text-align:center;margin-bottom:32px;">
         <div style="font-size:22px;font-weight:700;letter-spacing:0.15em;margin-bottom:8px;">仮　修　了　証　明　書</div>
-        <div style="width:60px;height:2px;background:#333;margin:0 auto;"></div>
+        
       </div>
       <div style="margin-bottom:24px;">
         <div style="font-size:18px;font-weight:700;border-bottom:1px solid #333;padding-bottom:4px;margin-bottom:4px;" id="cert-name"></div>
@@ -2987,13 +2987,15 @@
 
     // 有効期限：正式修了期限
     let expireStr = '—';
-    if (data.startedAt) {
+    const fullLimitEl = document.getElementById('app-full-limit');
+    if (fullLimitEl && fullLimitEl.textContent && fullLimitEl.textContent !== '—') {
+      // 「2026/1/1（残 XX日）」から日付部分のみ抽出
+      expireStr = fullLimitEl.textContent.split('（')[0].trim();
+    } else if (data.startedAt) {
       const start = data.startedAt.toDate ? data.startedAt.toDate() : new Date(data.startedAt);
       const expire = new Date(start);
       expire.setMonth(expire.getMonth() + 8);
       expireStr = toDateStr(expire);
-    } else if (data.tempLimit) {
-      expireStr = data.tempLimit;
     }
 
     document.getElementById('cert-name').textContent = name + '　殿';
