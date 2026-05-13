@@ -385,6 +385,16 @@ const q = query(
           const tb = b.data().createdAt?.toMillis?.() || 0;
           return tb - ta;
         });
+
+        // 申込が1件のみの場合は自動遷移
+        if (allDocs.length === 1) {
+          const d = allDocs[0];
+          const courseCode = d.data().courseCode || '4010';
+          const master = courseMaster[courseCode];
+          const courseFile = master?.pageFile || 'mypage_course_shonin.html';
+          window.location.href = `${courseFile}?id=${d.id}`;
+          return;
+        }
         const showDocs = allDocs.slice(0, 3);
         const hiddenDocs = allDocs.slice(3);
 
