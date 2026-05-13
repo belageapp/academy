@@ -851,11 +851,11 @@
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;" id="todoke-items">
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">変更届</div><div style="font-size:12px;color:var(--text-light);">氏名・住所・電話番号を変更したとき</div></div>
-          <button onclick="alert('近日公開予定です')" class="action-btn todoke-btn" style="opacity:0.4;pointer-events:none;">提出する</button>
+          <button onclick="openChangeModal()" class="action-btn todoke-btn">提出する</button>
         </div>
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">休講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により休講を希望するとき</div></div>
-          <button onclick="alert('近日公開予定です')" class="action-btn todoke-btn" style="opacity:0.4;pointer-events:none;">提出する</button>
+          <button onclick="openChangeModal()" class="action-btn todoke-btn">提出する</button>
         </div>
         <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div></div>
@@ -1071,6 +1071,62 @@
     <div style="display:flex;gap:10px;">
       <button onclick="closeTempCert()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">閉じる</button>
       <button onclick="downloadTempCert()" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📥 PDFをダウンロード</button>
+    </div>
+  </div>
+</div>
+<!-- 変更届モーダル -->
+<div id="change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:540px;padding:28px 24px;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📝 変更届</div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.7;">変更のある項目を入力してください。未入力の項目は変更されません。</p>
+
+    <!-- 氏名 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:8px;">① 氏名</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <div style="flex:1;"><label style="font-size:11px;color:var(--text-mid);">姓</label><input id="chg-sei" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+        <div style="flex:1;"><label style="font-size:11px;color:var(--text-mid);">名</label><input id="chg-mei" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <div style="flex:1;"><label style="font-size:11px;color:var(--text-mid);">姓（カナ）</label><input id="chg-sei-kana" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+        <div style="flex:1;"><label style="font-size:11px;color:var(--text-mid);">名（カナ）</label><input id="chg-mei-kana" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      </div>
+      <p style="font-size:11px;color:#F57C00;margin-top:4px;">※氏名を変更する場合は住民票（コピー可）の提出が必要です。送信後に書類提出画面が表示されます。</p>
+    </div>
+
+    <!-- 住所 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:8px;">② 住所</div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">郵便番号</label><input id="chg-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">住所</label><input id="chg-address" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">建物名等</label><input id="chg-address2" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      <p style="font-size:11px;color:#F57C00;margin-top:4px;">※住所を変更する場合は住所変更が確認できる書類の提出が必要です。送信後に書類提出画面が表示されます。</p>
+    </div>
+
+    <!-- 書類郵送先住所 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:8px;">③ 書類郵送先住所（住所と異なる場合）</div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">郵便番号</label><input id="chg-alt-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">住所</label><input id="chg-alt-address" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+      <div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-mid);">建物名等</label><input id="chg-alt-address2" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"></div>
+    </div>
+
+    <!-- 電話番号 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:8px;">④ 電話番号</div>
+      <input id="chg-phone" type="tel" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+    </div>
+
+    <!-- メールアドレス変更 -->
+    <div style="margin-bottom:20px;background:#FFF8E1;border-radius:8px;padding:12px;">
+      <div style="font-size:12px;font-weight:700;color:#F57C00;margin-bottom:6px;">⑤ メールアドレスを変更したい場合</div>
+      <input id="chg-email" type="email" placeholder="新しいメールアドレス" style="width:100%;padding:8px 10px;border:1.5px solid #FDE68A;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:6px;">
+      <p style="font-size:11px;color:#F57C00;line-height:1.7;">※メールアドレスの変更は管理者が対応します。申請後、確認のご連絡をいたします。</p>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeChangeModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button onclick="submitChange()" id="change-submit-btn" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">変更届を送信する</button>
     </div>
   </div>
 </div>
@@ -3217,6 +3273,81 @@
     }
   }
   window.changeCoursePassword = changeCoursePassword;
+  // 変更届
+  function openChangeModal() {
+    document.getElementById('change-modal').style.display = 'block';
+    ['chg-sei','chg-mei','chg-sei-kana','chg-mei-kana','chg-zip','chg-address','chg-address2',
+     'chg-alt-zip','chg-alt-address','chg-alt-address2','chg-phone','chg-email'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+  function closeChangeModal() {
+    document.getElementById('change-modal').style.display = 'none';
+  }
+  async function submitChange() {
+    const fields = {
+      sei: document.getElementById('chg-sei').value.trim(),
+      mei: document.getElementById('chg-mei').value.trim(),
+      seiKana: document.getElementById('chg-sei-kana').value.trim(),
+      meiKana: document.getElementById('chg-mei-kana').value.trim(),
+      zip: document.getElementById('chg-zip').value.trim(),
+      address: document.getElementById('chg-address').value.trim(),
+      address2: document.getElementById('chg-address2').value.trim(),
+      altZip: document.getElementById('chg-alt-zip').value.trim(),
+      altAddress: document.getElementById('chg-alt-address').value.trim(),
+      altAddress2: document.getElementById('chg-alt-address2').value.trim(),
+      phone: document.getElementById('chg-phone').value.trim(),
+      email: document.getElementById('chg-email').value.trim(),
+    };
+    const hasChange = Object.values(fields).some(v => v !== '');
+    if (!hasChange) { alert('変更内容を入力してください'); return; }
+
+    const needsDoc = fields.sei || fields.mei || fields.zip || fields.address;
+    const btn = document.getElementById('change-submit-btn');
+    btn.textContent = '送信中...'; btn.style.pointerEvents = 'none';
+
+    try {
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const docId = window.__docId;
+
+      // Firestoreに変更届を保存
+      await addDoc(collection(db, 'applications', docId, 'todoke'), {
+        type: '変更届',
+        fields,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
+
+      // お知らせ送信
+      await addDoc(collection(db, 'notices'), {
+        applicationId: docId,
+        title: '変更届を受け付けました',
+        body: '変更届を受け付けました。内容を確認後、対応いたします。' + (needsDoc ? '\n\n氏名・住所の変更には本人確認書類の提出が必要です。引き続き書類をご提出ください。' : ''),
+        target: 'specific',
+        emails: [window.__appData?.email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+
+      closeChangeModal();
+
+      // 氏名・住所変更の場合は書類提出モーダルを開く
+      if (needsDoc) {
+        setTimeout(() => openUpload('id'), 500);
+      } else {
+        alert('変更届を送信しました。');
+      }
+      location.reload();
+    } catch(e) {
+      alert('送信に失敗しました：' + e.message);
+      btn.textContent = '変更届を送信する'; btn.style.pointerEvents = 'auto';
+    }
+  }
+  window.openChangeModal = openChangeModal;
+  window.closeChangeModal = closeChangeModal;
+  window.submitChange = submitChange;
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
