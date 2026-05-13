@@ -824,7 +824,26 @@
   </div>
 
   <!-- ⑦ 届出書 -->
-  <div class="toggle-section" id="todoke-section">
+  <!-- パスワード変更 -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('pw-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
+        <span class="toggle-header-title">パスワード変更
+          <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
+        </span>
+      </span>
+      <span class="toggle-arrow" id="arrow-pw-body">›</span>
+    </button>
+    <div class="toggle-body" id="pw-body">
+      <form class="pw-form" onsubmit="changeCoursePassword();return false;">
+        <input type="password" id="course-new-pw" placeholder="新しいパスワード（8文字以上）" autocomplete="new-password">
+        <input type="password" id="course-new-pw2" placeholder="新しいパスワード（確認）" autocomplete="new-password">
+        <button type="submit" class="pw-submit">パスワードを変更する</button>
+      </form>
+      <div id="course-pw-msg" style="font-size:13px;margin-top:10px;display:none;"></div>
+    </div>
+  </div>
     <button class="toggle-header" onclick="toggleSection('todoke-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📝</span>
@@ -3160,6 +3179,26 @@
     }
   }
   window.updateNextStep = updateNextStep;
+  // パスワード変更
+  async function changeCoursePassword() {
+    const pw1 = document.getElementById('course-new-pw').value;
+    const pw2 = document.getElementById('course-new-pw2').value;
+    const msg = document.getElementById('course-pw-msg');
+    if (pw1.length < 8) { msg.style.display='block'; msg.style.color='#E05050'; msg.textContent='8文字以上で入力してください'; return; }
+    if (pw1 !== pw2) { msg.style.display='block'; msg.style.color='#E05050'; msg.textContent='パスワードが一致しません'; return; }
+    try {
+      const { getAuth, updatePassword } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      const auth = getAuth();
+      await updatePassword(auth.currentUser, pw1);
+      msg.style.display='block'; msg.style.color='#4CAF72'; msg.textContent='パスワードを変更しました！';
+      document.getElementById('course-new-pw').value='';
+      document.getElementById('course-new-pw2').value='';
+    } catch(e) {
+      msg.style.display='block'; msg.style.color='#E05050';
+      msg.textContent='変更に失敗しました。一度ログアウトして再ログイン後にお試しください。';
+    }
+  }
+  window.changeCoursePassword = changeCoursePassword;
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
