@@ -839,27 +839,6 @@
   </div>
 
   <!-- ⑦ 届出書 -->
-  <!-- パスワード変更 -->
-  <div class="toggle-section">
-    <button class="toggle-header" onclick="toggleSection('pw-body')">
-      <span class="toggle-header-left">
-        <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
-        <span class="toggle-header-title">パスワード変更
-          <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
-        </span>
-      </span>
-      <span class="toggle-arrow" id="arrow-pw-body">›</span>
-    </button>
-    <div class="toggle-body" id="pw-body">
-      <form class="pw-form" onsubmit="changeCoursePassword();return false;">
-        <input type="password" id="course-new-pw" placeholder="新しいパスワード（8文字以上）" autocomplete="new-password">
-        <input type="password" id="course-new-pw2" placeholder="新しいパスワード（確認）" autocomplete="new-password">
-        <button type="submit" class="pw-submit">パスワードを変更する</button>
-      </form>
-      <div id="course-pw-msg" style="font-size:13px;margin-top:10px;display:none;"></div>
-      <p style="font-size:11px;color:var(--text-light);margin-top:8px;line-height:1.7;">※設定したパスワードは必ずメモするか、パスワードマネージャーに保存してください。パスワードを忘れた場合はログイン画面の「パスワードをお忘れの方」から再設定できます。</p>
-    </div>
-  </div>
   <div class="toggle-section" id="todoke-section">
     <button class="toggle-header" onclick="toggleSection('todoke-body')">
       <span class="toggle-header-left">
@@ -883,6 +862,28 @@
           <button onclick="alert('近日公開予定です')" class="action-btn todoke-btn" style="opacity:0.4;pointer-events:none;background:linear-gradient(135deg,#e53935,#c62828);">提出する</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- パスワード変更 -->
+  <div class="toggle-section">
+    <button class="toggle-header" onclick="toggleSection('pw-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap" style="background:var(--pink-light);">🔒</span>
+        <span class="toggle-header-title">パスワード変更
+          <span class="toggle-header-desc">初期パスワードから変更することをお勧めします</span>
+        </span>
+      </span>
+      <span class="toggle-arrow" id="arrow-pw-body">›</span>
+    </button>
+    <div class="toggle-body" id="pw-body">
+      <form class="pw-form" onsubmit="changeCoursePassword();return false;">
+        <input type="password" id="course-new-pw" placeholder="新しいパスワード（8文字以上）" autocomplete="new-password">
+        <input type="password" id="course-new-pw2" placeholder="新しいパスワード（確認）" autocomplete="new-password">
+        <button type="submit" class="pw-submit">パスワードを変更する</button>
+      </form>
+      <div id="course-pw-msg" style="font-size:13px;margin-top:10px;display:none;"></div>
+      <p style="font-size:11px;color:var(--text-light);margin-top:8px;line-height:1.7;">※設定したパスワードは必ずメモするか、パスワードマネージャーに保存してください。パスワードを忘れた場合はログイン画面の「パスワードをお忘れの方」から再設定できます。</p>
     </div>
   </div>
 
