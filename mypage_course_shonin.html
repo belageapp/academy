@@ -1246,8 +1246,8 @@
 
       // 受講日程
       document.getElementById('app-applied').textContent = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString('ja-JP') : '—';
-      document.getElementById('app-completed').textContent = data.completedAt ? new Date(data.completedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
-      document.getElementById('app-temp-completed').textContent = data.tempCompletedAt ? new Date(data.tempCompletedAt.toMillis()).toLocaleDateString('ja-JP') : '—';
+      document.getElementById('app-completed').textContent = data.reportApprovedAt ? new Date(data.reportApprovedAt.toMillis ? data.reportApprovedAt.toMillis() : data.reportApprovedAt).toLocaleDateString('ja-JP') : '—';
+      document.getElementById('app-temp-completed').textContent = data.test2PassedAt ? new Date(data.test2PassedAt.toMillis ? data.test2PassedAt.toMillis() : data.test2PassedAt).toLocaleDateString('ja-JP') : '—';
 
       if (data.activeAt) {
         const startDate = new Date(data.activeAt.toMillis());
