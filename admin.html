@@ -369,6 +369,7 @@
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>変更届</div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出</div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告</div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート</div>
@@ -572,6 +573,11 @@
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📋 実習修了報告一覧</div>
         <div id="ojt-list">読み込み中...</div>
       </div><!-- /section-ojt -->
+
+      <div id="section-change" style="display:none;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 変更届一覧</div>
+        <div id="change-list">読み込み中...</div>
+      </div><!-- /section-change -->
 
       <div id="section-report" style="display:none;">
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 修了レポート一覧</div>
@@ -927,6 +933,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
     document.getElementById('section-ojt').style.display          = section === 'ojt'          ? 'block' : 'none';
+    document.getElementById('section-change').style.display       = section === 'change'       ? 'block' : 'none';
     document.getElementById('section-report').style.display       = section === 'report'       ? 'block' : 'none';
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
@@ -934,6 +941,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     if (section === 'notices') loadNotices();
     if (section === 'venue') loadVenueList();
     if (section === 'ojt') loadOjtList();
+    if (section === 'change') loadChangeList();
     if (section === 'report') loadReportList();
     if (section === 'certificate') loadCertificateList();
     document.getElementById('topbar-title').textContent = 
@@ -942,6 +950,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       section === 'documents' ? '🪪 書類確認' :
       section === 'venue'     ? '🏥 実習先届出' :
       section === 'ojt'       ? '📋 実習修了報告' :
+      section === 'change'      ? '📝 変更届' :
       section === 'report'      ? '📝 修了レポート' :
       section === 'certificate' ? '📜 正式修了証明書発行' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
@@ -1810,6 +1819,80 @@ document.getElementById('m-status').value = a.status || 'pending';
     } catch(e) { console.warn('完了メール送信失敗:', e); }
   }
   window.sendBothApprovedNotice = sendBothApprovedNotice;
+  async function loadChangeList() {
+    const el = document.getElementById('change-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, serverTimestamp, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), orderBy('createdAt', 'desc')));
+      const docs = snap.docs.filter(d => d.data().type === '変更届');
+      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">変更届はまだありません。</p>'; return; }
+
+      let html = '';
+      for (const d of docs) {
+        const t = d.data();
+        const f = t.fields || {};
+        const appId = d.ref.parent.parent.id;
+        const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', appId));
+        const a = appSnap.data() || {};
+        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isProcessed = t.status === 'done';
+
+        const rows = [
+          ['氏名', [f.sei, f.mei].filter(Boolean).join('　') || '—'],
+          ['氏名カナ', [f.seiKana, f.meiKana].filter(Boolean).join('　') || '—'],
+          ['住所', f.zip ? `〒${f.zip} ${f.address||''}${f.address2 ? ' ' + f.address2 : ''}` : '—'],
+          ['郵送先住所', f.altZip ? `〒${f.altZip} ${f.altAddress||''}${f.altAddress2 ? ' ' + f.altAddress2 : ''}` : '—'],
+          ['電話番号', f.phone || '—'],
+          ['メールアドレス変更希望', f.email || '—'],
+        ].map(([k,v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="width:120px;color:#888;flex-shrink:0;">${k}</span><span style="color:#333;">${v}</span></div>`).join('');
+
+        html += `<div style="background:white;border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+              <span style="font-size:14px;font-weight:700;">${a.sei||''}${a.mei||''}</span>
+              <span style="font-size:12px;color:#888;margin-left:8px;">${a.email||''}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;">${date}</span>
+              ${isProcessed
+                ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">対応済み</span>'
+                : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未対応</span>'}
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">${rows}</div>
+          ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
+        </div>`;
+      }
+      el.innerHTML = html;
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+
+  async function doneChange(appId, todId, email, name) {
+    if (!confirm(`${name} さんの変更届を対応済みにしますか？`)) return;
+    try {
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', appId, 'todoke', todId), { status: 'done', doneAt: serverTimestamp() });
+      await addDoc(collection(window.__db, 'notices'), {
+        applicationId: appId,
+        title: '変更届の対応が完了しました',
+        body: '変更届の内容を確認し、対応が完了しました。ご不明な点があればお問い合わせください。',
+        target: 'specific',
+        emails: [email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+      alert('対応済みにしました');
+      loadChangeList();
+    } catch(e) {
+      alert('エラー：' + e.message);
+    }
+  }
+
+  window.loadChangeList = loadChangeList;
+  window.doneChange = doneChange;
 </script>
 
 <!-- 画像拡大モーダル -->
