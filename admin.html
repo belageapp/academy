@@ -369,7 +369,7 @@
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>変更届</div>
+    <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書</div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出</div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告</div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート</div>
@@ -575,7 +575,7 @@
       </div><!-- /section-ojt -->
 
       <div id="section-change" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 変更届一覧</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 届出書一覧</div>
         <div id="change-list">読み込み中...</div>
       </div><!-- /section-change -->
 
@@ -950,7 +950,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       section === 'documents' ? '🪪 書類確認' :
       section === 'venue'     ? '🏥 実習先届出' :
       section === 'ojt'       ? '📋 実習修了報告' :
-      section === 'change'      ? '📝 変更届' :
+      section === 'change'      ? '📝 届出書' :
       section === 'report'      ? '📝 修了レポート' :
       section === 'certificate' ? '📜 正式修了証明書発行' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
@@ -1825,8 +1825,8 @@ document.getElementById('m-status').value = a.status || 'pending';
     try {
       const { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, serverTimestamp, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), orderBy('createdAt', 'desc')));
-      const docs = snap.docs.filter(d => d.data().type === '変更届');
-      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">変更届はまだありません。</p>'; return; }
+      const docs = snap.docs;
+      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
 
       let html = '';
       for (const d of docs) {
@@ -1838,14 +1838,32 @@ document.getElementById('m-status').value = a.status || 'pending';
         const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
         const isProcessed = t.status === 'done';
 
-        const rows = [
-          ['氏名', [f.sei, f.mei].filter(Boolean).join('　') || '—'],
-          ['氏名カナ', [f.seiKana, f.meiKana].filter(Boolean).join('　') || '—'],
-          ['住所', f.zip ? `〒${f.zip} ${f.address||''}${f.address2 ? ' ' + f.address2 : ''}` : '—'],
-          ['郵送先住所', f.altZip ? `〒${f.altZip} ${f.altAddress||''}${f.altAddress2 ? ' ' + f.altAddress2 : ''}` : '—'],
-          ['電話番号', f.phone || '—'],
-          ['メールアドレス変更希望', f.email || '—'],
-        ].map(([k,v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="width:120px;color:#888;flex-shrink:0;">${k}</span><span style="color:#333;">${v}</span></div>`).join('');
+        let rowData = [];
+        if (t.type === '変更届') {
+          rowData = [
+            ['氏名', [f.sei, f.mei].filter(Boolean).join('　') || '—'],
+            ['氏名かな', [f.seiKana, f.meiKana].filter(Boolean).join('　') || '—'],
+            ['住所', f.zip ? `〒${f.zip} ${f.address||''}${f.address2 ? ' ' + f.address2 : ''}` : '—'],
+            ['郵送先住所', f.altZip ? `〒${f.altZip} ${f.altAddress||''}${f.altAddress2 ? ' ' + f.altAddress2 : ''}` : '—'],
+            ['電話番号', f.phone || '—'],
+            ['メールアドレス変更希望', f.email || '—'],
+          ];
+        } else if (t.type === '休講届') {
+          rowData = [
+            ['氏名', t.name || '—'],
+            ['住所', t.address || '—'],
+            ['電話番号', t.phone || '—'],
+            ['休講希望期間', (t.dateFrom || '—') + ' 〜 ' + (t.dateTo || '—')],
+            ['理由', t.reason || '—'],
+          ];
+        } else if (t.type === '退講届') {
+          rowData = [
+            ['氏名', t.name || '—'],
+            ['住所', t.address || '—'],
+            ['電話番号', t.phone || '—'],
+          ];
+        }
+        const rows = rowData.map(([k,v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="width:120px;color:#888;flex-shrink:0;">${k}</span><span style="color:#333;">${v}</span></div>`).join('');
 
         html += `<div style="background:white;border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
