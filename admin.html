@@ -369,6 +369,7 @@
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書</div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出</div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告</div>
@@ -573,6 +574,11 @@
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📋 実習修了報告一覧</div>
         <div id="ojt-list">読み込み中...</div>
       </div><!-- /section-ojt -->
+
+      <div id="section-inquiry" style="display:none;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📬 問い合わせ一覧</div>
+        <div id="inquiry-list">読み込み中...</div>
+      </div><!-- /section-inquiry -->
 
       <div id="section-change" style="display:none;">
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 届出書一覧</div>
@@ -933,6 +939,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
     document.getElementById('section-ojt').style.display          = section === 'ojt'          ? 'block' : 'none';
+    document.getElementById('section-inquiry').style.display      = section === 'inquiry'      ? 'block' : 'none';
     document.getElementById('section-change').style.display       = section === 'change'       ? 'block' : 'none';
     document.getElementById('section-report').style.display       = section === 'report'       ? 'block' : 'none';
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
@@ -941,6 +948,7 @@ document.getElementById('m-status').value = a.status || 'pending';
     if (section === 'notices') loadNotices();
     if (section === 'venue') loadVenueList();
     if (section === 'ojt') loadOjtList();
+    if (section === 'inquiry') loadInquiryList();
     if (section === 'change') loadChangeList();
     if (section === 'report') loadReportList();
     if (section === 'certificate') loadCertificateList();
@@ -950,6 +958,7 @@ document.getElementById('m-status').value = a.status || 'pending';
       section === 'documents' ? '🪪 書類確認' :
       section === 'venue'     ? '🏥 実習先届出' :
       section === 'ojt'       ? '📋 実習修了報告' :
+      section === 'inquiry'     ? '📬 問い合わせ' :
       section === 'change'      ? '📝 届出書' :
       section === 'report'      ? '📝 修了レポート' :
       section === 'certificate' ? '📜 正式修了証明書発行' : '';
@@ -1911,6 +1920,99 @@ document.getElementById('m-status').value = a.status || 'pending';
 
   window.loadChangeList = loadChangeList;
   window.doneChange = doneChange;
+
+  async function loadInquiryList() {
+    const el = document.getElementById('inquiry-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'inquiries'), orderBy('createdAt', 'desc')));
+      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">問い合わせはまだありません。</p>'; return; }
+      let html = '';
+      snap.docs.forEach(d => {
+        const t = d.data();
+        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isAnswered = t.status === 'answered';
+        html += `<div style="background:white;border:1px solid ${isAnswered ? '#eee' : '#FDE68A'};border-radius:10px;padding:16px;margin-bottom:16px;${isAnswered ? 'opacity:0.8;' : ''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div>
+              <span style="font-size:14px;font-weight:700;">${t.name||'—'}</span>
+              <span style="font-size:12px;color:#888;margin-left:8px;">${t.email||''}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;">${date}</span>
+              ${isAnswered
+                ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">回答済み</span>'
+                : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未回答</span>'}
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:4px;">${t.subject||'—'}</div>
+          <div style="font-size:13px;color:var(--text-dark);margin-bottom:10px;line-height:1.7;">${t.body||''}</div>
+          ${t.answer ? `<div style="background:#F0FBF4;border-left:3px solid var(--teal);padding:10px 12px;font-size:13px;color:var(--text-dark);border-radius:0 6px 6px 0;margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:var(--teal-dark);">回答済み：</span><br>${t.answer}</div>` : ''}
+          ${!isAnswered ? `
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <textarea id="reply-${d.id}" rows="3" placeholder="回答を入力してください" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+            <button onclick="replyInquiry('${d.id}','${t.applicationId||''}','${t.email||''}','${t.name||''}','${t.subject||''}')" style="padding:8px 16px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;align-self:flex-end;">返信する</button>
+          </div>` : ''}
+        </div>`;
+      });
+      el.innerHTML = html;
+
+      // 未回答バッジ更新
+      const pendingCount = snap.docs.filter(d => d.data().status !== 'answered').length;
+      const badge = document.getElementById('inquiry-badge');
+      if (badge) {
+        if (pendingCount > 0) { badge.style.display = 'inline'; badge.textContent = pendingCount; }
+        else { badge.style.display = 'none'; }
+      }
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+
+  async function replyInquiry(inquiryId, applicationId, email, name, subject) {
+    const answer = document.getElementById('reply-' + inquiryId)?.value.trim();
+    if (!answer) { alert('回答を入力してください'); return; }
+    try {
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'inquiries', inquiryId), {
+        answer,
+        status: 'answered',
+        answeredAt: serverTimestamp(),
+      });
+      await addDoc(collection(window.__db, 'notices'), {
+        applicationId,
+        title: 'お問い合わせへの回答が届いています',
+        body: `「${subject}」についてのご質問に回答しました。マイページのお問い合わせセクションをご確認ください。\n\n【回答】\n${answer}`,
+        target: 'specific',
+        emails: [email],
+        createdAt: serverTimestamp(),
+        createdBy: 'info@holiscare.or.jp',
+      });
+      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendInquiryReplyMail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, answer })
+      }).catch(e => console.warn('メール送信失敗:', e));
+      alert('返信しました');
+      loadInquiryList();
+    } catch(e) {
+      alert('エラー：' + e.message);
+    }
+  }
+
+  window.loadInquiryList = loadInquiryList;
+  window.replyInquiry = replyInquiry;
+
+  // 初期ロード時に未回答バッジを表示
+  (async () => {
+    try {
+      const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'inquiries'), where('status', '==', 'pending')));
+      const badge = document.getElementById('inquiry-badge');
+      if (badge && snap.size > 0) { badge.style.display = 'inline'; badge.textContent = snap.size; }
+    } catch(e) {}
+  })();
 </script>
 
 <!-- 画像拡大モーダル -->
