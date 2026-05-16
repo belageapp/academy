@@ -699,37 +699,7 @@
 
   <!-- 問い合わせ -->
   <div class="toggle-section">
-    <button class="toggle-header" onclick="toggleSection('inquiry-body')">
-      <span class="toggle-header-left">
-        <span class="toggle-icon-wrap" style="background:#E3F2FD;">📬</span>
-        <span class="toggle-header-title">お問い合わせ<span class="toggle-header-desc">ご質問・ご相談はこちらから</span></span>
-      </span>
-      <span class="toggle-arrow" id="arrow-inquiry-body">›</span>
-    </button>
-    <div class="toggle-body" id="inquiry-body">
-      <div id="inquiry-history" style="margin-bottom:16px;"></div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div>
-          <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">件名 <span style="color:red;">*</span></label>
-          <select id="inquiry-subject" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
-            <option value="">選択してください</option>
-            <option value="入金・書類提出・誓約書・実習先届出">入金・書類提出・誓約書・実習先届出</option>
-            <option value="eラーニング・動画視聴">eラーニング・動画視聴</option>
-            <option value="テスト受験・仮修了証明書発行">テスト受験・仮修了証明書発行</option>
-            <option value="介護施設実習・修了レポート・正式修了証明書">介護施設実習・修了レポート・正式修了証明書</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">内容 <span style="color:red;">*</span></label>
-          <textarea id="inquiry-body-text" rows="4" placeholder="ご質問・ご相談内容を入力してください" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
-        </div>
-        <button onclick="submitInquiry()" style="padding:11px;background:var(--teal);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">送信する</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ② 受講内容・ステータス -->
+    <!-- ② 受講内容・ステータス -->
   <div class="toggle-section">
     <button class="toggle-header" onclick="toggleSection('app-body')">
       <span class="toggle-header-left">
@@ -923,6 +893,38 @@
     </div>
 
   </div><!-- /timeline-wrap -->
+
+  <!-- ご質問・お問い合わせ -->
+  <div class="toggle-section">
+  <button class="toggle-header" onclick="toggleSection('inquiry-body')">
+      <span class="toggle-header-left">
+        <span class="toggle-icon-wrap" style="background:#E3F2FD;">📬</span>
+        <span class="toggle-header-title">ご質問・お問い合わせ<span class="toggle-header-desc">学習内容のご質問やご相談はこちら</span></span>
+      </span>
+      <span class="toggle-arrow" id="arrow-inquiry-body">›</span>
+    </button>
+    <div class="toggle-body" id="inquiry-body">
+      <div id="inquiry-history" style="margin-bottom:16px;"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">件名 <span style="color:red;">*</span></label>
+          <select id="inquiry-subject" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+            <option value="">選択してください</option>
+            <option value="入金・書類提出・誓約書・実習先届出">入金・書類提出・誓約書・実習先届出</option>
+            <option value="eラーニング・動画視聴">eラーニング・動画視聴</option>
+            <option value="テスト受験・仮修了証明書発行">テスト受験・仮修了証明書発行</option>
+            <option value="介護施設実習・修了レポート・正式修了証明書">介護施設実習・修了レポート・正式修了証明書</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">内容 <span style="color:red;">*</span></label>
+          <textarea id="inquiry-body-text" rows="4" placeholder="ご質問・ご相談内容を入力してください" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+        </div>
+        <button onclick="submitInquiry()" style="padding:11px;background:var(--teal);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">送信する</button>
+      </div>
+    </div>
+  </div>
 
   <div style="margin-top:20px;"></div>
 
