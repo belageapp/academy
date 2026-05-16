@@ -1400,9 +1400,10 @@
         <div id="rpt-q5-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
       </div>
     </div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="closeReportModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
-      <button id="rpt-submit-btn" onclick="submitReport()" style="flex:2;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">レポートを提出する</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="closeReportModal()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button onclick="saveDraftReport()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--teal);border-radius:10px;background:#fff;font-size:14px;color:var(--teal-dark);font-weight:700;cursor:pointer;font-family:inherit;">💾 保存して中断</button>
+      <button id="rpt-submit-btn" onclick="submitReport()" style="flex:2;min-width:120px;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">レポートを提出する</button>
     </div>
   </div>
 </div>
@@ -3243,15 +3244,18 @@
 // 修了レポートモーダル
   function openReportModal() {
     document.getElementById('report-modal').style.display = 'block';
+    // 下書きがあれば読み込む
+    const draft = window.__appData?.reportDraft || {};
     ['q1','q2','q3','q4','q5'].forEach(q => {
       const el = document.getElementById('rpt-' + q);
-      el.value = '';
-      el.oninput = () => {
-        document.getElementById('rpt-' + q + '-count').textContent = el.value.length + '字';
+      el.value = draft[q] || '';
+      const updateCount = () => {
         const len = el.value.length;
+        document.getElementById('rpt-' + q + '-count').textContent = len + '字';
         document.getElementById('rpt-' + q + '-count').style.color = len < 100 || len > 200 ? '#e53935' : '#2E7D47';
       };
-      document.getElementById('rpt-' + q + '-count').textContent = '0字';
+      el.oninput = updateCount;
+      updateCount();
     });
   }
   function closeReportModal() {
@@ -3296,6 +3300,27 @@
   window.openReportModal = openReportModal;
   window.closeReportModal = closeReportModal;
   window.submitReport = submitReport;
+  async function saveDraftReport() {
+    const vals = {
+      q1: document.getElementById('rpt-q1').value,
+      q2: document.getElementById('rpt-q2').value,
+      q3: document.getElementById('rpt-q3').value,
+      q4: document.getElementById('rpt-q4').value,
+      q5: document.getElementById('rpt-q5').value,
+    };
+    try {
+      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', window.__docId), {
+        reportDraft: vals
+      });
+      if (window.__appData) window.__appData.reportDraft = vals;
+      alert('下書きを保存しました。');
+      closeReportModal();
+    } catch(e) {
+      alert('保存に失敗しました：' + e.message);
+    }
+  }
+  window.saveDraftReport = saveDraftReport;
 // 仮修了証
   async function openTempCert() {
     const data = window.__appData || {};
