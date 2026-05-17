@@ -1500,6 +1500,7 @@
       const status = data.status || 'pending';
       const isConfirmed = ['confirmed','active','completed'].includes(status);
       const isActive = ['active','completed'].includes(status);
+      const isCompleted = status === 'completed';
       const isRestricted = ['cancelled','suspended','withdrawn'].includes(status);
       const isAwaitingPayment = status === 'awaiting_payment';
 
@@ -1597,6 +1598,28 @@
             </div>`;
         }
         return;
+      }
+      if (isCompleted) {
+        // 修了後は特定セクションのみ表示
+        const sectionsToHide = ['step2-body','test-body','ojt-body','todoke-body','guide-body'];
+        sectionsToHide.forEach(id => {
+          const section = document.getElementById(id)?.closest('.toggle-section, .tl-item');
+          if (section) section.style.display = 'none';
+        });
+        // 受講ステップラベルを非表示
+        const stepLabel = document.querySelector('.timeline-wrap')?.previousElementSibling;
+        if (stepLabel) stepLabel.style.display = 'none';
+        const timelineWrap = document.querySelector('.timeline-wrap');
+        if (timelineWrap) timelineWrap.style.display = 'none';
+        // 修了メッセージを表示
+        const banner = document.getElementById('next-step-banner');
+        if (banner) {
+          banner.style.display = 'flex';
+          banner.style.background = 'linear-gradient(135deg,#E8F5E9,#E0F7FB)';
+          banner.style.borderColor = '#4CAF72';
+          document.getElementById('next-step-icon').textContent = '🎓';
+          document.getElementById('next-step-text').textContent = '修了おめでとうございます！正式修了証明書を郵送しています。';
+        }
       }
       renderCourseFlow(data);
 
@@ -2288,6 +2311,7 @@
     const pledgeOk = data.pledgeSigned === true;
     const isConfirmed = ['confirmed','active','completed'].includes(status);
     const isActive = ['active','completed'].includes(status);
+      const isCompleted = status === 'completed';
       const isRestricted = ['cancelled','suspended','withdrawn'].includes(status);
     const test1Ok = data.test1Passed === true;
     const test2Ok = data.test2Passed === true;
