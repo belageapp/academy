@@ -1500,6 +1500,7 @@
       const status = data.status || 'pending';
       const isConfirmed = ['confirmed','active','completed'].includes(status);
       const isActive = ['active','completed'].includes(status);
+      const isRestricted = ['cancelled','suspended','withdrawn'].includes(status);
       const isAwaitingPayment = status === 'awaiting_payment';
 
 
@@ -1579,6 +1580,24 @@
         document.getElementById('app-full-limit').innerHTML = '<span style="color:' + fullColor + ';">' + fullLimit.toLocaleDateString('ja-JP') + '（残 ' + fullDays + '日）</span>';
       }
 
+      if (isRestricted) {
+        const statusMessages = {
+          cancelled: 'この講座はキャンセルされています。',
+          suspended: 'この講座は現在休講中です。',
+          withdrawn: 'この講座は退講済みです。',
+        };
+        const pageWrap = document.querySelector('.page-wrap');
+        if (pageWrap) {
+          pageWrap.innerHTML = `
+            <div style="text-align:center;padding:48px 24px;background:white;border-radius:16px;margin-top:16px;">
+              <div style="font-size:48px;margin-bottom:16px;">🚫</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:8px;">アクセスできません</div>
+              <div style="font-size:13px;color:var(--text-mid);margin-bottom:24px;">${statusMessages[status] || 'この講座にはアクセスできません。'}</div>
+              <a href="mypage.html" style="padding:10px 24px;background:var(--teal);color:white;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;">マイページに戻る</a>
+            </div>`;
+        }
+        return;
+      }
       renderCourseFlow(data);
 
 
@@ -2269,6 +2288,7 @@
     const pledgeOk = data.pledgeSigned === true;
     const isConfirmed = ['confirmed','active','completed'].includes(status);
     const isActive = ['active','completed'].includes(status);
+      const isRestricted = ['cancelled','suspended','withdrawn'].includes(status);
     const test1Ok = data.test1Passed === true;
     const test2Ok = data.test2Passed === true;
     const ojtOk = data.ojtPassed === true;
