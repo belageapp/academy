@@ -3927,19 +3927,33 @@
       const el = document.getElementById('inquiry-history');
       if (!el) return;
       if (snap.empty) { el.innerHTML = ''; return; }
-      let html = '<div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;">過去のお問い合わせ</div>';
-      snap.docs.forEach(d => {
+      const allDocs = snap.docs;
+      const showDocs = allDocs.slice(0, 3);
+      const hiddenDocs = allDocs.slice(3);
+
+      const renderItem = (d) => {
         const t = d.data();
         const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        html += `<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px;">
+        return `<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
             <span style="font-size:12px;font-weight:700;">${t.subject||'—'}</span>
             <span style="font-size:11px;color:#888;">${date}</span>
           </div>
           <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">${t.body||''}</div>
-          ${t.answer ? `<div style="background:white;border-left:3px solid var(--teal);padding:8px 10px;font-size:12px;color:var(--text-dark);margin-top:6px;border-radius:0 6px 6px 0;"><span style="font-size:11px;font-weight:700;color:var(--teal-dark);">回答：</span><br>${t.answer}</div>` : '<div style="font-size:11px;color:#F57C00;margin-top:4px;">⏳ 回答待ち</div>'}
+          ${t.answer
+            ? `<div style="background:white;border-left:3px solid var(--teal);padding:8px 10px;font-size:12px;color:var(--text-dark);margin-top:6px;border-radius:0 6px 6px 0;"><span style="font-size:11px;font-weight:700;color:var(--teal-dark);">回答：</span><br>${t.answer}</div>`
+            : '<div style="font-size:11px;color:#F57C00;margin-top:4px;">⏳ 回答待ち</div>'}
         </div>`;
-      });
+      };
+
+      let html = '<div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;">過去のお問い合わせ</div>';
+      showDocs.forEach(d => { html += renderItem(d); });
+      if (hiddenDocs.length > 0) {
+        html += `<div id="inquiry-hidden" style="display:none;">`;
+        hiddenDocs.forEach(d => { html += renderItem(d); });
+        html += `</div>`;
+        html += `<button onclick="document.getElementById('inquiry-hidden').style.display='block';this.style.display='none';" style="width:100%;padding:8px;background:white;border:1.5px solid var(--border);border-radius:8px;font-size:12px;color:var(--teal);font-weight:700;cursor:pointer;font-family:inherit;">もっと見る（${hiddenDocs.length}件）</button>`;
+      }
       el.innerHTML = html;
     } catch(e) { console.warn('問い合わせ履歴読み込みエラー:', e); }
   }
