@@ -1698,8 +1698,8 @@
           } else {
             renderVideoList(videoData, watched);
           }
-          // 全動画視聴済み確認（アクティブ時のみ）
-          if (isActive) checkAllVideosWatched(videoData, watched);
+          // 全動画視聴済み確認（アクティブ時のみ・未完了時のみ）
+          if (isActive && !window.__appData?.videoAllDone) checkAllVideosWatched(videoData, watched);
         } catch(e) {
           console.error('動画取得エラー:', e);
           videoList.innerHTML = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;font-size:12px;color:#F57C00;">動画の読み込みに失敗しました</div>';
