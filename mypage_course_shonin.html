@@ -3651,6 +3651,24 @@
             highlighted = true;
           }
         });
+      } else if (targetSection === 'ojt-body') {
+        // STEP4：対象タスクに左ボーダー点滅
+        const ojtItems = document.querySelectorAll('#ojt-body .step-flow-item');
+        const data = window.__appData || {};
+        const ojtOk = data.ojtPassed === true;
+        const ojtReported = data.ojtReported === true;
+        const reportSubmitted = data.reportSubmitted === true;
+        const reportApproved = data.reportApproved === true;
+        const certIssued = data.certificateIssued === true;
+        ojtItems.forEach((item, i) => {
+          const text = item.textContent;
+          const isCurrent =
+            (text.includes('実習修了報告') && !ojtOk && !ojtReported) ||
+            (text.includes('修了レポート') && ojtOk && !reportSubmitted && !reportApproved) ||
+            (text.includes('修了レポート') && ojtOk && reportSubmitted && !reportApproved) ||
+            (text.includes('正式修了証明書') && ojtOk && reportApproved && !certIssued);
+          if (isCurrent) item.classList.add('next-highlight');
+        });
       } else {
         // その他：セクションボタンに左ボーダー点滅
         const btn = document.querySelector(`button[onclick*="${targetSection}"]`);
