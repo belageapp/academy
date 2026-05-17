@@ -3626,8 +3626,8 @@
           if (isCurrent) {
             const badge = document.createElement('span');
             badge.className = 'next-badge';
-            badge.textContent = '👆 次はここ';
-            badge.style.cssText = 'font-size:14px;animation:pulse 1.5s infinite;flex-shrink:0;';
+            badge.textContent = '👉';
+            badge.style.cssText = 'font-size:13px;animation:pulse 1.5s infinite;flex-shrink:0;margin-right:2px;background:none;padding:0;border-radius:0;color:inherit;font-weight:normal;';
             const dot = item.querySelector('.sfi-dot');
             if (dot) dot.parentNode.insertBefore(badge, dot);
             item.appendChild(badge);
@@ -3642,7 +3642,8 @@
           if (titleEl) {
             const badge = document.createElement('span');
             badge.className = 'next-badge';
-            badge.textContent = '👆 次はここ';
+            badge.textContent = '👉';
+            badge.style.cssText = 'font-size:13px;animation:pulse 1.5s infinite;background:none;padding:0;border-radius:0;margin-left:6px;';
             titleEl.appendChild(badge);
           }
         }
