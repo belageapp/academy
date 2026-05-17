@@ -3651,6 +3651,20 @@
             highlighted = true;
           }
         });
+      } else if (targetSection === 'test-body') {
+        // STEP3：対象カードに左ボーダー点滅
+        const testItems = document.querySelectorAll('#test-list > div');
+        const data = window.__appData || {};
+        const test1Ok = data.test1Passed === true;
+        const test2Ok = data.test2Passed === true;
+        const tempCertIssued = data.tempCertIssued === true;
+        testItems.forEach((item, i) => {
+          const isCurrent =
+            (i === 0 && !test1Ok) ||
+            (i === 1 && test1Ok && !test2Ok) ||
+            (i === 2 && test2Ok && !tempCertIssued);
+          if (isCurrent) item.classList.add('next-highlight');
+        });
       } else if (targetSection === 'ojt-body') {
         // STEP4：対象タスクに左ボーダー点滅
         const ojtItems = document.querySelectorAll('#ojt-body .step-flow-item');
