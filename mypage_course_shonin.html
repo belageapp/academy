@@ -29,7 +29,7 @@
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 10px var(--shadow);
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
     .back-btn {
       background: none; border: 1.5px solid var(--border); color: var(--text-mid);
       border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer;
@@ -49,11 +49,7 @@
     .header-pc-logo { display: flex; }
     .header-pc-right { display: flex; }
     @media (max-width: 480px) {
-      .header-pc-logo { display: none !important; }
-      .header-pc-right { display: none !important; }
-      .header { padding: 8px 12px; height: auto; flex-direction: column; align-items: stretch; gap: 6px; }
-      .header-logo-row { display: flex; justify-content: center; width: 100%; }
-      .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+      .header { padding: 8px 12px; }
     }
 
     .course-header {
