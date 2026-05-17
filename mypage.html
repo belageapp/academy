@@ -158,6 +158,8 @@
     .status-confirmed { background: var(--teal-light); color: var(--teal-dark); }
     .status-completed { background: var(--green-light); color: #2E7D47; }
     .status-cancelled { background: #F5F5F5; color: #888; }
+    .status-suspended { background: #FFF8E1; color: #F57C00; }
+    .status-withdrawn { background: #F3F4F6; color: #6B7280; }
     .status-未対応 { background: var(--yellow-light); color: #B8860B; }
     .status-入金待ち { background: var(--yellow-light); color: #B8860B; }
     .status-受講確定 { background: var(--teal-light); color: var(--teal-dark); }
@@ -351,7 +353,7 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
     task_done: '受講中',
     ojt_done: '受講中',
     completed: '修了',
-    cancelled: 'キャンセル',
+    cancelled: 'キャンセル', suspended: '休講中', withdrawn: '退講',
   };
 
   onAuthStateChanged(auth, async user => {
