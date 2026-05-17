@@ -3589,7 +3589,7 @@
       else if (!venueOk) { icon = '🏥'; text = '介護実習先の有無を届け出てください'; targetSection = 'step1-body'; }
       else { icon = '⏳'; text = '書類確認中です。しばらくお待ちください'; targetSection = 'step1-body'; }
     } else if (status === 'pending' || status === 'awaiting_payment') {
-      icon = '💳'; text = 'ご入金をお待ちしています'; targetSection = 'step1-body';
+      icon = '💳'; text = 'ご入金をお待ちしています'; targetSection = 'payment-item';
     }
 
     if (!text) return;
@@ -3609,7 +3609,11 @@
     });
 
     if (targetSection) {
-      if (targetSection === 'step1-body') {
+      if (targetSection === 'payment-item') {
+        // 入金待ち：ご入金の確認タスク（i=0）をハイライト
+        const step1Items = document.querySelectorAll('#step1-content .step-flow-item');
+        if (step1Items[0]) step1Items[0].classList.add('next-highlight');
+      } else if (targetSection === 'step1-body') {
         // STEP1：最初の未完了タスクに左ボーダー点滅
         const data = window.__appData || {};
         const docStatus = data.documentStatus || {};
