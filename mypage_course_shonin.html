@@ -3624,10 +3624,10 @@
         step1Items.forEach((item, i) => {
           if (highlighted) return;
           const isCurrent =
-            (i === 0 && !photoOk && !photoPending) ||
-            (i === 1 && photoOk && !idOk && !idPending) ||
-            (i === 2 && photoOk && idOk && !pledgeOk) ||
-            (i === 3 && photoOk && idOk && pledgeOk && !venueOk);
+            (i === 1 && !photoOk && !photoPending) ||
+            (i === 2 && photoOk && !idOk && !idPending) ||
+            (i === 3 && photoOk && idOk && !pledgeOk) ||
+            (i === 4 && photoOk && idOk && pledgeOk && !venueOk);
           if (isCurrent) {
             item.classList.add('next-highlight');
             highlighted = true;
