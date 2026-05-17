@@ -264,7 +264,7 @@
 <div class="page-wrap">
 
   <!-- お知らせ -->
-  <div class="toggle-section">
+  <div class="toggle-section" style="display:none;">
     <button class="toggle-header" onclick="toggleSection('notice-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📢</span>
@@ -487,6 +487,18 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
               courseList.insertBefore(card, moreBtn);
             });
             moreBtn.remove();
+            // 3件に戻るボタンを追加
+            const lessBtn = document.createElement('button');
+            lessBtn.textContent = '3件表示に戻る';
+            lessBtn.style.cssText = 'width:100%; padding:12px; background:white; border:1.5px solid var(--border); border-radius:10px; color:var(--teal); font-size:13px; font-weight:700; cursor:pointer; font-family:"Noto Sans JP",sans-serif; margin-top:4px;';
+            lessBtn.onclick = () => {
+              // hiddenDocsのカードを削除
+              const allCards = courseList.querySelectorAll('.course-card');
+              allCards.forEach((card, i) => { if (i >= 3) card.remove(); });
+              lessBtn.remove();
+              courseList.appendChild(moreBtn);
+            };
+            courseList.appendChild(lessBtn);
           };
           courseList.appendChild(moreBtn);
         }
