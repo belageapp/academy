@@ -2483,7 +2483,8 @@
       const nyukinExtra = isConfirmed
         ? '<span style="font-size:11px;background:#EBF7EF;color:#166534;padding:2px 8px;border-radius:10px;font-weight:700;">✅ 入金済み</span>'
         : payBtn;
-      html += sfi('ご入金の確認', isConfirmed, !isConfirmed, nyukinExtra);
+      const nyukinActive = !isConfirmed && (status === 'pending' || status === 'awaiting_payment');
+      html += sfi('ご入金の確認', isConfirmed, nyukinActive, nyukinExtra);
       html += sfi('顔写真の提出', photoOk, isConfirmed && !photoOk, photoExtra);
       html += sfi('本人確認書類の提出', idOk, isConfirmed && !idOk, idExtra);
       html += sfi('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, pledgeExtra);
