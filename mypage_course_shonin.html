@@ -1675,6 +1675,7 @@
     // お知らせ（リアルタイム更新）
     const noticeList = document.getElementById('notice-list');
     try {
+      console.log('notices query docId:', window.__docId);
       const q = query(collection(db, 'notices'), where('applicationId', '==', window.__docId), orderBy('createdAt', 'desc'));
       onSnapshot(q, async (snap) => {
       const uid = user.uid;
