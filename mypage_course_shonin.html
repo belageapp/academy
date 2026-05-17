@@ -2631,6 +2631,9 @@
 
   function checkAllVideosWatched(videoData, watched) {
     if (!videoData || videoData.length === 0) return;
+    const status = window.__appData?.status || '';
+    const isActiveNow = ['active','completed'].includes(status);
+    if (!isActiveNow) return;
     const allWatched = videoData.every(v => watched.includes(v.id));
     // カードステータス更新
     const vidStatus = document.getElementById('video-card-status');

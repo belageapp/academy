@@ -1343,7 +1343,8 @@ document.getElementById('m-status').value = a.status || 'pending';
     const reasonField = type === 'photo' ? 'documentStatus.photoRejectReason' : 'documentStatus.idDocumentRejectReason';
     await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
       [field]: 'rejected',
-      [reasonField]: reason
+      [reasonField]: reason,
+      status: 'confirmed',
     });
 
     const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
