@@ -1896,7 +1896,7 @@ document.getElementById('m-status').value = a.status || 'pending';
             </div>
           </div>
           <div style="margin-bottom:12px;">${rows}</div>
-          ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
+          ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}','${t.type||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
         </div>`;
       }
       el.innerHTML = html;
@@ -1905,15 +1905,36 @@ document.getElementById('m-status').value = a.status || 'pending';
     }
   }
 
-  async function doneChange(appId, todId, email, name) {
-    if (!confirm(`${name} さんの変更届を対応済みにしますか？`)) return;
+  async function doneChange(appId, todId, email, name, type) {
+    const typeLabel = type === '休講届' ? '休講届' : type === '退講届' ? '退講届' : '変更届';
+    const confirmMsg = type === '休講届'
+      ? `${name} さんを休講中にします。ステータスが「休講中」に変更されます。よろしいですか？`
+      : type === '退講届'
+        ? `${name} さんを退講済みにします。ステータスが「退講」に変更されます。よろしいですか？`
+        : `${name} さんの変更届を対応済みにしますか？`;
+    if (!confirm(confirmMsg)) return;
     try {
       const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'applications', appId, 'todoke', todId), { status: 'done', doneAt: serverTimestamp() });
+
+      // 休講・退講はステータスも変更
+      if (type === '休講届') {
+        await updateDoc(doc(window.__db, 'applications', appId), { status: 'suspended' });
+      } else if (type === '退講届') {
+        await updateDoc(doc(window.__db, 'applications', appId), { status: 'withdrawn' });
+      }
+
+      const noticeMessages = {
+        '休講届': { title: '休講届の対応が完了しました', body: '休講届を受理しました。休講中はマイページへのアクセスが制限されます。復講をご希望の際はご連絡ください。' },
+        '退講届': { title: '退講届の対応が完了しました', body: '退講届を受理しました。受講料の返還はできません。またのご縁をお待ちしております。' },
+        '変更届': { title: '変更届の対応が完了しました', body: '変更届の内容を確認し、対応が完了しました。ご不明な点があればお問い合わせください。' },
+      };
+      const msg = noticeMessages[type] || noticeMessages['変更届'];
+
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: appId,
-        title: '変更届の対応が完了しました',
-        body: '変更届の内容を確認し、対応が完了しました。ご不明な点があればお問い合わせください。',
+        title: msg.title,
+        body: msg.body,
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
