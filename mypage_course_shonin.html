@@ -1371,13 +1371,14 @@
 
 <!-- 修了レポートモーダル -->
 <div id="report-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
-  <div style="background:white;border-radius:16px;margin:20px auto;max-width:560px;padding:28px 24px;">
+  <div style="background:white;border-radius:16px;margin:20px auto;max-width:560px;padding:0;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="padding:28px 24px 0;overflow-y:auto;flex:1;">
     <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📝 修了レポート</div>
     <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.7;">自分の言葉で記述してください。具体例を含め、それぞれ100〜200文字で記述してください。</p>
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--text-dark);display:block;margin-bottom:4px;">①介護における「尊厳」とは何か <span style="color:red;">*</span></label>
-        <textarea id="rpt-q1" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+        <textarea id="rpt-q1" rows="4" placeholder="100〜200文字で記述してください" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:inherit;resize:vertical;"></textarea>
         <div id="rpt-q1-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
       </div>
       <div>
@@ -1421,10 +1422,13 @@
         </div>
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="closeReportModal()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
-      <button onclick="saveDraftReport()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--teal);border-radius:10px;background:#fff;font-size:14px;color:var(--teal-dark);font-weight:700;cursor:pointer;font-family:inherit;">💾 保存して中断</button>
-      <button id="rpt-submit-btn" onclick="submitReport()" style="flex:2;min-width:120px;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">レポートを提出する</button>
+    </div><!-- /scroll area -->
+    <div style="padding:16px 24px;border-top:1px solid var(--border);background:white;border-radius:0 0 16px 16px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeReportModal()" style="flex:1;padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:12px;color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;">キャンセル</button>
+        <button onclick="saveDraftReport()" style="flex:1;padding:10px 4px;border:1.5px solid var(--teal);border-radius:10px;background:#fff;font-size:12px;color:var(--teal-dark);font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">💾 保存して中断</button>
+        <button id="rpt-submit-btn" onclick="submitReport()" style="flex:2;padding:10px 4px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">レポートを提出する</button>
+      </div>
     </div>
   </div>
 </div>
