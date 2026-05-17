@@ -1568,8 +1568,8 @@
         document.getElementById('app-address2-row').style.display = '';
         document.getElementById('app-address2').textContent = data.address2;
       }
-      if (data.alt_addr === '別の住所に送る' && (data.alt_addr1 || data.alt_zip)) {
-        document.getElementById('app-altaddr').textContent = data.altAddress || '—';
+      if (data.altAddress && data.altAddress.trim() !== '' && data.altAddress !== '〒　') {
+        document.getElementById('app-altaddr').textContent = data.altAddress;
       } else {
         document.getElementById('app-altaddr').textContent = '（なし）';
       }
