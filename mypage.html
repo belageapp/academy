@@ -40,10 +40,12 @@
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 10px var(--shadow);
     }
-    .header-logo { display: flex; align-items: center; }
-    .header-logo img { height: 36px; width: auto; }
-    .header-right { display: flex; align-items: center; gap: 14px; }
-    .header-name { font-size: 13px; color: var(--text-mid); }
+    .header-left { display: flex; align-items: center; flex: 1; }
+    .header-center { display: flex; align-items: center; justify-content: center; flex: 1; }
+    .header-right { display: flex; align-items: center; gap: 14px; flex: 1; justify-content: flex-end; }
+    .header-name { display: none; }
+    .header-logo-sp { display: none; }
+    .header-logo-pc { display: flex; }
     .logout-btn {
       background: none; border: 1.5px solid var(--border);
       color: var(--text-mid); border-radius: 20px;
@@ -209,10 +211,9 @@
       .page-wrap { padding: 20px 12px 60px; }
     }
     @media (max-width: 480px) {
-      .header { padding: 8px 12px; height: auto; flex-direction: column; align-items: stretch; gap: 6px; }
-      .header-logo { justify-content: center; }
-      .header-right { justify-content: flex-end; align-items: center; gap: 8px; }
-      .header-name { font-size: 12px; }
+      .header { padding: 8px 12px; }
+      .header-logo-pc { display: none; }
+      .header-logo-sp { display: flex; }
       .logout-btn { padding: 5px 10px; font-size: 11px; }
     }
 /* トグルセクション */
@@ -249,11 +250,13 @@
 <body>
 
 <header class="header">
-  <div class="header-logo">
-    <img src="assets/logo.png" alt="ホリスケアアカデミー" onerror="this.style.display='none'">
+  <div class="header-left">
+  </div>
+  <div class="header-center">
+    <img src="assets/logo.png" alt="ホリスケアアカデミー" class="header-logo-pc" style="height:36px;" onerror="this.style.display='none'">
+    <img src="assets/logo_square.png" alt="ホリスケアアカデミー" class="header-logo-sp" style="height:40px;" onerror="this.style.display='none'">
   </div>
   <div class="header-right">
-    <span class="header-name" id="header-name"></span>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </header>
