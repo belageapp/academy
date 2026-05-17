@@ -3483,12 +3483,24 @@
     let targetSection = '';
 
     if (certIssued) {
-      // 全完了
+      icon = '🎓'; text = '修了おめでとうございます！正式修了証明書を郵送しました。';
+      const banner = document.getElementById('next-step-banner');
+      if (banner) {
+        banner.style.background = 'linear-gradient(135deg,#E8F5E9,#E0F7FB)';
+        banner.style.borderColor = '#4CAF72';
+        document.getElementById('next-step-icon').textContent = icon;
+        document.getElementById('next-step-text').textContent = text;
+        banner.style.display = 'flex';
+      }
       return;
     } else if (ojtOk && reportApproved && !certIssued) {
       icon = '📜'; text = '正式修了証明書の発行を待っています'; targetSection = 'ojt-body';
+    } else if (ojtOk && !reportApproved && reportSubmitted) {
+      icon = '⏳'; text = '修了レポートを提出しました。当校で確認中です'; targetSection = 'ojt-body';
     } else if (ojtOk && !reportApproved && !reportSubmitted) {
       icon = '📝'; text = '修了レポートを記入・提出してください'; targetSection = 'ojt-body';
+    } else if (!ojtOk && ojtReported && tempCertIssued) {
+      icon = '⏳'; text = '実習修了報告を提出しました。当校で確認中です'; targetSection = 'ojt-body';
     } else if (!ojtOk && !ojtReported && tempCertIssued) {
       icon = '🏥'; text = '介護施設での実習を完了したら、実習修了を報告してください'; targetSection = 'ojt-body';
     } else if (!tempCertIssued && test2Ok) {
