@@ -363,7 +363,8 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
     if (!user) { window.location.href = 'mypage_login.html'; return; }
 
     const name = user.displayName || user.email;
-    document.getElementById('header-name').textContent = name + ' さん';
+    const headerNameEl = document.getElementById('header-name');
+    if (headerNameEl) headerNameEl.textContent = name + ' さん';
     document.getElementById('welcome-name').textContent = name + ' さん、こんにちは！';
 
     // 申し込みデータ取得
