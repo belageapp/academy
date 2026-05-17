@@ -37,7 +37,7 @@
     }
     .back-btn:hover { background: var(--teal-light); border-color: var(--teal); }
     .header-right { display: flex; align-items: center; gap: 14px; }
-    .header-name { font-size: 13px; color: var(--text-mid); }
+    .header-name { display: none; }
     .logout-btn {
       background: none; border: 1.5px solid var(--border); color: var(--text-mid);
       border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer;
@@ -562,24 +562,11 @@
 <body>
 
 <header class="header">
-  <div class="header-logo-row">
-    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:36px;" onerror="this.style.display='none'">
-  </div>
-  <div class="header-left header-pc-logo">
-    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:36px;" onerror="this.style.display='none'">
+  <div class="header-left">
     <button class="back-btn" onclick="window.location.href='mypage.html'">← 戻る</button>
+    <img src="assets/logo_square.png" alt="ホリスケアアカデミー" style="height:40px;" onerror="this.style.display='none'">
   </div>
-  <div class="header-main-row">
-    <div class="header-left">
-      <button class="back-btn" onclick="window.location.href='mypage.html'">← 戻る</button>
-    </div>
-    <div class="header-right">
-      <span class="header-name" id="header-name"></span>
-      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
-    </div>
-  </div>
-  <div class="header-right header-pc-right">
-    <span class="header-name" id="header-name-pc"></span>
+  <div class="header-right">
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </header>
@@ -587,6 +574,7 @@
 <div class="course-header">
   <h2 id="course-title">講座詳細</h2>
   <p id="course-subtitle">受講番号：読み込み中...</p>
+  <p id="course-name" style="font-size:13px;margin-top:4px;opacity:0.85;word-break:break-all;"></p>
 </div>
 
 <!-- 次のステップバナー -->
@@ -1485,7 +1473,8 @@
   onAuthStateChanged(auth, async user => {
     if (!user) { window.location.href = 'mypage_login.html'; return; }
     const name = user.displayName || user.email;
-    document.getElementById('header-name').textContent = name + ' さん';
+    const nameEl = document.getElementById('course-name');
+    if (nameEl) nameEl.textContent = 'お名前：' + name;
     if (document.getElementById('header-name-pc')) document.getElementById('header-name-pc').textContent = name + ' さん';
     document.getElementById('doc-name').value = name;
 
