@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受講生マニュアル｜ホリスケアアカデミー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #2BBCD4;
+    --teal-dark: #1A9AB0;
+    --teal-light: #E0F7FB;
+    --teal-pale: #F0FBFD;
+    --text: #1a2e35;
+    --text-mid: #5a7a85;
+    --text-light: #8faab5;
+    --border: #D4EEF3;
+    --bg: #F5FBFC;
+    --white: #ffffff;
+    --green: #2E7D47;
+    --green-light: #EBF7EF;
+    --orange: #F57C00;
+    --orange-light: #FFF8E1;
+    --purple: #5B21B6;
+    --purple-light: #F3E8FF;
+    --red: #e53935;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ヘッダー */
+  header {
+    background: white;
+    border-bottom: 3px solid var(--teal);
+    padding: 0 24px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(43,188,212,0.1);
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-badge {
+    font-size: 11px;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+
+  /* ヒーロー */
+  .hero {
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    color: white;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero p {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 24px;
+  }
+
+  .hero-steps {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .hero-step {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* メインコンテンツ */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px 80px;
+  }
+
+  /* 目次 */
+  .toc {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(43,188,212,0.06);
+  }
+
+  .toc h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+
+  .toc-item:hover { background: var(--teal-pale); color: var(--teal-dark); }
+
+  .toc-num {
+    width: 22px;
+    height: 22px;
+    background: var(--teal);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* セクション */
+  .section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(43,188,212,0.06);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--teal-light);
+  }
+
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--teal-dark);
+  }
+
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-mid);
+    margin-top: 2px;
+  }
+
+  /* ステップカード */
+  .step-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .step-card.step1 { background: var(--teal-light); }
+  .step-card.step2 { background: var(--green-light); }
+  .step-card.step3 { background: var(--orange-light); }
+  .step-card.step4 { background: var(--purple-light); }
+
+  .step-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .step-card.step1 .step-card-title { color: var(--teal-dark); }
+  .step-card.step2 .step-card-title { color: var(--green); }
+  .step-card.step3 .step-card-title { color: var(--orange); }
+  .step-card.step4 .step-card-title { color: var(--purple); }
+
+  .step-card-body {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.8;
+  }
+
+  /* タスクリスト */
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .task-num {
+    width: 24px;
+    height: 24px;
+    background: var(--teal);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .task-content { flex: 1; }
+  .task-title { font-weight: 700; margin-bottom: 2px; }
+  .task-desc { font-size: 12px; color: var(--text-mid); line-height: 1.6; }
+
+  /* 注意ボックス */
+  .notice-box {
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 12px 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .notice-box.info { background: var(--teal-light); color: var(--teal-dark); border: 1px solid #7ECFD9; }
+  .notice-box.warning { background: var(--orange-light); color: #7A4A00; border: 1px solid #FDE68A; }
+  .notice-box.danger { background: #FFF1F2; color: #9F1239; border: 1px solid #FECDD3; }
+
+  .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* FAQ */
+  details {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+
+  summary {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    transition: background 0.15s;
+  }
+
+  summary:hover { background: var(--teal-pale); }
+
+  summary::before {
+    content: 'Q';
+    width: 22px;
+    height: 22px;
+    background: var(--teal);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  details[open] summary { background: var(--teal-pale); }
+
+  .faq-answer {
+    padding: 12px 16px 14px 52px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.8;
+    background: var(--teal-pale);
+    border-top: 1px solid var(--border);
+  }
+
+  /* 届出書テーブル */
+  .todoke-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .todoke-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--bg);
+  }
+
+  .todoke-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--teal-dark);
+  }
+
+  .todoke-desc {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  .todoke-warn {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 4px;
+    font-weight: 700;
+  }
+
+  /* お問い合わせ */
+  .contact-box {
+    background: linear-gradient(135deg, var(--teal-light), var(--teal-pale));
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .contact-box h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+  }
+
+  .contact-box p {
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-bottom: 12px;
+  }
+
+  .contact-tel {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--teal-dark);
+    letter-spacing: 1px;
+  }
+
+  .contact-mail {
+    font-size: 13px;
+    color: var(--teal-dark);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  /* フッター */
+  footer {
+    background: var(--teal-dark);
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    line-height: 2;
+  }
+
+  /* セクションラベル */
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--teal);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    margin: 16px 0 8px;
+  }
+
+  p { margin-bottom: 8px; font-size: 13px; color: var(--text-mid); line-height: 1.8; }
+
+  /* スマホ対応 */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 20px; }
+    .section { padding: 18px 16px; }
+    .container { padding: 20px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">
+    <img src="assets/logo.png" alt="ホリスケアアカデミー" style="height:36px;" onerror="this.style.display='none'">
+  </div>
+  <div class="header-badge">受講生マニュアル</div>
+</header>
+
+<div class="hero">
+  <h1>📖 受講生マニュアル</h1>
+  <p>オンライン初任者研修 ご受講の手引き</p>
+  <div class="hero-steps">
+    <div class="hero-step">STEP1 受講準備</div>
+    <div class="hero-step">STEP2 eラーニング</div>
+    <div class="hero-step">STEP3 テスト</div>
+    <div class="hero-step">STEP4 実習・修了</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 目次 -->
+  <div class="toc">
+    <h2>📋 目次</h2>
+    <div class="toc-list">
+      <a href="#login" class="toc-item"><span class="toc-num">1</span>マイページへのログイン</a>
+      <a href="#flow" class="toc-item"><span class="toc-num">2</span>受講の流れ</a>
+      <a href="#step1" class="toc-item"><span class="toc-num">3</span>STEP1　受講準備</a>
+      <a href="#step2" class="toc-item"><span class="toc-num">4</span>STEP2　eラーニング・動画視聴</a>
+      <a href="#step3" class="toc-item"><span class="toc-num">5</span>STEP3　テスト・仮修了証明書</a>
+      <a href="#step4" class="toc-item"><span class="toc-num">6</span>STEP4　実習・修了レポート・正式修了証明書</a>
+      <a href="#todoke" class="toc-item"><span class="toc-num">7</span>各種届出書</a>
+      <a href="#faq" class="toc-item"><span class="toc-num">8</span>よくある質問</a>
+      <a href="#contact" class="toc-item"><span class="toc-num">9</span>お問い合わせ</a>
+    </div>
+  </div>
+
+  <!-- 1. ログイン -->
+  <div class="section" id="login">
+    <div class="section-header">
+      <div class="section-icon" style="background:#E0F7FB;">🔑</div>
+      <div>
+        <div class="section-title">マイページへのログイン</div>
+        <div class="section-sub">お申し込み後はマイページから受講状況を確認できます</div>
+      </div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item">
+        <div class="task-num">1</div>
+        <div class="task-content">
+          <div class="task-title">お申し込み確認メールを確認する</div>
+          <div class="task-desc">メールに記載されている「マイページへ」リンクをタップしてください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">2</div>
+        <div class="task-content">
+          <div class="task-title">メールアドレスとパスワードを入力する</div>
+          <div class="task-desc">お申し込み時のメールアドレスと、メールに記載された初期パスワードを入力してください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">3</div>
+        <div class="task-content">
+          <div class="task-title">受講ページが表示される</div>
+          <div class="task-desc">ログインに成功すると受講ページが表示されます。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-box info" style="margin-top:16px;">
+      <span class="notice-icon">💡</span>
+      <div>ログイン後にパスワードを変更することをお勧めします。パスワード変更は受講ページ下部の「パスワード変更」から行えます。</div>
+    </div>
+
+    <div class="notice-box warning">
+      <span class="notice-icon">⚠️</span>
+      <div>パスワードをお忘れの場合は、ログイン画面の「パスワードをお忘れの方はこちら」からリセットメールを送信できます。</div>
+    </div>
+  </div>
+
+  <!-- 2. 受講の流れ -->
+  <div class="section" id="flow">
+    <div class="section-header">
+      <div class="section-icon" style="background:#EBF7EF;">📋</div>
+      <div>
+        <div class="section-title">受講の流れ</div>
+        <div class="section-sub">4つのSTEPで修了を目指します</div>
+      </div>
+    </div>
+
+    <div class="step-card step1">
+      <div class="step-card-title">STEP 1　受講準備（入金・書類提出・誓約書・実習先届出）</div>
+      <div class="step-card-body">お支払いが確認されたら受講確定となります。顔写真・本人確認書類の提出、誓約書への同意、介護実習先の有無の届出を行ってください。4つ全て完了すると受講開始となります。</div>
+    </div>
+
+    <div class="step-card step2">
+      <div class="step-card-title">STEP 2　eラーニング・動画視聴</div>
+      <div class="step-card-body">eラーニング（10科目）、動画教材（事例検討・14本）、AEGISC-LMS動画（100本）の全てを完了してください。eラーニングは科目ごとに70%以上の正答率で合格となります。</div>
+    </div>
+
+    <div class="step-card step3">
+      <div class="step-card-title">STEP 3　テスト受験・仮修了証明書発行</div>
+      <div class="step-card-body">テスト１・テスト２を受験してください。両方合格後に仮修了証明書を発行できます。仮修了証明書はPDFでダウンロードできます。受講開始から3ヶ月以内に完了してください。</div>
+    </div>
+
+    <div class="step-card step4">
+      <div class="step-card-title">STEP 4　介護施設実習・修了レポート・正式修了証明書</div>
+      <div class="step-card-body">仮修了証明書を持って介護施設で実習を行います。実習修了後に実習修了報告と修了レポートを提出してください。両方承認されると正式修了証明書が発行・郵送されます。受講開始から8ヶ月以内に完了してください。</div>
+    </div>
+  </div>
+
+  <!-- 3. STEP1 -->
+  <div class="section" id="step1">
+    <div class="section-header">
+      <div class="section-icon" style="background:#E0F7FB;">📄</div>
+      <div>
+        <div class="section-title">STEP1　受講準備</div>
+        <div class="section-sub">4つのタスクを完了させてください</div>
+      </div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item">
+        <div class="task-num">1</div>
+        <div class="task-content">
+          <div class="task-title">ご入金の確認</div>
+          <div class="task-desc">クレジットカードの場合は決済ページへお進みください。銀行振込の場合は確認メールに記載の口座へお振込ください。入金確認後に受講確定となります。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">2</div>
+        <div class="task-content">
+          <div class="task-title">顔写真の提出</div>
+          <div class="task-desc">正面を向いた顔写真をアップロードしてください。帽子・サングラス不可。修了証明書に使用します。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">3</div>
+        <div class="task-content">
+          <div class="task-title">本人確認書類の提出</div>
+          <div class="task-desc">運転免許証・マイナンバーカード・健康保険証などをアップロードしてください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">4</div>
+        <div class="task-content">
+          <div class="task-title">誓約書への同意</div>
+          <div class="task-desc">学則・修了要件・受講誓約書をよくお読みいただき、同意してください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">5</div>
+        <div class="task-content">
+          <div class="task-title">介護実習先の有無届出</div>
+          <div class="task-desc">現在勤務中・勤務予定の介護施設がある場合は届け出てください。ない場合は「当校指定」を選択してください。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-box info" style="margin-top:16px;">
+      <span class="notice-icon">ℹ️</span>
+      <div>提出した書類は当校で確認・承認します。承認後に次のSTEPが解放されます。</div>
+    </div>
+  </div>
+
+  <!-- 4. STEP2 -->
+  <div class="section" id="step2">
+    <div class="section-header">
+      <div class="section-icon" style="background:#EBF7EF;">🎓</div>
+      <div>
+        <div class="section-title">STEP2　eラーニング・動画視聴</div>
+        <div class="section-sub">3つの学習コンテンツを全て完了してください</div>
+      </div>
+    </div>
+
+    <h3>📚 eラーニング（10科目）</h3>
+    <p>どの科目からでも学習を始められます。各科目で問題に回答し、70%以上の正答率で合格となります。不合格の場合は何度でも再挑戦できます。回答内容は自動的に保存されます。</p>
+
+    <div class="notice-box info">
+      <span class="notice-icon">💡</span>
+      <div>途中でページを閉じても進捗は自動保存されます。次回ログイン時に続きから再開できます。</div>
+    </div>
+
+    <h3>📹 動画教材（事例検討・14本）</h3>
+    <p>補助資料集を使った事例検討の動画です。全14本を最後まで視聴してください。視聴完了は自動的に記録されます。</p>
+
+    <h3>🎬 AEGISC-LMS動画（100本）</h3>
+    <p>介護の基本と技術に関する動画です。AEGISC-LMSにログインして視聴してください。全て視聴完了後に「視聴完了を報告する」ボタンを押してください。当校で確認・承認後に完了となります。</p>
+
+    <div class="notice-box warning">
+      <span class="notice-icon">⚠️</span>
+      <div>AEGISC-LMSのIDとパスワードは受講ページに記載されています。</div>
+    </div>
+  </div>
+
+  <!-- 5. STEP3 -->
+  <div class="section" id="step3">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FFF8E1;">✏️</div>
+      <div>
+        <div class="section-title">STEP3　テスト・仮修了証明書</div>
+        <div class="section-sub">テストに合格して仮修了証明書を発行してください</div>
+      </div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item">
+        <div class="task-num">1</div>
+        <div class="task-content">
+          <div class="task-title">テスト１の受験</div>
+          <div class="task-desc">介護技術に関する問題（34問）。70%以上の正答率で合格。不合格の場合は何度でも再挑戦できます。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">2</div>
+        <div class="task-content">
+          <div class="task-title">テスト２の受験</div>
+          <div class="task-desc">総合問題（40問）。テスト１合格後に解放されます。70%以上の正答率で合格。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">3</div>
+        <div class="task-content">
+          <div class="task-title">仮修了証明書の発行</div>
+          <div class="task-desc">テスト２合格後に発行できます。「発行する」ボタンを押してPDFをダウンロードしてください。実習時に必要です。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-box warning">
+      <span class="notice-icon">⚠️</span>
+      <div>仮修了証明書は受講開始から3ヶ月以内に発行してください。</div>
+    </div>
+  </div>
+
+  <!-- 6. STEP4 -->
+  <div class="section" id="step4">
+    <div class="section-header">
+      <div class="section-icon" style="background:#F3E8FF;">🏥</div>
+      <div>
+        <div class="section-title">STEP4　実習・修了レポート・正式修了証明書</div>
+        <div class="section-sub">実習を経て正式修了証明書を取得してください</div>
+      </div>
+    </div>
+
+    <div class="task-list">
+      <div class="task-item">
+        <div class="task-num">1</div>
+        <div class="task-content">
+          <div class="task-title">介護施設での実習</div>
+          <div class="task-desc">仮修了証明書を持って当校指定（または届け出た）介護施設で実習を行ってください。実習内容は施設の担当者と相談してください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">2</div>
+        <div class="task-content">
+          <div class="task-title">実習修了報告</div>
+          <div class="task-desc">実習が完了したら「報告する」ボタンから実習施設名・実習期間・備考を入力して報告してください。当校で確認・承認します。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">3</div>
+        <div class="task-content">
+          <div class="task-title">修了レポートの提出</div>
+          <div class="task-desc">5つの設問（①尊厳・②利用者理解・③コミュニケーション・④安全と配慮・⑤今後の目標）について、それぞれ100〜200文字で記述してください。自分の言葉で具体例を含めて書いてください。</div>
+        </div>
+      </div>
+      <div class="task-item">
+        <div class="task-num">4</div>
+        <div class="task-content">
+          <div class="task-title">正式修了証明書の郵送</div>
+          <div class="task-desc">実習修了報告と修了レポートの両方が承認されると、正式修了証明書が発行され郵送されます。修了レポート提出時に送付先住所を確認してください。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-box warning">
+      <span class="notice-icon">⚠️</span>
+      <div>正式修了まで受講開始から8ヶ月以内に完了してください。</div>
+    </div>
+  </div>
+
+  <!-- 7. 届出書 -->
+  <div class="section" id="todoke">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FFF8E1;">📝</div>
+      <div>
+        <div class="section-title">各種届出書</div>
+        <div class="section-sub">受講ページの「届出書」セクションから提出できます</div>
+      </div>
+    </div>
+
+    <div class="todoke-grid">
+      <div class="todoke-item">
+        <div class="todoke-name">変更届</div>
+        <div class="todoke-desc">氏名・住所・電話番号・メールアドレスを変更したときに提出してください。氏名・住所の変更には本人確認書類の再提出が必要です。</div>
+      </div>
+      <div class="todoke-item">
+        <div class="todoke-name">休講届</div>
+        <div class="todoke-desc">病気・その他やむを得ない理由により休講を希望するときに提出してください。休講期間・理由を入力して送信してください。</div>
+        <div class="todoke-warn">※ 休講中はマイページへのアクセスが制限されます。</div>
+      </div>
+      <div class="todoke-item">
+        <div class="todoke-name">退講届</div>
+        <div class="todoke-desc">受講を中止する場合に提出してください。提出前に内容をよくご確認ください。</div>
+        <div class="todoke-warn">※ 退講後は受講料の返還請求はできません。退講後はマイページへのアクセスができなくなります。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. FAQ -->
+  <div class="section" id="faq">
+    <div class="section-header">
+      <div class="section-icon" style="background:#EBF7EF;">❓</div>
+      <div>
+        <div class="section-title">よくある質問</div>
+        <div class="section-sub">お困りの際はまずこちらをご確認ください</div>
+      </div>
+    </div>
+
+    <details>
+      <summary>パスワードを忘れました</summary>
+      <div class="faq-answer">ログイン画面の「パスワードをお忘れの方はこちら」からリセットメールを送信できます。メールに記載のリンクから新しいパスワードを設定してください。メールが届かない場合は迷惑メールフォルダをご確認ください。</div>
+    </details>
+
+    <details>
+      <summary>eラーニングの途中で中断できますか</summary>
+      <div class="faq-answer">はい、できます。回答内容は自動的に保存されますので、途中でページを閉じても次回ログイン時に続きから再開できます。</div>
+    </details>
+
+    <details>
+      <summary>動画が再生されません</summary>
+      <div class="faq-answer">ブラウザを最新版に更新するか、別のブラウザでお試しください。Wi-Fi環境での視聴を推奨します。解決しない場合はお問い合わせください。</div>
+    </details>
+
+    <details>
+      <summary>テストに不合格になりました</summary>
+      <div class="faq-answer">何度でも再受験できます。テキストの該当箇所を見直してから再挑戦してください。合格基準は70%以上の正答率です。</div>
+    </details>
+
+    <details>
+      <summary>実習先は自分で探す必要がありますか</summary>
+      <div class="faq-answer">原則として当校が指定します。現在勤務中・勤務予定の施設や受け入れの同意を得ている施設がある場合は、届出書セクションの実習先届出からお申し出ください。</div>
+    </details>
+
+    <details>
+      <summary>修了までどのくらいかかりますか</summary>
+      <div class="faq-answer">仮修了まで受講開始から3ヶ月以内、正式修了まで8ヶ月以内が目安です。eラーニング・動画・テストを集中的に取り組めば、1〜2ヶ月で仮修了も可能です。</div>
+    </details>
+
+    <details>
+      <summary>書類を差し戻された場合はどうすればいいですか</summary>
+      <div class="faq-answer">受講ページのSTEP1に「要再提出」と表示されます。「再提出」ボタンから新しい書類をアップロードしてください。差し戻し理由はお知らせセクションでご確認いただけます。</div>
+    </details>
+
+    <details>
+      <summary>修了レポートを途中で保存できますか</summary>
+      <div class="faq-answer">はい、できます。修了レポートの入力画面で「💾 保存して中断」ボタンを押すと下書きが保存されます。次回開いた際に続きから入力できます。</div>
+    </details>
+  </div>
+
+  <!-- 9. お問い合わせ -->
+  <div class="section" id="contact">
+    <div class="section-header">
+      <div class="section-icon" style="background:#E0F7FB;">📬</div>
+      <div>
+        <div class="section-title">お問い合わせ</div>
+        <div class="section-sub">ご不明な点はお気軽にご連絡ください</div>
+      </div>
+    </div>
+
+    <div class="notice-box info" style="margin-bottom:16px;">
+      <span class="notice-icon">💡</span>
+      <div>受講ページの「ご質問・お問い合わせ」セクションからもお問い合わせいただけます。回答はお知らせとメールでお届けします。</div>
+    </div>
+
+    <div class="contact-box">
+      <h3>ホリスケアアカデミー 事務局</h3>
+      <p>特定非営利活動法人 Social Care Good<br>広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F</p>
+      <div class="contact-tel">082-545-2402</div>
+      <p style="margin-top:8px;font-size:12px;">平日 9:00〜17:00</p>
+      <a href="mailto:info@holiscare.or.jp" class="contact-mail">info@holiscare.or.jp</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>特定非営利活動法人 Social Care Good　ホリスケアアカデミー</p>
+  <p>広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F</p>
+  <p>TEL：082-545-2402　／　info@holiscare.or.jp</p>
+</footer>
+
+</body>
+</html>
