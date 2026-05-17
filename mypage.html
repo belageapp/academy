@@ -489,7 +489,7 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
             moreBtn.remove();
             // 3件に戻るボタンを追加
             const lessBtn = document.createElement('button');
-            lessBtn.textContent = '3件表示に戻る';
+            lessBtn.textContent = '折りたたむ';
             lessBtn.style.cssText = 'width:100%; padding:12px; background:white; border:1.5px solid var(--border); border-radius:10px; color:var(--teal); font-size:13px; font-weight:700; cursor:pointer; font-family:"Noto Sans JP",sans-serif; margin-top:4px;';
             lessBtn.onclick = () => {
               // hiddenDocsのカードを削除
