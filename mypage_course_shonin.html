@@ -1400,6 +1400,26 @@
         <div id="rpt-q5-count" style="font-size:11px;color:var(--text-light);text-align:right;margin-top:2px;">0字</div>
       </div>
     </div>
+    <!-- 正式修了証明書 送付先確認 -->
+    <div style="background:#F0FBF4;border-radius:10px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;">📮 正式修了証明書の送付先確認</div>
+      <p style="font-size:12px;color:var(--text-mid);margin-bottom:12px;line-height:1.7;">正式修了証明書の送付先をご確認ください。変更がある場合は「その他」を選択して新しい住所を入力してください。</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;" id="cert-addr-options"></div>
+      <div id="cert-addr-custom" style="display:none;">
+        <div style="margin-bottom:8px;">
+          <label style="font-size:12px;color:var(--text-mid);">郵便番号 <span style="color:red;">*</span></label>
+          <input id="cert-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:12px;color:var(--text-mid);">住所 <span style="color:red;">*</span></label>
+          <input id="cert-address" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-mid);">建物名等</label>
+          <input id="cert-address2" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+        </div>
+      </div>
+    </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <button onclick="closeReportModal()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:inherit;">キャンセル</button>
       <button onclick="saveDraftReport()" style="flex:1;min-width:80px;padding:12px;border:1.5px solid var(--teal);border-radius:10px;background:#fff;font-size:14px;color:var(--teal-dark);font-weight:700;cursor:pointer;font-family:inherit;">💾 保存して中断</button>
@@ -3289,6 +3309,35 @@
 // 修了レポートモーダル
   function openReportModal() {
     document.getElementById('report-modal').style.display = 'block';
+
+    // 送付先選択肢を生成
+    const data = window.__appData || {};
+    const homeAddr = (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || '');
+    const altAddr = data.altAddress || '';
+    const hasAlt = altAddr && altAddr.trim() !== '' && altAddr !== '〒　';
+    const defaultAddr = hasAlt ? 'alt' : 'home';
+    const optionsEl = document.getElementById('cert-addr-options');
+    optionsEl.innerHTML = `
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;background:white;padding:10px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;">
+        <input type="radio" name="cert-addr" value="home" ${defaultAddr === 'home' ? 'checked' : ''} style="margin-top:2px;accent-color:var(--teal);">
+        <div><div style="font-weight:700;margin-bottom:2px;">自宅住所</div><div style="font-size:12px;color:var(--text-mid);">${homeAddr || '—'}</div></div>
+      </label>
+      ${hasAlt ? `
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;background:white;padding:10px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;">
+        <input type="radio" name="cert-addr" value="alt" ${defaultAddr === 'alt' ? 'checked' : ''} style="margin-top:2px;accent-color:var(--teal);">
+        <div><div style="font-weight:700;margin-bottom:2px;">別途郵送先</div><div style="font-size:12px;color:var(--text-mid);">${altAddr}</div></div>
+      </label>` : ''}
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;background:white;padding:10px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;">
+        <input type="radio" name="cert-addr" value="custom" onchange="document.getElementById('cert-addr-custom').style.display='block'" style="margin-top:2px;accent-color:var(--teal);">
+        <div><div style="font-weight:700;">その他（新しい住所を入力）</div></div>
+      </label>`;
+    document.querySelectorAll('input[name="cert-addr"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('cert-addr-custom').style.display = r.value === 'custom' ? 'block' : 'none';
+      });
+    });
+    document.getElementById('cert-addr-custom').style.display = 'none';
+
     // 下書きがあれば読み込む
     const draft = window.__appData?.reportDraft || {};
     ['q1','q2','q3','q4','q5'].forEach(q => {
@@ -3319,9 +3368,26 @@
       const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = window.__db;
       const docId = window.__docId;
+      // 送付先を取得
+      const certAddrType = document.querySelector('input[name="cert-addr"]:checked')?.value || 'home';
+      const data = window.__appData || {};
+      let certDeliveryAddress = '';
+      if (certAddrType === 'home') {
+        certDeliveryAddress = (data.zip ? '〒' + data.zip + '　' : '') + (data.address || data.address1 || '');
+      } else if (certAddrType === 'alt') {
+        certDeliveryAddress = data.altAddress || '';
+      } else {
+        const zip = document.getElementById('cert-zip').value.trim();
+        const addr = document.getElementById('cert-address').value.trim();
+        const addr2 = document.getElementById('cert-address2').value.trim();
+        if (!zip || !addr) { alert('送付先の郵便番号と住所を入力してください'); btn.textContent = 'レポートを提出する'; btn.style.pointerEvents = 'auto'; return; }
+        certDeliveryAddress = '〒' + zip + '　' + addr + (addr2 ? '　' + addr2 : '');
+      }
+
       await updateDoc(doc(db, 'applications', docId), {
         reportSubmitted: true,
         reportSubmittedAt: serverTimestamp(),
+        certDeliveryAddress,
         report: {
           q1: vals[0], q2: vals[1], q3: vals[2], q4: vals[3], q5: vals[4]
         }
