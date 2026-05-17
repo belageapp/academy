@@ -1639,6 +1639,7 @@ document.getElementById('m-status').value = a.status || 'pending';
         '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
         '<th style="padding:10px 12px;text-align:left;">実習施設名</th>' +
         '<th style="padding:10px 12px;text-align:left;">実習期間</th>' +
+        '<th style="padding:10px 12px;text-align:left;">送付先</th>' +
         '<th style="padding:10px 12px;text-align:left;">承認日</th>' +
         '<th style="padding:10px 12px;text-align:left;">ステータス</th>' +
         '<th style="padding:10px 12px;text-align:left;">操作</th>' +
@@ -1652,6 +1653,7 @@ document.getElementById('m-status').value = a.status || 'pending';
           <td style="padding:10px 12px;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
           <td style="padding:10px 12px;">${r.facility||'—'}</td>
           <td style="padding:10px 12px;">${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
+          <td style="padding:10px 12px;">${a.certDeliveryAddress||'—'}</td>
           <td style="padding:10px 12px;">${approvedDate}</td>
           <td style="padding:10px 12px;">${isIssued
             ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行済み</span>'
