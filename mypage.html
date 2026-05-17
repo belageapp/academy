@@ -402,13 +402,6 @@ const q = query(
           const data = doc.data();
           const status = data.status || 'pending';
           const statusText = statusLabel[status] || status;
-          const statusColors = {
-            '入金待ち': {bg:'#FFF8E1',border:'#FDE68A',text:'#92400E'},
-            '受講確定': {bg:'#E0F7FB',border:'#7ECFD9',text:'#1A9AB0'},
-            '受講中':   {bg:'#EBF7EF',border:'#86EFAC',text:'#166534'},
-            '修了':     {bg:'#F3E8FF',border:'#C4B5FD',text:'#5B21B6'},
-            'キャンセル':{bg:'#F5F5F5',border:'#D1D5DB',text:'#6B7280'},
-          };
           const card = document.createElement('a');
           card.className = 'course-card';
 const courseCode = data.courseCode || '4010';
