@@ -540,8 +540,8 @@
       .page-wrap { padding: 16px 12px 60px; }
       .course-header { padding: 16px; }
     }
-    .next-badge { display:inline-block;font-size:10px;font-weight:700;background:linear-gradient(135deg,#F59E0B,#D97706);color:white;padding:2px 8px;border-radius:10px;margin-left:8px;animation:pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+    .next-highlight { border-left:3px solid #F59E0B !important; animation:border-pulse 1.5s infinite; }
+    @keyframes border-pulse { 0%,100%{border-left-color:#F59E0B;} 50%{border-left-color:transparent;} }
     
   .pw-form { display: flex; flex-direction: column; gap: 10px; }
     .pw-form input {
@@ -3601,10 +3601,14 @@
     banner.style.display = 'flex';
 
     // 「次はここ！」バッジをタスクレベルで追加
-    document.querySelectorAll('.next-badge').forEach(el => el.remove());
+    // 前回のハイライトをリセット
+    document.querySelectorAll('.next-highlight').forEach(el => {
+      el.classList.remove('next-highlight');
+    });
+
     if (targetSection) {
-      // STEP1のタスクバッジ
       if (targetSection === 'step1-body') {
+        // STEP1：最初の未完了タスクに左ボーダー点滅
         const data = window.__appData || {};
         const docStatus = data.documentStatus || {};
         const photoOk = docStatus.photo === 'approved';
@@ -3613,40 +3617,24 @@
         const venueOk = data.practiceVenueReported === true;
         const photoPending = docStatus.photo === 'pending';
         const idPending = docStatus.idDocument === 'pending';
-        // 最初の未完了タスクにバッジ
         const step1Items = document.querySelectorAll('#step1-content .step-flow-item');
-        let badgeAdded = false;
+        let highlighted = false;
         step1Items.forEach((item, i) => {
-          if (badgeAdded) return;
+          if (highlighted) return;
           const isCurrent =
             (i === 0 && !photoOk && !photoPending) ||
             (i === 1 && photoOk && !idOk && !idPending) ||
             (i === 2 && photoOk && idOk && !pledgeOk) ||
             (i === 3 && photoOk && idOk && pledgeOk && !venueOk);
           if (isCurrent) {
-            const badge = document.createElement('span');
-            badge.className = 'next-badge';
-            badge.textContent = '👉';
-            badge.style.cssText = 'position:absolute;left:-32px;top:50%;transform:translateY(-50%);font-size:22px;animation:pulse 1.5s infinite;background:none;padding:0;border-radius:0;';
-            item.style.position = 'relative';
-            item.appendChild(badge);
-            item.appendChild(badge);
-            badgeAdded = true;
+            item.classList.add('next-highlight');
+            highlighted = true;
           }
         });
       } else {
-        // その他のセクションはヘッダーにバッジ
+        // その他：セクションボタンに左ボーダー点滅
         const btn = document.querySelector(`button[onclick*="${targetSection}"]`);
-        if (btn) {
-          const titleEl = btn.querySelector('.toggle-header-title, .step-title');
-          if (titleEl) {
-            const badge = document.createElement('span');
-            badge.className = 'next-badge';
-            badge.textContent = '👉';
-            badge.style.cssText = 'font-size:13px;animation:pulse 1.5s infinite;background:none;padding:0;border-radius:0;margin-left:6px;';
-            titleEl.appendChild(badge);
-          }
-        }
+        if (btn) btn.classList.add('next-highlight');
       }
     }
   }
