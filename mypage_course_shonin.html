@@ -3537,6 +3537,7 @@
     document.querySelectorAll('.next-badge').forEach(el => el.remove());
     if (targetSection) {
       const btn = document.querySelector(`button[onclick*="${targetSection}"]`);
+      console.log('badge target:', targetSection, 'btn found:', !!btn);
       if (btn) {
         const titleEl = btn.querySelector('.toggle-header-title, .step-title');
         if (titleEl) {
