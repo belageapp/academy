@@ -526,6 +526,7 @@
     .step-flow-item {
       display: flex; align-items: center; gap: 8px;
       padding: 7px 10px; border-radius: 7px; font-size: 12px; margin-bottom: 4px;
+      flex-wrap: nowrap;
     }
     .step-flow-item:last-child { margin-bottom: 0; }
     .sfi-done { background: var(--green-light); color: #166534; border: 1px solid #86EFAC; }
@@ -2469,9 +2470,9 @@
       function sfi(label, done, active, extra) {
         const cls = done ? 'sfi-done' : active ? 'sfi-active' : 'sfi-lock';
         const badge = done
-          ? '<span style="margin-left:auto;font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;">完了</span>'
+          ? '<span style="margin-left:auto;font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap;flex-shrink:0;">完了</span>'
           : active
-            ? '<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;font-weight:700;">対応中</span>'
+            ? '<span style="margin-left:auto;font-size:11px;background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap;flex-shrink:0;">対応中</span>'
             : '';
         return '<div class="step-flow-item ' + cls + '" style="justify-content:space-between;">' +
           '<div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>' + label + '</div>' +
