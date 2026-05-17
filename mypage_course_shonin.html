@@ -3627,8 +3627,8 @@
             const badge = document.createElement('span');
             badge.className = 'next-badge';
             badge.textContent = '👆 次はここ';
-            item.style.position = 'relative';
-            badge.style.cssText = 'position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;background:linear-gradient(135deg,#F59E0B,#D97706);color:white;padding:2px 8px;border-radius:10px;white-space:nowrap;animation:pulse 1.5s infinite;z-index:1;';
+            badge.style.cssText = 'font-size:14px;animation:pulse 1.5s infinite;flex-shrink:0;margin-right:4px;';
+            item.insertBefore(badge, item.firstChild);
             item.appendChild(badge);
             badgeAdded = true;
           }
