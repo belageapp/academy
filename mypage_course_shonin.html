@@ -3501,6 +3501,8 @@
       icon = '📝'; text = '修了レポートを記入・提出してください'; targetSection = 'ojt-body';
     } else if (!ojtOk && ojtReported && tempCertIssued) {
       icon = '⏳'; text = '実習修了報告を提出しました。当校で確認中です'; targetSection = 'ojt-body';
+    } else if (ojtOk && !reportSubmitted && !reportApproved) {
+      icon = '📝'; text = '修了レポートを記入・提出してください'; targetSection = 'ojt-body';
     } else if (!ojtOk && !ojtReported && tempCertIssued) {
       icon = '🏥'; text = '介護施設での実習を完了したら、実習修了を報告してください'; targetSection = 'ojt-body';
     } else if (!tempCertIssued && test2Ok) {
@@ -3520,7 +3522,7 @@
       else if (!venueOk) { icon = '🏥'; text = '介護実習先の有無を届け出てください'; targetSection = 'step1-body'; }
       else { icon = '⏳'; text = '書類確認中です。しばらくお待ちください'; targetSection = 'step1-body'; }
     } else if (status === 'pending' || status === 'awaiting_payment') {
-      icon = '💳'; text = 'ご入金をお待ちしています'; targetSection = '';
+      icon = '💳'; text = 'ご入金をお待ちしています'; targetSection = 'step1-body';
     }
 
     if (!text) return;
