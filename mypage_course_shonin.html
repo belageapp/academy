@@ -3629,9 +3629,9 @@
           if (highlighted) return;
           const isCurrent =
             (i === 1 && !photoOk && !photoPending) ||
-            (i === 2 && photoOk && !idOk && !idPending) ||
-            (i === 3 && photoOk && idOk && !pledgeOk) ||
-            (i === 4 && photoOk && idOk && pledgeOk && !venueOk);
+            (i === 2 && (photoOk || photoPending) && !idOk && !idPending) ||
+            (i === 3 && (photoOk || photoPending) && (idOk || idPending) && !pledgeOk) ||
+            (i === 4 && (photoOk || photoPending) && (idOk || idPending) && pledgeOk && !venueOk);
           if (isCurrent) {
             item.classList.add('next-highlight');
             highlighted = true;
