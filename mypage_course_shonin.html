@@ -30,6 +30,13 @@
       box-shadow: 0 2px 10px var(--shadow);
     }
     .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-center { display: flex; align-items: center; justify-content: center; flex: 1; }
+    .header-logo-sp { display: none; }
+    .header-logo-pc { display: flex; }
+    @media (max-width: 600px) {
+      .header-logo-pc { display: none; }
+      .header-logo-sp { display: flex; }
+    }
     .back-btn {
       background: none; border: 1.5px solid var(--border); color: var(--text-mid);
       border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer;
@@ -560,7 +567,10 @@
 <header class="header">
   <div class="header-left">
     <button class="back-btn" onclick="window.location.href='mypage.html'">← 戻る</button>
-    <img src="assets/logo_square.png" alt="ホリスケアアカデミー" style="height:40px;" onerror="this.style.display='none'">
+  </div>
+  <div class="header-center">
+    <img src="assets/logo.png" alt="ホリスケアアカデミー" class="header-logo-pc" style="height:36px;" onerror="this.style.display='none'">
+    <img src="assets/logo_square.png" alt="ホリスケアアカデミー" class="header-logo-sp" style="height:40px;" onerror="this.style.display='none'">
   </div>
   <div class="header-right">
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
