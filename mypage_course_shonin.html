@@ -2990,6 +2990,13 @@
     if (badge && parseInt(badge.textContent) > 0) {
       const count = parseInt(badge.textContent) - 1;
       badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none';
+      // 未読が0になったらトグルをclose
+      if (count === 0) {
+        const noticeBody = document.getElementById('notice-body');
+        const noticeArrow = document.getElementById('arrow-notice-body');
+        if (noticeBody) noticeBody.classList.remove('open');
+        if (noticeArrow) noticeArrow.classList.remove('open');
+      }
     }
   };
 
