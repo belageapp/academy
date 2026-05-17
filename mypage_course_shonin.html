@@ -3599,18 +3599,48 @@
     document.getElementById('next-step-text').textContent = text;
     banner.style.display = 'flex';
 
-    // 「次はここ！」バッジをセクションヘッダーに追加
+    // 「次はここ！」バッジをタスクレベルで追加
     document.querySelectorAll('.next-badge').forEach(el => el.remove());
     if (targetSection) {
-      const btn = document.querySelector(`button[onclick*="${targetSection}"]`);
-      console.log('badge target:', targetSection, 'btn found:', !!btn);
-      if (btn) {
-        const titleEl = btn.querySelector('.toggle-header-title, .step-title');
-        if (titleEl) {
-          const badge = document.createElement('span');
-          badge.className = 'next-badge';
-          badge.textContent = '👆 次はここ';
-          titleEl.appendChild(badge);
+      // STEP1のタスクバッジ
+      if (targetSection === 'step1-body') {
+        const data = window.__appData || {};
+        const docStatus = data.documentStatus || {};
+        const photoOk = docStatus.photo === 'approved';
+        const idOk = docStatus.idDocument === 'approved';
+        const pledgeOk = data.pledgeSigned === true;
+        const venueOk = data.practiceVenueReported === true;
+        const photoPending = docStatus.photo === 'pending';
+        const idPending = docStatus.idDocument === 'pending';
+        // 最初の未完了タスクにバッジ
+        const step1Items = document.querySelectorAll('#step1-content .step-flow-item');
+        let badgeAdded = false;
+        step1Items.forEach((item, i) => {
+          if (badgeAdded) return;
+          const isCurrent =
+            (i === 0 && !photoOk && !photoPending) ||
+            (i === 1 && photoOk && !idOk && !idPending) ||
+            (i === 2 && photoOk && idOk && !pledgeOk) ||
+            (i === 3 && photoOk && idOk && pledgeOk && !venueOk);
+          if (isCurrent) {
+            const badge = document.createElement('span');
+            badge.className = 'next-badge';
+            badge.textContent = '👆 次はここ';
+            item.appendChild(badge);
+            badgeAdded = true;
+          }
+        });
+      } else {
+        // その他のセクションはヘッダーにバッジ
+        const btn = document.querySelector(`button[onclick*="${targetSection}"]`);
+        if (btn) {
+          const titleEl = btn.querySelector('.toggle-header-title, .step-title');
+          if (titleEl) {
+            const badge = document.createElement('span');
+            badge.className = 'next-badge';
+            badge.textContent = '👆 次はここ';
+            titleEl.appendChild(badge);
+          }
         }
       }
     }
