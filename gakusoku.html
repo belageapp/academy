@@ -145,9 +145,12 @@
     .nav-footer-btn {
       flex: 1; padding: 12px; border-radius: 10px; font-size: 14px;
       font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
-      border: none; transition: opacity 0.15s;
+      border: none; transition: opacity 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .nav-footer-btn:hover { opacity: 0.85; }
+    @media (max-width: 480px) {
+      .nav-footer-btn { font-size: 11px; padding: 10px 6px; }
+    }
     .nav-footer-prev { background: #F3F4F6; color: #374151; }
     .nav-footer-next { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white; }
     .page-wrap { padding-bottom: 80px; }
