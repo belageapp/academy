@@ -3627,9 +3627,9 @@
             const badge = document.createElement('span');
             badge.className = 'next-badge';
             badge.textContent = '👉';
-            badge.style.cssText = 'font-size:13px;animation:pulse 1.5s infinite;flex-shrink:0;margin-right:2px;background:none;padding:0;border-radius:0;color:inherit;font-weight:normal;';
-            const dot = item.querySelector('.sfi-dot');
-            if (dot) dot.parentNode.insertBefore(badge, dot);
+            badge.style.cssText = 'position:absolute;left:-24px;top:50%;transform:translateY(-50%);font-size:14px;animation:pulse 1.5s infinite;background:none;padding:0;border-radius:0;';
+            item.style.position = 'relative';
+            item.appendChild(badge);
             item.appendChild(badge);
             badgeAdded = true;
           }
