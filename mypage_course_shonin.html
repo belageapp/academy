@@ -2527,7 +2527,7 @@
       const va = document.getElementById('arrow-video-card');
       if (vc) vc.classList.remove('open');
       if (va) va.classList.remove('open');
-    } else if (step1Done) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
+    } else if (step1Done || isActive) setCardStatus('video-card-status','進行中','#FEF3E8','#9A3412');
     else setCardStatus('video-card-status','未解放','#F3F4F6','#6B7280');
 
     if (data.externalVideoDone) {
