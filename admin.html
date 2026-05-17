@@ -240,6 +240,8 @@
     .sbadge-active    { background: #D1FAE5; color: #065F46; }
     .sbadge-completed { background: var(--teal-light); color: var(--teal-dark); }
     .sbadge-cancelled { background: #FEE2E2; color: #991B1B; }
+    .sbadge-suspended { background: #FFF8E1; color: #F57C00; }
+    .sbadge-withdrawn { background: #F3F4F6; color: #6B7280; }
 
     .detail-btn {
       background: var(--teal-pale); border: 1.5px solid var(--border);
@@ -431,6 +433,8 @@
               <option value="active">受講中</option>
               <option value="completed">修了</option>
               <option value="cancelled">キャンセル</option>
+              <option value="suspended">休講中</option>
+              <option value="withdrawn">退講</option>
             </select>
             <button class="refresh-btn" onclick="loadData()">🔄 更新</button>
             <button class="export-btn" onclick="exportCSV()">📥 CSV出力</button>
@@ -501,6 +505,8 @@
                   <option value="active">受講中</option>
                   <option value="completed">修了</option>
                   <option value="cancelled">キャンセル</option>
+              <option value="suspended">休講中</option>
+              <option value="withdrawn">退講</option>
                 </select>
                 <input type="text" id="n-search" onkeyup="filterStudentCheckboxes()" placeholder="名前・メールで検索"
                   style="flex:1;min-width:150px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;">
@@ -616,6 +622,8 @@
               <option value="active">受講中</option>
               <option value="completed">修了</option>
               <option value="cancelled">キャンセル</option>
+              <option value="suspended">休講中</option>
+              <option value="withdrawn">退講</option>
             </select>
             <button class="save-btn" onclick="saveStatus()">保存する</button>
             <div id="bank-confirm-area" style="display:none; margin-top:12px;">
@@ -767,7 +775,7 @@ async function doLogin() {
           <td>${a.phone||'—'}</td>
           <td style="font-size:12px;">${a.email||'—'}</td>
           <td>${a.payment||'—'}</td>
-          <td><span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル'}[a.status]||a.status||'—'}</span></td>
+          <td><span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span></td>
           <td><button class="detail-btn" onclick="openModal('${a.id}')">詳細</button></td>
         </tr>`;
       }).join('');
