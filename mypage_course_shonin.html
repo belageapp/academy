@@ -1410,15 +1410,15 @@
       <div id="cert-addr-custom" style="display:none;">
         <div style="margin-bottom:8px;">
           <label style="font-size:12px;color:var(--text-mid);">郵便番号 <span style="color:red;">*</span></label>
-          <input id="cert-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          <input id="cert-zip" type="text" placeholder="000-0000" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:inherit;" oninput="lookupCertZip(this.value)">
         </div>
         <div style="margin-bottom:8px;">
           <label style="font-size:12px;color:var(--text-mid);">住所 <span style="color:red;">*</span></label>
-          <input id="cert-address" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          <input id="cert-address" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:inherit;">
         </div>
         <div>
           <label style="font-size:12px;color:var(--text-mid);">建物名等</label>
-          <input id="cert-address2" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          <input id="cert-address2" type="text" style="width:100%;margin-top:3px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:inherit;">
         </div>
       </div>
     </div>
@@ -3937,6 +3937,20 @@
   }
   window.submitInquiry = submitInquiry;
   window.loadInquiryHistory = loadInquiryHistory;
+  async function lookupCertZip(zip) {
+    const clean = zip.replace(/[^0-9]/g, '');
+    if (clean.length !== 7) return;
+    try {
+      const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${clean}`);
+      const json = await res.json();
+      if (json.results && json.results[0]) {
+        const r = json.results[0];
+        const addr = (r.address1 || '') + (r.address2 || '') + (r.address3 || '');
+        document.getElementById('cert-address').value = addr;
+      }
+    } catch(e) { console.warn('郵便番号検索失敗:', e); }
+  }
+  window.lookupCertZip = lookupCertZip;
 </script>
 <!-- 銀行振込情報モーダル -->
 <div id="bank-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)this.style.display='none'">
