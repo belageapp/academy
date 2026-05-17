@@ -19,6 +19,28 @@
 
 ---
 
+## v1.15.1 - 2026/05/17（構築１５ 続き）
+
+### course画面 ヘッダー全面改善
+- 氏名表示をヘッダーから削除
+- ヘッダーを「← 戻る」｜ロゴ（中央）｜「ログアウト」のシンプルな3カラム構成に変更
+- スマホ：正方形ロゴ（logo_square.png）を使用
+- PC：横長ロゴ（logo.png）を使用
+- CSSメディアクエリでロゴを自動切り替え
+- `logo_square.png` を既存の `logo.png` から切り出して作成（58x62px）
+
+### コースヘッダー 改善
+- 受講番号の下に「お名前：〇〇〇〇」を追加
+- 長い名前でも `word-break:break-all` で折り返し対応
+- 東南アジアなど長い名前の受講生にも対応
+
+### お知らせページネーション 改善
+- ページ数が多い時に「…」で省略表示
+- `flex-wrap:wrap` でボタンが崩れないよう修正
+- 前へ・次へボタンのスタイルを統一
+
+---
+
 ## v1.15.0 - 2026/05/17（構築１５）
 
 ### Stripe本番モード 修正
@@ -67,7 +89,6 @@
 - `isActive` 時もSTEP2を解放するよう修正
 - 動画視聴カード・AEGISCカードも同様に修正
 - `checkAllVideosWatched` を `videoAllDone: true` の場合はスキップ
-- 差し戻し時に `status: confirmed` に自動で戻す
 
 ### 正式修了証明書 送付先確認フロー 実装
 - 修了レポートモーダルに「正式修了証明書の送付先確認」セクションを追加
@@ -96,11 +117,6 @@
 - 色をオレンジ（#F57C00）→ ピンク（#F06292）に変更
 - 未読が0になったらお知らせトグルを自動でclose
 
-### お知らせページネーション 改善
-- ページ数が多い時に「…」で省略表示
-- `flex-wrap:wrap` でボタンが崩れないよう修正
-- 前へ・次へボタンのスタイルを統一
-
 ### ご質問・お問い合わせ 改善
 - 内容入力テキストエリアのフォントサイズを16pxに変更
 - 過去の問い合わせを最新3件表示・「もっと見る」ボタンで全件表示
@@ -119,22 +135,9 @@
 - スマホでフォントサイズを11pxに縮小（二行防止）
 - `white-space:nowrap` 追加
 
-### ヘッダー 全面改善
-- 氏名表示をヘッダーから削除
-- ヘッダーを「← 戻る」｜ロゴ（中央）｜「ログアウト」のシンプルな3カラム構成に変更
-- スマホ：正方形ロゴ（logo_square.png）を使用
-- PC：横長ロゴ（logo.png）を使用
-- CSSメディアクエリでロゴを自動切り替え
-- `logo_square.png` を既存の `logo.png` から切り出して作成（58x62px）
-
-### コースヘッダー 改善
-- 受講番号の下に「お名前：〇〇〇〇」を追加
-- 長い名前でも `word-break:break-all` で折り返し対応
-- 東南アジアなど長い名前の受講生にも対応
-
 ---
 
-## v1.14.0 - 2026/05/14〜17（構築１４）
+## v1.14.0 - 2026/05/14〜16（構築１４）
 
 ### 受講ガイドセクション 実装
 - course画面にお知らせの直後に「受講ガイド」セクションを追加
@@ -154,55 +157,23 @@
 - Cloud Functions：`sendInquiryReplyMail` を追加・デプロイ
 - Firestoreルール：`inquiries` コレクションのルールを追加
 
-### パスワード変更セクション
-- course画面に追加（届出書の後）
-- パスワード注記・ログイン画面への案内を追加
-- ログイン画面のパスワードリセットリンク近くに注記追加
-
-### 申し込みメール改善
-- ログイン手順（3ステップ）を申し込みメールに追加
-- 既存ユーザーの場合はパスワードを表示しない（`isNewUser` フラグで分岐）
-
 ### Stripe本番モード切り替え完了
-- `STRIPE_SECRET_KEY` を本番キーに更新
+- `STRIPE_SECRET_KEY` を本番キーに更新（version 8）
 - `STRIPE_WEBHOOK_SECRET` を本番用に設定
-- 本番用価格ID（受講料・テキスト代）を設定
+- 本番用価格ID（受講料 `price_1TQ1tb2HjMKbPXKpFoHCb6sY`・テキスト代 `price_1TQ1tX2HjMKbPXKpVxWICuiU`）を設定
 - Cloud Functions（`stripeWebhook`・`createCheckoutSession`）を再デプロイ
-- `payment_method_types` を削除してStripe自動判定に変更（Apple Pay・Google Pay対応）
+- Stripeダッシュボードに本番Webhookエンドポイントを登録
 
 ### Firestoreセキュリティルール更新
 - `inquiries` コレクションのルールを追加
 - `notices` のフィルタリング修正（`where('applicationId', '==', docId)` を追加）
 - Firestoreインデックスを作成（notices: applicationId + createdAt）
+- `/{path=**}/todoke` collectionGroupルールを追加
 
-### マイページ改善
-- お知らせセクションを非表示に変更
-- `statusColors` のスコープ問題を修正（`moreBtn.onclick` 内で参照できなかった問題）
-- 「折りたたむ」ボタンを追加（すべて表示後に折りたたみ可能）
-- 受講講座一覧の説明文を「受講中の講座をクリックして学習を開始できます」に変更
-
-### 次のステップバナー 改善
-- 修了レポート提出後・確認中の状態でメッセージを追加
-- 実習修了報告提出後・確認中の状態でメッセージを追加
-- `ojtOk` かつ修了レポート未提出の状態でメッセージを追加
-- 証明書発行済み時に「修了おめでとうございます！」メッセージを表示
-- `pending`/`awaiting_payment` 時のバッジターゲットを `step1-body` に修正
-
-### 休講・退講・キャンセル時のアクセス制限 実装
-- `cancelled`・`suspended`・`withdrawn` の場合、course画面に「アクセスできません」メッセージを表示
-- admin.html のステータス選択肢に「休講中」「退講」を追加
-- mypage.html のステータスラベル・CSSバッジに「休講中」「退講」を追加
-- 届出書メニューの「対応済み」ボタン押下時に種類に応じてステータスを自動変更
-  - 休講届 → `status: suspended`・受講生にお知らせ送信
-  - 退講届 → `status: withdrawn`・受講生にお知らせ送信
-  - 変更届 → ステータス変更なし・受講生にお知らせ送信
-
-### 修了後の表示制限 実装
-- `status: completed` の場合、course画面でeラーニング・テスト・実習・届出書・受講ガイドセクションを非表示
-- 修了メッセージをバナーに表示
-
-### お知らせ未読バッジの色変更
-- オレンジ（#F57C00）→ ピンク（#F06292）に変更
+### 修了レポート 下書き保存機能
+- 「保存して中断」ボタンを追加
+- Firestoreに `reportDraft` フィールドで保存
+- 次回モーダルオープン時に下書きを読み込む
 
 ---
 
@@ -230,7 +201,7 @@
 - 修了日：`reportApprovedAt` から取得
 
 ### 次のステップバナー・バッジ 実装
-- ページ上部に「次にすべきこと」バナーを常時表示
+- ページ上部に「次のステップ」バナーを常時表示
 - 現在の状態に応じて適切なアクションを案内
 - 進行中セクションのヘッダーに「👆 次はここ」バッジを点滅表示（CSSアニメーション）
 
@@ -360,12 +331,10 @@
 
 ### eラーニング 採点・問題修正
 - 合格時の「次のテーマが解放されました！」メッセージを削除
-  （全テーマが最初から開放されているため不要）
 - 順不同グループ採点に対応
   - theme4：問題11-1〜11-4、11-5〜11-8
   - theme8：問題10-1〜10-5
   - theme9：問題2-2〜2-3
-  - グループ内の回答セットが正解セットと一致すれば全問正解
 - theme1 問題1：正解を3→1に修正
 - theme9 問題2-2：正解を1→4に、問題2-3：正解を4→8に修正
 - 採点結果・復習画面の「Q1.」プレフィックスを削除
@@ -384,37 +353,22 @@
 - `openTestModal` をalertから本実装に置き換え
 - テストモーダル実装：問題表示・選択・自動保存・採点・結果表示
 - 合格時に `applications` の `test1Passed` / `test2Passed` を更新
-- 合格時「テスト２が解放されました！」メッセージ表示
 - 正答率70%以上で合格、合格基準を結果画面に明示
 
 ### テスト・eラーニング 問題番号UI改善
 - ドットナビゲーションを大問グループ対応に変更
-  - 単独問題：`1`、`2`、`3`
-  - 穴埋めグループ：`8-1`、`8-2`（PDF問題番号ベース）
 - `buildGroups`（テスト用）・`buildQuizGroups`（eラーニング用）関数を実装
-- 穴埋め問題のcontext冒頭を `【問題1-8】` → `【問題8】` に統一
-- 単独問題の問題文冒頭に `【問題1】`〜 を追加
-- context内の穴埋め番号を `（１）` → `（8-1）` 形式に統一
-- questionの指示文を `（１）に入る言葉として` → `（8-1）に入る言葉として` に統一
-- 採点結果・復習モードの問題番号を `Q1.` → `問題1.` / `問題8-1.` 形式に統一
-- 各テーマの問題番号をPDF通し番号からテーマ内連番（1〜）に振り直し
-- `quiz_fixed3/` スクリプトで theme1〜10.json を一括更新
+- 穴埋め問題のcontext冒頭・番号形式を統一
+- 採点結果・復習モードの問題番号を統一
 
 ### テストセクション トグル制御
-- `step2Done`（eラーニング・動画すべて完了）かつ `test2Passed` 未完了の間、テストセクションのトグルを常にopen
-- `test2Passed: true` 時もトグルopen維持
-
-### Firestore フィールド確認・整理
-- `taskAllDone`：eラーニング完了フラグ
-- `videoAllDone`：自社動画完了フラグ（`internalVideoDone` への変更は見送り）
-- `externalVideoDone`：外部動画完了フラグ
-- 3つすべて `true` で `step2Done` が成立しテスト解放
+- `step2Done` かつ `test2Passed` 未完了の間、テストセクションのトグルを常にopen
 
 ### 外部動画（edulio）承認フロー
 - ユーザーが「視聴完了を報告する」→ `externalVideoPending: true`
-- admin.html の書類確認一覧に外部動画承認欄を追加（承認・差し戻し・承認取消）
-- 承認時：`externalVideoDone: true` に更新 + ユーザーへメール送信（sendEdulioApprovedMail）
-- 差し戻し時：理由をユーザーへメール送信（sendEdulioRejectedMail）
+- admin.html の書類確認一覧に外部動画承認欄を追加
+- 承認時：`externalVideoDone: true`・`sendEdulioApprovedMail` 送信
+- 差し戻し時：`sendEdulioRejectedMail` 送信
 - Cloud Functions に `sendEdulioApprovedMail`・`sendEdulioRejectedMail` を追加・デプロイ
 
 ### バグ修正
@@ -435,36 +389,24 @@
 - mypage_course_shonin.html：confirmed状態→講座の流れトグル自動open
 - mypage.html：お知らせをcourseと同じアコーディオン形式に統一
 - mypage.html：受講講座一覧をセクションボックス化
-- mypage.html：パスワード変更をトグル化（デフォルトclose）
 - mypage.html：カードのステータスをcourse式カラーバッジに
 - mypage.html：カードに受講開始日・仮修了期限・正式修了期限・仮修了日・修了日を追加
-- mypage.html：セクション幅をcourseと統一（max-width: 680px）
-- mypage.html：statusLabelにactive追加
 - 申し込みフローをクレジット案２に変更（保存→メール送信→完了画面→決済）
 - ステータス表示統一（pending→入金待ち（振込）、awaiting_payment→入金待ち（カード））
 - awaiting_payment状態のcourse画面対応（再決済ボタン・ロック表示）
-- 銀行振込完了画面・payment_success.htmlにマイページへボタン追加
 - 振込情報モーダル新設（Step0「🏦 振込情報」ボタン）
 - admin.html振込確認・saveStatus時にメール・お知らせ自動送信
-- 誓約書同意時のメール送信（sendPledgeSignedMail）
 - edulio ID・パスワード表示・コピーボタン・視聴完了報告ボタン追加
 - active変更時にedulio IDを自動発行（hca001〜連番、counters/edulioで管理）
-- noticesにapplicationIdを保存・applicationId/applicationIds両方で削除対応
 
 ### セキュリティ
 - admin.htmlのログインをinfo@holiscare.or.jpのみに制限
-
-### バグ修正
-- gakusoku.html：誓約書送信エラーの修正
-- __serverTimestamp → __serverTs のバグ修正
-- mypage.html：markReadのnullチェック追加
 
 ### Cloud Functions
 - sendConfirmationEmailHttp 追加
 - sendPledgeSignedMail 追加
 - sendActiveNotifyMail 追加
 - onApplicationDeleted トリガー追加
-- onNoticeCreated 削除（不要な通知メールを廃止）
 
 ---
 
@@ -479,11 +421,6 @@
 - 結果表示：ベストスコア保存・合格/不合格バッジ
 - 穴埋め問題のcontext表示対応
 - questions_r1〜r5_final.json → theme1〜10.json に変換・配置
-
-### UI改善
-- 復習ボタン：オレンジ系グラデーション
-- 再挑戦ボタン：明るいカラー
-- 学習するボタン：ブルー系に統一
 
 ---
 
