@@ -2555,7 +2555,7 @@
     }
 
     // 次のステップバナー・バッジ
-    window.updateNextStep && window.updateNextStep(data);
+    setTimeout(() => { window.updateNextStep && window.updateNextStep(data); }, 100);
     // 問い合わせ履歴
     window.loadInquiryHistory && window.loadInquiryHistory();
   }
@@ -3604,6 +3604,7 @@
     // 前回のハイライトをリセット
     document.querySelectorAll('.next-highlight').forEach(el => {
       el.classList.remove('next-highlight');
+      el.style.removeProperty('border-left');
     });
 
     if (targetSection) {
