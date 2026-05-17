@@ -3651,6 +3651,19 @@
             highlighted = true;
           }
         });
+      } else if (targetSection === 'step2-body') {
+        // STEP2：対象カードに左ボーダー点滅
+        const data = window.__appData || {};
+        if (!data.taskAllDone) {
+          const elearnCard = document.querySelector('button[onclick*="elearn-card"]')?.closest('.card-toggle');
+          if (elearnCard) elearnCard.classList.add('next-highlight');
+        } else if (!data.videoAllDone) {
+          const videoCard = document.querySelector('button[onclick*="video-card"]')?.closest('.card-toggle');
+          if (videoCard) videoCard.classList.add('next-highlight');
+        } else if (!data.externalVideoDone) {
+          const aegiscCard = document.querySelector('button[onclick*="aegisc-card"]')?.closest('.card-toggle');
+          if (aegiscCard) aegiscCard.classList.add('next-highlight');
+        }
       } else if (targetSection === 'test-body') {
         // STEP3：対象カードに左ボーダー点滅
         const testItems = document.querySelectorAll('#test-list > div');
