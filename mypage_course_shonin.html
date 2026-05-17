@@ -3627,8 +3627,9 @@
             const badge = document.createElement('span');
             badge.className = 'next-badge';
             badge.textContent = '👆 次はここ';
-            badge.style.cssText = 'font-size:14px;animation:pulse 1.5s infinite;flex-shrink:0;margin-right:4px;';
-            item.insertBefore(badge, item.firstChild);
+            badge.style.cssText = 'font-size:14px;animation:pulse 1.5s infinite;flex-shrink:0;';
+            const dot = item.querySelector('.sfi-dot');
+            if (dot) dot.parentNode.insertBefore(badge, dot);
             item.appendChild(badge);
             badgeAdded = true;
           }
