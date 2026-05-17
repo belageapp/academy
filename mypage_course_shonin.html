@@ -2391,7 +2391,7 @@
 
     // Step2
     if (step2Done) { setDot(2,'done'); setTag('step2-tag','完了','done'); }
-    else if (step1Done) { setDot(2,'active'); setTag('step2-tag','進行中','active'); openStep('step2-body'); }
+    else if (step1Done || isActive) { setDot(2,'active'); setTag('step2-tag','進行中','active'); openStep('step2-body'); }
     else { setDot(2,'lock'); setTag('step2-tag','未解放','lock'); }
 
     // Step3
