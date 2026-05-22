@@ -1079,7 +1079,7 @@ async function doLogin() {
         html += `<tr style="border-bottom:1px solid var(--border);${isDone ? 'opacity:0.7;' : ''}">
           <td style="padding:10px 14px;">${date}</td>
           <td style="padding:10px 14px;font-weight:700;color:var(--teal-dark);">${a.studentNo||'—'}</td>
-          <td style="padding:10px 14px;font-weight:700;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;font-weight:400;">${a.seiFuri||''}${a.meiFuri||''}</span></td>
+          <td style="padding:10px 14px;font-weight:700;">${(a.sei||a.mei) ? (a.sei||'')+(a.mei||'') : (a.name||'—')}<br><span style="font-size:11px;color:#888;font-weight:400;">${(a.seiFuri||a.meiFuri) ? (a.seiFuri||'')+(a.meiFuri||'') : (a.kana||'')}</span></td>
           <td style="padding:10px 14px;">${a.phone||'—'}</td>
           <td style="padding:10px 14px;">${deliveryAddr}</td>
           <td style="padding:10px 14px;">
