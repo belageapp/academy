@@ -402,6 +402,7 @@
     <div class="sb-section">メニュー</div>
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
+    <div class="sb-item" id="menu-textorder" onclick="if(window.showSection)window.showSection('textorder')"><span class="ico">📦</span>テキスト発注<span id="textorder-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書</div>
@@ -574,6 +575,43 @@
         </div>
 
       </div><!-- /section-notices -->
+
+      <!-- ===== テキスト発注セクション ===== -->
+      <div id="section-textorder" style="display:none;">
+        <div class="stats" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat">
+            <div class="stat-lbl">発注待ち</div>
+            <div class="stat-val" id="to-st-pending" style="color:var(--yellow-warn)">—</div>
+            <span class="stat-tag tag-y">要対応</span>
+          </div>
+          <div class="stat">
+            <div class="stat-lbl">発注済み</div>
+            <div class="stat-val" id="to-st-done" style="color:var(--teal)">—</div>
+            <span class="stat-tag tag-t">完了</span>
+          </div>
+          <div class="stat">
+            <div class="stat-lbl">合計</div>
+            <div class="stat-val" id="to-st-total" style="color:var(--text-mid)">—</div>
+            <span class="stat-tag" style="background:#F3F4F6;color:#6B7280;">テキスト購入者</span>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📦 テキスト発注一覧</div>
+            <div class="thead-acts">
+              <select id="to-filter" onchange="loadTextOrderList()" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E\") no-repeat right 10px center;">
+                <option value="pending">発注待ち</option>
+                <option value="all">すべて</option>
+                <option value="done">発注済み</option>
+              </select>
+              <button class="refresh-btn" onclick="loadTextOrderList()">🔄 更新</button>
+            </div>
+          </div>
+          <div id="textorder-list" style="padding:16px;">
+            <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+          </div>
+        </div>
+      </div><!-- /section-textorder -->
 
       <div id="section-documents" style="display:none;">
         <div class="stats">
@@ -908,8 +946,7 @@ async function doLogin() {
       pi('入金確認', paymentDone ? 'done' : 'none');
 
     // ---- 受講確定ブロック ----
-    const hasText = a.payment === '銀行振込' ? true : a.textOrdered === true; // 購入者のみ
-    const isCardPayment = a.payment !== '銀行振込';
+    const hasTextbook = (a.textbook === 'purchase' || a.textbook === '購入（6,600円）');
     const textState = a.textOrdered === true ? 'done' : 'none';
     const textBtn = `<button class="prog-toggle-btn" onclick="toggleTextField('${id}',${a.textOrdered===true})">${a.textOrdered ? '取消' : '発注済にする'}</button>`;
 
@@ -919,8 +956,8 @@ async function doLogin() {
     const venueState  = a.practiceVenueReported === true ? 'done' : 'none';
 
     let confirmedHtml = '';
-    // テキスト発注（銀行振込＝購入者のみ表示）
-    if (a.payment === '銀行振込') {
+    // テキスト発注（テキスト購入者のみ表示）
+    if (hasTextbook) {
       confirmedHtml += pi('テキスト発注', textState, textBtn);
     }
     confirmedHtml += pi('顔写真の提出', photoState === 'none' ? 'none' : 'done');
@@ -972,6 +1009,131 @@ async function doLogin() {
     } catch(e) { alert('更新に失敗しました：' + e.message); }
   }
   window.toggleTextField = toggleTextField;
+
+  // テキスト発注一覧
+  async function loadTextOrderList() {
+    const el = document.getElementById('textorder-list');
+    el.innerHTML = '<div style="color:var(--text-light);font-size:13px;">読み込み中...</div>';
+    const filter = document.getElementById('to-filter')?.value || 'pending';
+    try {
+      const { collection, getDocs, query, orderBy, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      // テキスト購入者のみ取得
+      const snap = await getDocs(query(collection(window.__db, 'applications'), orderBy('createdAt', 'desc')));
+      const allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // テキスト購入者のみフィルタ
+      const textBuyers = allDocs.filter(a => {
+        const tb = a.textbook || '';
+        return tb === 'purchase' || tb === '購入（6,600円）';
+      });
+
+      // 統計更新
+      const pendingCount = textBuyers.filter(a => !a.textOrdered).length;
+      const doneCount    = textBuyers.filter(a => a.textOrdered).length;
+      const el_pending = document.getElementById('to-st-pending');
+      const el_done    = document.getElementById('to-st-done');
+      const el_total   = document.getElementById('to-st-total');
+      if (el_pending) el_pending.textContent = pendingCount;
+      if (el_done)    el_done.textContent    = doneCount;
+      if (el_total)   el_total.textContent   = textBuyers.length;
+
+      // バッジ更新
+      const badge = document.getElementById('textorder-badge');
+      if (badge) {
+        if (pendingCount > 0) { badge.style.display = 'inline'; badge.textContent = pendingCount; }
+        else { badge.style.display = 'none'; }
+      }
+
+      // フィルタ適用
+      const filtered = filter === 'pending' ? textBuyers.filter(a => !a.textOrdered)
+        : filter === 'done' ? textBuyers.filter(a => a.textOrdered)
+        : textBuyers;
+
+      if (!filtered.length) {
+        el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:8px 0;">該当する申込者はいません。</p>';
+        return;
+      }
+
+      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+      html += '<thead><tr style="background:var(--teal-pale);">' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">申込日</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">受講番号</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">お名前</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">電話番号</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発送先住所</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発注状況</th>' +
+        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">操作</th>' +
+        '</tr></thead><tbody>';
+
+      filtered.forEach(a => {
+        const date = a.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isDone = a.textOrdered === true;
+        const orderedDate = a.textOrderedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+
+        // 発送先住所：別途住所があればそちらを優先
+        const hasAlt = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
+        const deliveryAddr = hasAlt
+          ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}<br><span style="font-size:11px;color:var(--teal-dark);font-weight:700;">※別途発送先</span>`
+          : `${a.zip ? '〒'+a.zip+' ' : ''}${a.address||'—'}`;
+
+        html += `<tr style="border-bottom:1px solid var(--border);${isDone ? 'opacity:0.7;' : ''}">
+          <td style="padding:10px 14px;">${date}</td>
+          <td style="padding:10px 14px;font-weight:700;color:var(--teal-dark);">${a.studentNo||'—'}</td>
+          <td style="padding:10px 14px;font-weight:700;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;font-weight:400;">${a.seiFuri||''}${a.meiFuri||''}</span></td>
+          <td style="padding:10px 14px;">${a.phone||'—'}</td>
+          <td style="padding:10px 14px;">${deliveryAddr}</td>
+          <td style="padding:10px 14px;">
+            ${isDone
+              ? `<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発注済み</span>${orderedDate ? '<br><span style="font-size:11px;color:#888;">'+orderedDate+'</span>' : ''}`
+              : '<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発注待ち</span>'}
+          </td>
+          <td style="padding:10px 14px;">
+            <button onclick="markTextOrdered('${a.id}',${isDone})" style="padding:5px 14px;background:${isDone ? '#F3F4F6' : 'var(--teal)'};color:${isDone ? '#6B7280' : 'white'};border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:opacity 0.2s;">
+              ${isDone ? '取消' : '発注済みにする'}
+            </button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadTextOrderList = loadTextOrderList;
+
+  async function markTextOrdered(docId, current) {
+    const newVal = !current;
+    const msg = newVal ? 'テキストを発注済みにしますか？' : 'テキスト発注を発注待ちに戻しますか？';
+    if (!confirm(msg)) return;
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const updateData = { textOrdered: newVal };
+      if (newVal) updateData.textOrderedAt = serverTimestamp();
+      await updateDoc(doc(window.__db, 'applications', docId), updateData);
+      // allキャッシュも更新
+      const idx = all.findIndex(a => a.id === docId);
+      if (idx > -1) { all[idx].textOrdered = newVal; }
+      loadTextOrderList();
+    } catch(e) { alert('更新に失敗しました：' + e.message); }
+  }
+  window.markTextOrdered = markTextOrdered;
+
+  // 初期バッジ：テキスト発注待ち件数
+  (async () => {
+    try {
+      const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'applications'), orderBy('createdAt', 'desc')));
+      const pendingCount = snap.docs.filter(d => {
+        const a = d.data();
+        const tb = a.textbook || '';
+        const isTextBuyer = tb === 'purchase' || tb === '購入（6,600円）';
+        return isTextBuyer && !a.textOrdered;
+      }).length;
+      const badge = document.getElementById('textorder-badge');
+      if (badge && pendingCount > 0) { badge.style.display = 'inline'; badge.textContent = pendingCount; }
+    } catch(e) {}
+  })();
 
   async function saveStatus() {
     if (!curId) return;
@@ -1105,6 +1267,7 @@ async function doLogin() {
   function showSection(section) {
     document.getElementById('section-applications').style.display = section === 'applications' ? 'block' : 'none';
     document.getElementById('section-notices').style.display      = section === 'notices'      ? 'block' : 'none';
+    document.getElementById('section-textorder').style.display    = section === 'textorder'    ? 'block' : 'none';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
     document.getElementById('section-ojt').style.display          = section === 'ojt'          ? 'block' : 'none';
@@ -1121,16 +1284,18 @@ async function doLogin() {
     if (section === 'change') loadChangeList();
     if (section === 'report') loadReportList();
     if (section === 'certificate') loadCertificateList();
+    if (section === 'textorder') loadTextOrderList();
     document.getElementById('topbar-title').textContent = 
       section === 'applications' ? '📋 申し込み管理' : 
-      section === 'notices' ? '📢 お知らせ管理' : 
-      section === 'documents' ? '🪪 書類確認' :
-      section === 'venue'     ? '🏥 実習先届出' :
-      section === 'ojt'       ? '📋 実習修了報告' :
-      section === 'inquiry'     ? '📬 問い合わせ' :
-      section === 'change'      ? '📝 届出書' :
-      section === 'report'      ? '📝 修了レポート' :
-      section === 'certificate' ? '📜 正式修了証明書発行' : '';
+      section === 'notices'      ? '📢 お知らせ管理' :
+      section === 'textorder'    ? '📦 テキスト発注' :
+      section === 'documents'    ? '🪪 書類確認' :
+      section === 'venue'        ? '🏥 実習先届出' :
+      section === 'ojt'          ? '📋 実習修了報告' :
+      section === 'inquiry'      ? '📬 問い合わせ' :
+      section === 'change'       ? '📝 届出書' :
+      section === 'report'       ? '📝 修了レポート' :
+      section === 'certificate'  ? '📜 正式修了証明書発行' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
