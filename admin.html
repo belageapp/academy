@@ -324,6 +324,38 @@
 
     .empty-row td { text-align: center; padding: 48px; color: var(--text-light); font-size: 14px; }
 
+    /* 進捗チェックリスト */
+    .prog-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 10px; border-radius: 8px; margin-bottom: 4px;
+      background: var(--teal-pale); border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .prog-item-left { display: flex; align-items: center; gap: 8px; }
+    .prog-dot {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+    }
+    .prog-dot.done { background: #D1FAE5; color: #065F46; }
+    .prog-dot.pending { background: #FEF3C7; color: #92400E; }
+    .prog-dot.none { background: #F3F4F6; color: #9CA3AF; }
+    .prog-label { color: var(--text); }
+    .prog-badge {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      border-radius: 10px; white-space: nowrap; flex-shrink: 0;
+    }
+    .prog-badge.done { background: #D1FAE5; color: #065F46; }
+    .prog-badge.pending { background: #FEF3C7; color: #92400E; }
+    .prog-badge.none { background: #F3F4F6; color: #9CA3AF; }
+    .prog-toggle-btn {
+      font-size: 11px; padding: 3px 10px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: white;
+      color: var(--text-mid); cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .prog-toggle-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+
     /* フッター */
     .site-footer {
       background: var(--teal-dark); color: rgba(255,255,255,0.7);
@@ -614,6 +646,29 @@
     </div>
     <div class="modal-body">
       <dl id="modal-dl"></dl>
+      <!-- 進捗チェックリスト -->
+      <div id="progress-section" style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--teal-light);">📊 進捗状況</div>
+
+        <!-- 入金待ち -->
+        <div id="prog-block-pending" style="display:none;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">入金待ち</div>
+          <div id="prog-pending-items"></div>
+        </div>
+
+        <!-- 受講確定 -->
+        <div id="prog-block-confirmed" style="display:none;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">受講確定</div>
+          <div id="prog-confirmed-items"></div>
+        </div>
+
+        <!-- 受講中 -->
+        <div id="prog-block-active" style="display:none;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">受講中</div>
+          <div id="prog-active-items"></div>
+        </div>
+      </div>
+
       <div class="modal-status">
         <label>ステータスを変更する</label>
 <select id="m-status">
@@ -801,16 +856,122 @@ async function doLogin() {
       Object.entries(LABELS).map(([k,lbl]) =>
         a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
       ).join('');
-document.getElementById('m-status').value = a.status || 'pending';
+  document.getElementById('m-status').value = a.status || 'pending';
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
   document.getElementById('bank-confirm-area').style.display = isBankPending ? 'block' : 'none';
+
+  // 進捗チェックリスト表示
+  renderProgress(id, a);
+
   document.getElementById('modal').classList.add('open');
   }
   window.openModal = openModal;
 
   function closeModal() { document.getElementById('modal').classList.remove('open'); curId=null; }
   window.closeModal = closeModal;
+
+  // 進捗チェックリスト描画
+  function renderProgress(id, a) {
+    const docStatus = a.documentStatus || {};
+    const status = a.status || '';
+
+    // 各ブロック表示制御
+    const showPending   = ['pending','awaiting_payment'].includes(status);
+    const showConfirmed = ['confirmed','active','completed','suspended','withdrawn'].includes(status);
+    const showActive    = ['active','completed','suspended','withdrawn'].includes(status);
+
+    document.getElementById('prog-block-pending').style.display   = showPending   ? 'block' : 'none';
+    document.getElementById('prog-block-confirmed').style.display = showConfirmed ? 'block' : 'none';
+    document.getElementById('prog-block-active').style.display    = showActive    ? 'block' : 'none';
+
+    // ヘルパー
+    function pi(label, state, extraBtn) {
+      // state: 'done' | 'pending' | 'none'
+      const icons = { done: '✓', pending: '…', none: '–' };
+      const labels = { done: '完了', pending: '確認中', none: '未完了' };
+      return `<div class="prog-item">
+        <div class="prog-item-left">
+          <div class="prog-dot ${state}">${icons[state]}</div>
+          <span class="prog-label">${label}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${extraBtn || ''}
+          <span class="prog-badge ${state}">${labels[state]}</span>
+        </div>
+      </div>`;
+    }
+
+    // ---- 入金待ちブロック ----
+    const paymentDone = !['pending','awaiting_payment'].includes(status);
+    document.getElementById('prog-pending-items').innerHTML =
+      pi('入金確認', paymentDone ? 'done' : 'none');
+
+    // ---- 受講確定ブロック ----
+    const hasText = a.payment === '銀行振込' ? true : a.textOrdered === true; // 購入者のみ
+    const isCardPayment = a.payment !== '銀行振込';
+    const textState = a.textOrdered === true ? 'done' : 'none';
+    const textBtn = `<button class="prog-toggle-btn" onclick="toggleTextField('${id}',${a.textOrdered===true})">${a.textOrdered ? '取消' : '発注済にする'}</button>`;
+
+    const photoState = docStatus.photo === 'approved' ? 'done' : docStatus.photo === 'pending' ? 'pending' : 'none';
+    const idState    = docStatus.idDocument === 'approved' ? 'done' : docStatus.idDocument === 'pending' ? 'pending' : 'none';
+    const pledgeState = a.pledgeSigned === true ? 'done' : 'none';
+    const venueState  = a.practiceVenueReported === true ? 'done' : 'none';
+
+    let confirmedHtml = '';
+    // テキスト発注（銀行振込＝購入者のみ表示）
+    if (a.payment === '銀行振込') {
+      confirmedHtml += pi('テキスト発注', textState, textBtn);
+    }
+    confirmedHtml += pi('顔写真の提出', photoState === 'none' ? 'none' : 'done');
+    confirmedHtml += pi('顔写真の承認', photoState);
+    confirmedHtml += pi('本人確認書類の提出', idState === 'none' ? 'none' : 'done');
+    confirmedHtml += pi('本人確認書類の承認', idState);
+    confirmedHtml += pi('受講誓約書への同意', pledgeState);
+    confirmedHtml += pi('実習先届出の提出', venueState);
+    document.getElementById('prog-confirmed-items').innerHTML = confirmedHtml;
+
+    // ---- 受講中ブロック ----
+    const eLearningState = a.taskAllDone === true ? 'done' : 'none';
+    const videoCaseState = a.videoAllDone === true ? 'done' : 'none';
+    const videoAegisState = a.externalVideoDone === true ? 'done'
+      : a.externalVideoPending === true ? 'pending' : 'none';
+    const test1State = a.test1Passed === true ? 'done' : 'none';
+    const test2State = a.test2Passed === true ? 'done' : 'none';
+    const tempCertState = a.tempCertIssued === true ? 'done' : 'none';
+    const ojtState = a.ojtReported === true ? 'done' : 'none';
+    const reportState = a.reportApproved === true ? 'done'
+      : a.reportSubmitted === true ? 'pending' : 'none';
+    const certState = a.certificateIssued === true ? 'done' : 'none';
+
+    document.getElementById('prog-active-items').innerHTML =
+      pi('eラーニングの完了', eLearningState) +
+      pi('動画教材（事例検討）の完了', videoCaseState) +
+      pi('動画教材（AEGIS）の完了', videoAegisState) +
+      pi('テスト１の完了', test1State) +
+      pi('テスト２の完了', test2State) +
+      pi('仮修了証明書の発行', tempCertState) +
+      pi('実習修了報告の完了', ojtState) +
+      pi('修了レポートの提出・承認', reportState) +
+      pi('正式修了証明書の発行', certState);
+  }
+  window.renderProgress = renderProgress;
+
+  // テキスト発注トグル
+  async function toggleTextField(docId, current) {
+    const newVal = !current;
+    const msg = newVal ? 'テキストを発注済みにしますか？' : 'テキスト発注を未完了に戻しますか？';
+    if (!confirm(msg)) return;
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { textOrdered: newVal });
+      const idx = all.findIndex(a => a.id === docId);
+      if (idx > -1) { all[idx].textOrdered = newVal; }
+      // モーダル再描画
+      const a = all.find(x => x.id === docId);
+      if (a) renderProgress(docId, a);
+    } catch(e) { alert('更新に失敗しました：' + e.message); }
+  }
+  window.toggleTextField = toggleTextField;
 
   async function saveStatus() {
     if (!curId) return;
