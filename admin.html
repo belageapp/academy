@@ -779,6 +779,7 @@
         if (typeof window.loadData === 'function') {
           clearInterval(waitLoad);
           window.loadData();
+          window.initAllBadges && window.initAllBadges();
         }
       }, 100);
     } else {
@@ -2347,7 +2348,7 @@ async function doLogin() {
   window.replyInquiry = replyInquiry;
 
   // 初期ロード時に未回答バッジを表示
-  (async () => {
+  async function initAllBadges() {
     try {
       const { collection, getDocs, query, where, orderBy, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
@@ -2378,7 +2379,7 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 実習先届出：未確認（提出済みで承認なし → practiceVenueReported=true かつ 当校指定以外）
+      // 実習先届出：未確認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
         const count = snap.docs.filter(d => {
@@ -2389,7 +2390,7 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 実習修了報告：未承認（ojtReported=true かつ ojtPassed≠true）
+      // 実習修了報告：未承認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('ojtReported', '==', true)));
         const count = snap.docs.filter(d => d.data().ojtPassed !== true).length;
@@ -2397,7 +2398,7 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 修了レポート：提出済み未承認（reportSubmitted=true かつ reportApproved≠true）
+      // 修了レポート：提出済み未承認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('reportSubmitted', '==', true)));
         const count = snap.docs.filter(d => d.data().reportApproved !== true).length;
@@ -2405,7 +2406,7 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 正式修了証明書：発行待ち（ojtPassed=true かつ reportApproved=true かつ certificateIssued≠true）
+      // 正式修了証明書：発行待ち
       try {
         const snap = await getDocs(query(
           collection(window.__db, 'applications'),
@@ -2418,7 +2419,8 @@ async function doLogin() {
       } catch(e) {}
 
     } catch(e) {}
-  })();
+  }
+  window.initAllBadges = initAllBadges;
 </script>
 
 <!-- 画像拡大モーダル -->
