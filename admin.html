@@ -471,6 +471,10 @@
             </select>
             <button class="refresh-btn" onclick="loadData()">🔄 更新</button>
             <button class="export-btn" onclick="exportCSV()">📥 CSV出力</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+              <input type="checkbox" id="show-test-data" onchange="loadData()" style="cursor:pointer;">
+              🧪 テストデータを表示
+            </label>
           </div>
         </div>
         <div class="tbl-wrap">
@@ -825,7 +829,8 @@ async function doLogin() {
     try {
       const q = window.__query(window.__col(window.__db, 'applications'), window.__orderBy('createdAt','desc'));
       const snap = await window.__getDocs(q);
-      all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const showTest = document.getElementById('show-test-data')?.checked;
+      all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => showTest || !a.isTest);
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
     } catch(e) {
@@ -914,6 +919,7 @@ async function doLogin() {
   function renderProgress(id, a) {
     const docStatus = a.documentStatus || {};
     const status = a.status || '';
+    const isTest = a.isTest === true;
 
     // 各ブロック表示制御
     const showPending   = ['pending','awaiting_payment'].includes(status);
@@ -924,18 +930,32 @@ async function doLogin() {
     document.getElementById('prog-block-confirmed').style.display = showConfirmed ? 'block' : 'none';
     document.getElementById('prog-block-active').style.display    = showActive    ? 'block' : 'none';
 
-    // ヘルパー
-    function pi(label, state, extraBtn) {
-      // state: 'done' | 'pending' | 'none'
+    // テストバナー表示
+    const progSection = document.getElementById('progress-section');
+    const existingBanner = document.getElementById('test-banner');
+    if (existingBanner) existingBanner.remove();
+    if (isTest) {
+      const banner = document.createElement('div');
+      banner.id = 'test-banner';
+      banner.style.cssText = 'background:#FFF3F8;border:2px dashed #F06292;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#c2185b;font-weight:700;';
+      banner.textContent = '🧪 テストデータ — 各項目を手動で切り替えできます';
+      progSection.insertBefore(banner, progSection.firstChild);
+    }
+
+    // ヘルパー：isTestの場合のみトグルボタンを表示
+    function pi(label, state, field, currentVal) {
       const icons = { done: '✓', pending: '…', none: '–' };
       const labels = { done: '完了', pending: '確認中', none: '未完了' };
+      const toggleBtn = (isTest && field)
+        ? `<button class="prog-toggle-btn" onclick="toggleProgressField('${id}','${field}',${currentVal})">${currentVal ? '✕ 戻す' : '✓ 完了にする'}</button>`
+        : '';
       return `<div class="prog-item">
         <div class="prog-item-left">
           <div class="prog-dot ${state}">${icons[state]}</div>
           <span class="prog-label">${label}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          ${extraBtn || ''}
+          ${toggleBtn}
           <span class="prog-badge ${state}">${labels[state]}</span>
         </div>
       </div>`;
@@ -944,56 +964,68 @@ async function doLogin() {
     // ---- 入金待ちブロック ----
     const paymentDone = !['pending','awaiting_payment'].includes(status);
     document.getElementById('prog-pending-items').innerHTML =
-      pi('入金確認', paymentDone ? 'done' : 'none');
+      pi('入金確認', paymentDone ? 'done' : 'none', null, null);
 
     // ---- 受講確定ブロック ----
     const hasTextbook = (a.textbook === 'purchase' || a.textbook === '購入（6,600円）');
-    const textState = a.textOrdered === true ? 'done' : 'none';
-    const textBtn = `<button class="prog-toggle-btn" onclick="toggleTextField('${id}',${a.textOrdered===true})">${a.textOrdered ? '取消' : '発注済にする'}</button>`;
-
-    const photoState = docStatus.photo === 'approved' ? 'done' : docStatus.photo === 'pending' ? 'pending' : 'none';
-    const idState    = docStatus.idDocument === 'approved' ? 'done' : docStatus.idDocument === 'pending' ? 'pending' : 'none';
+    const textState   = a.textOrdered === true ? 'done' : 'none';
+    const photoState  = docStatus.photo === 'approved' ? 'done' : docStatus.photo === 'pending' ? 'pending' : 'none';
+    const idState     = docStatus.idDocument === 'approved' ? 'done' : docStatus.idDocument === 'pending' ? 'pending' : 'none';
     const pledgeState = a.pledgeSigned === true ? 'done' : 'none';
     const venueState  = a.practiceVenueReported === true ? 'done' : 'none';
 
     let confirmedHtml = '';
-    // テキスト発注（テキスト購入者のみ表示）
     if (hasTextbook) {
-      confirmedHtml += pi('テキスト発注', textState, textBtn);
+      // テキスト発注は既存のtoggleTextFieldを使用
+      const textBtn = isTest
+        ? `<button class="prog-toggle-btn" onclick="toggleTextField('${id}',${a.textOrdered===true})">${a.textOrdered ? '✕ 戻す' : '✓ 完了にする'}</button>`
+        : '';
+      confirmedHtml += pi('テキスト発注', textState, null, null).replace('</div>\n      </div>', `${textBtn}</div>\n      </div>`);
     }
-    confirmedHtml += pi('顔写真の提出', photoState === 'none' ? 'none' : 'done');
-    confirmedHtml += pi('顔写真の承認', photoState);
-    confirmedHtml += pi('本人確認書類の提出', idState === 'none' ? 'none' : 'done');
-    confirmedHtml += pi('本人確認書類の承認', idState);
-    confirmedHtml += pi('受講誓約書への同意', pledgeState);
-    confirmedHtml += pi('実習先届出の提出', venueState);
+    confirmedHtml += pi('顔写真の提出',       photoState === 'none' ? 'none' : 'done', null, null);
+    confirmedHtml += pi('顔写真の承認',        photoState, null, null);
+    confirmedHtml += pi('本人確認書類の提出',   idState === 'none' ? 'none' : 'done', null, null);
+    confirmedHtml += pi('本人確認書類の承認',   idState, null, null);
+    confirmedHtml += pi('受講誓約書への同意',   pledgeState, 'pledgeSigned', a.pledgeSigned===true);
+    confirmedHtml += pi('実習先届出の提出',     venueState, 'practiceVenueReported', a.practiceVenueReported===true);
     document.getElementById('prog-confirmed-items').innerHTML = confirmedHtml;
 
     // ---- 受講中ブロック ----
-    const eLearningState = a.taskAllDone === true ? 'done' : 'none';
-    const videoCaseState = a.videoAllDone === true ? 'done' : 'none';
-    const videoAegisState = a.externalVideoDone === true ? 'done'
-      : a.externalVideoPending === true ? 'pending' : 'none';
-    const test1State = a.test1Passed === true ? 'done' : 'none';
-    const test2State = a.test2Passed === true ? 'done' : 'none';
-    const tempCertState = a.tempCertIssued === true ? 'done' : 'none';
-    const ojtState = a.ojtReported === true ? 'done' : 'none';
-    const reportState = a.reportApproved === true ? 'done'
-      : a.reportSubmitted === true ? 'pending' : 'none';
-    const certState = a.certificateIssued === true ? 'done' : 'none';
+    const eLearningState  = a.taskAllDone === true ? 'done' : 'none';
+    const videoCaseState  = a.videoAllDone === true ? 'done' : 'none';
+    const videoAegisState = a.externalVideoDone === true ? 'done' : a.externalVideoPending === true ? 'pending' : 'none';
+    const test1State      = a.test1Passed === true ? 'done' : 'none';
+    const test2State      = a.test2Passed === true ? 'done' : 'none';
+    const tempCertState   = a.tempCertIssued === true ? 'done' : 'none';
+    const ojtState        = a.ojtReported === true ? 'done' : 'none';
+    const reportState     = a.reportApproved === true ? 'done' : a.reportSubmitted === true ? 'pending' : 'none';
+    const certState       = a.certificateIssued === true ? 'done' : 'none';
 
     document.getElementById('prog-active-items').innerHTML =
-      pi('eラーニングの完了', eLearningState) +
-      pi('動画教材（事例検討）の完了', videoCaseState) +
-      pi('動画教材（AEGIS）の完了', videoAegisState) +
-      pi('テスト１の完了', test1State) +
-      pi('テスト２の完了', test2State) +
-      pi('仮修了証明書の発行', tempCertState) +
-      pi('実習修了報告の完了', ojtState) +
-      pi('修了レポートの提出・承認', reportState) +
-      pi('正式修了証明書の発行', certState);
+      pi('eラーニングの完了',        eLearningState,  'taskAllDone',       a.taskAllDone===true) +
+      pi('動画教材（事例検討）の完了', videoCaseState,  'videoAllDone',      a.videoAllDone===true) +
+      pi('動画教材（AEGIS）の完了',   videoAegisState, 'externalVideoDone', a.externalVideoDone===true) +
+      pi('テスト１の完了',           test1State,      'test1Passed',       a.test1Passed===true) +
+      pi('テスト２の完了',           test2State,      'test2Passed',       a.test2Passed===true) +
+      pi('仮修了証明書の発行',        tempCertState,   'tempCertIssued',    a.tempCertIssued===true) +
+      pi('実習修了報告の完了',        ojtState,        'ojtReported',       a.ojtReported===true) +
+      pi('修了レポートの提出・承認',   reportState,     'reportSubmitted',   a.reportSubmitted===true) +
+      pi('正式修了証明書の発行',      certState,       'certificateIssued', a.certificateIssued===true);
   }
   window.renderProgress = renderProgress;
+
+  // テストデータ専用：進捗フィールドトグル
+  async function toggleProgressField(docId, field, current) {
+    const newVal = !current;
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { [field]: newVal });
+      const idx = all.findIndex(a => a.id === docId);
+      if (idx > -1) { all[idx][field] = newVal; }
+      const a = all.find(x => x.id === docId);
+      if (a) renderProgress(docId, a);
+    } catch(e) { alert('更新に失敗しました：' + e.message); }
+  }
+  window.toggleProgressField = toggleProgressField;
 
   // テキスト発注トグル
   async function toggleTextField(docId, current) {
@@ -1235,7 +1267,7 @@ async function doLogin() {
 
   function exportCSV() {
     const headers = ['申込日時','お名前','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','支払方法','テキスト','お勤め先','優待コード','ステータス'];
-    const rows = filtered.map(a => {
+    const rows = filtered.filter(a => !a.isTest).map(a => {
       const d = a.createdAt?.toDate?.() ? a.createdAt.toDate().toLocaleDateString('ja-JP') : '';
       return [d,a.name,a.kana,a.gender,a.birthdate,a.phone,a.email,a.zip,a.address,a.payment,a.textbook,a.workplace,a.coupon,a.status]
         .map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',');
