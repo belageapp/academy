@@ -402,14 +402,14 @@
     <div class="sb-section">メニュー</div>
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
-    <div class="sb-item" id="menu-textorder" onclick="if(window.showSection)window.showSection('textorder')"><span class="ico">📦</span>テキスト発注<span id="textorder-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#f44336;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書</div>
-    <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出</div>
-    <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告</div>
-    <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート</div>
-    <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行</div>
+    <div class="sb-item" id="menu-textorder" onclick="if(window.showSection)window.showSection('textorder')"><span class="ico">📦</span>テキスト発注<span id="textorder-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書<span id="change-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -2365,10 +2365,62 @@ async function doLogin() {
   // 初期ロード時に未回答バッジを表示
   (async () => {
     try {
-      const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDocs(query(collection(window.__db, 'inquiries'), where('status', '==', 'pending')));
-      const badge = document.getElementById('inquiry-badge');
-      if (badge && snap.size > 0) { badge.style.display = 'inline'; badge.textContent = snap.size; }
+      const { collection, getDocs, query, where, orderBy, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+      // 問い合わせ：未回答
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'inquiries'), where('status', '==', 'pending')));
+        const badge = document.getElementById('inquiry-badge');
+        if (badge && snap.size > 0) { badge.style.display = 'inline'; badge.textContent = snap.size; }
+      } catch(e) {}
+
+      // 届出書：未対応
+      try {
+        const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), where('status', '!=', 'done')));
+        const count = snap.size;
+        const badge = document.getElementById('change-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+      } catch(e) {}
+
+      // 実習先届出：未確認（提出済みで承認なし → practiceVenueReported=true かつ 当校指定以外）
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
+        const count = snap.docs.filter(d => {
+          const v = d.data().practiceVenue || {};
+          return v.name !== '当校指定';
+        }).length;
+        const badge = document.getElementById('venue-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+      } catch(e) {}
+
+      // 実習修了報告：未承認（ojtReported=true かつ ojtPassed≠true）
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'applications'), where('ojtReported', '==', true)));
+        const count = snap.docs.filter(d => d.data().ojtPassed !== true).length;
+        const badge = document.getElementById('ojt-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+      } catch(e) {}
+
+      // 修了レポート：提出済み未承認（reportSubmitted=true かつ reportApproved≠true）
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'applications'), where('reportSubmitted', '==', true)));
+        const count = snap.docs.filter(d => d.data().reportApproved !== true).length;
+        const badge = document.getElementById('report-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+      } catch(e) {}
+
+      // 正式修了証明書：発行待ち（ojtPassed=true かつ reportApproved=true かつ certificateIssued≠true）
+      try {
+        const snap = await getDocs(query(
+          collection(window.__db, 'applications'),
+          where('ojtPassed', '==', true),
+          where('reportApproved', '==', true)
+        ));
+        const count = snap.docs.filter(d => d.data().certificateIssued !== true).length;
+        const badge = document.getElementById('certificate-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+      } catch(e) {}
+
     } catch(e) {}
   })();
 </script>
