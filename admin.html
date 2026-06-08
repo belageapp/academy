@@ -410,9 +410,9 @@
     <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書<span id="change-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-tempcert" onclick="if(window.showSection)window.showSection('tempcert')"><span class="ico">📄</span>仮修了証明書発行<span id="tempcert-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-tempcert" onclick="if(window.showSection)window.showSection('tempcert')"><span class="ico">📄</span>仮修了証明書発送<span id="tempcert-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
@@ -680,7 +680,7 @@
       </div><!-- /section-report -->
 
       <div id="section-tempcert" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📄 仮修了証明書発送管理</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📄 仮修了証明書発行管理</div>
         <div style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.7;">テスト２に合格した受講生の一覧です。仮修了証明書を郵送後、「発送済みにする」ボタンを押してください。</div>
         <div id="tempcert-list">読み込み中...</div>
       </div><!-- /section-tempcert -->
@@ -1329,7 +1329,7 @@ async function doLogin() {
       section === 'inquiry'      ? '📬 問い合わせ' :
       section === 'change'       ? '📝 届出書' :
       section === 'report'       ? '📝 修了レポート' :
-      section === 'tempcert'     ? '📄 仮修了証明書発送管理' :
+      section === 'tempcert'     ? '📄 仮修了証明書発行管理' :
       section === 'certificate'  ? '📜 正式修了証明書発行' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
