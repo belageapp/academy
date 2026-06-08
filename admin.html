@@ -650,44 +650,91 @@
       </div><!-- /section-documents -->
 
       <div id="section-venue" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🏥 実習先届出一覧</div>
-        <div style="display:flex;gap:8px;margin-bottom:16px;" id="venue-filter-tabs">
-          <button onclick="window.setVenueFilter('pending')" id="vf-pending" style="padding:6px 16px;border-radius:20px;border:1.5px solid #F57C00;background:#FFF8E1;color:#F57C00;font-size:12px;font-weight:700;cursor:pointer;">対応待ち</button>
-          <button onclick="window.setVenueFilter('all')"     id="vf-all"     style="padding:6px 16px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">すべて</button>
-          <button onclick="window.setVenueFilter('done')"    id="vf-done"    style="padding:6px 16px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">対応済み</button>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">🏥 実習先届出一覧</div>
+            <div class="thead-acts" id="venue-filter-tabs">
+              <button onclick="window.setVenueFilter('pending')" id="vf-pending" style="padding:5px 14px;border-radius:20px;border:1.5px solid #F57C00;background:#FFF8E1;color:#F57C00;font-size:12px;font-weight:700;cursor:pointer;">対応待ち</button>
+              <button onclick="window.setVenueFilter('all')"     id="vf-all"     style="padding:5px 14px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">すべて</button>
+              <button onclick="window.setVenueFilter('done')"    id="vf-done"    style="padding:5px 14px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">対応済み</button>
+              <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><div id="venue-list" style="min-height:60px;">読み込み中...</div></div>
         </div>
-        <div id="venue-list">読み込み中...</div>
       </div><!-- /section-venue -->
 
       <div id="section-ojt" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📋 実習修了報告一覧</div>
-        <div id="ojt-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📋 実習修了報告一覧</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadOjtList()">🔄 更新</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><div id="ojt-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-ojt -->
 
       <div id="section-inquiry" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📬 問い合わせ一覧</div>
-        <div id="inquiry-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📬 問い合わせ一覧</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadInquiryList()">🔄 更新</button>
+            </div>
+          </div>
+          <div style="padding:16px;"><div id="inquiry-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-inquiry -->
 
       <div id="section-change" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 届出書一覧</div>
-        <div id="change-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📝 届出書一覧</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadChangeList()">🔄 更新</button>
+            </div>
+          </div>
+          <div style="padding:16px;"><div id="change-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-change -->
 
       <div id="section-report" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📝 修了レポート一覧</div>
-        <div id="report-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📝 修了レポート一覧</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadReportList()">🔄 更新</button>
+            </div>
+          </div>
+          <div style="padding:16px;"><div id="report-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-report -->
 
       <div id="section-tempcert" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📄 仮修了証明書発行管理</div>
-        <div style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.7;">テスト２に合格した受講生の一覧です。仮修了証明書を郵送後、「発送済みにする」ボタンを押してください。</div>
-        <div id="tempcert-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📄 仮修了証明書発行管理</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadTempCertList()">🔄 更新</button>
+            </div>
+          </div>
+          <div style="padding:12px 16px 0;font-size:12px;color:var(--text-mid);line-height:1.7;">テスト２に合格した受講生の一覧です。仮修了証明書を郵送後、「発送済みにする」ボタンを押してください。</div>
+          <div class="tbl-wrap"><div id="tempcert-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-tempcert -->
 
       <div id="section-certificate" style="display:none;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📜 正式修了証明書発行</div>
-        <div id="certificate-list">読み込み中...</div>
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📜 正式修了証明書発行</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadCertificateList()">🔄 更新</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><div id="certificate-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
       </div><!-- /section-certificate -->
 
     </div>
