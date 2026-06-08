@@ -1131,10 +1131,9 @@
         <div style="margin-bottom:10px;">
           <label style="font-size:12px;color:var(--text-mid);">届出の理由 <span style="color:red;">*</span></label>
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;" id="venue-reason-group">
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="現在勤務中"> 現在勤務している</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務予定" onchange="onReasonChange()"> 勤務予定（いつからか入力）</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="受け入れ同意済み"> 受け入れの同意を得ている</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="その他" onchange="onReasonChange()"> その他</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="現在勤務中" onchange="onReasonChange()"> 現在勤務しており、同意を得ている</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="勤務予定" onchange="onReasonChange()"> 勤務予定で同意を得ている（いつからか入力）</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="radio" name="venue-reason" value="その他" onchange="onReasonChange()"> その他の理由で同意は得ている</label>
           </div>
         </div>
         <div id="venue-reason-detail-wrap" style="display:none;margin-bottom:10px;">
@@ -2795,11 +2794,9 @@
     if (reason === '勤務予定') {
       wrap.style.display = 'block';
       lbl.textContent = 'いつからの予定ですか？';
-    } else if (reason === 'その他') {
-      wrap.style.display = 'block';
-      lbl.textContent = '詳細を入力してください';
     } else {
       wrap.style.display = 'none';
+      document.getElementById('venue-reason-detail').value = '';
     }
   }
   async function submitVenue() {
@@ -2822,8 +2819,9 @@
             !document.getElementById('venue-zip').value.trim() ||
             !document.getElementById('venue-address').value.trim() ||
             !document.getElementById('venue-phone').value.trim() ||
-            !document.getElementById('venue-contact').value.trim() || !reason) {
-          alert('必須項目を入力してください');
+            !document.getElementById('venue-contact').value.trim() || !reason ||
+            (reason === '勤務予定' && !detail)) {
+          alert('必須項目を入力してください' + (reason === '勤務予定' && !detail ? '（勤務開始予定日を入力してください）' : ''));
           btn.textContent = '届出を送信する';
           btn.style.pointerEvents = 'auto';
           return;
