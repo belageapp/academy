@@ -1898,16 +1898,8 @@ async function doLogin() {
          __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
       return;
     }
-    let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-    html += '<thead><tr style="background:var(--sidebar);color:white;">' +
-      '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
-      '<th style="padding:10px 12px;text-align:left;">施設名</th>' +
-      '<th style="padding:10px 12px;text-align:left;">住所</th>' +
-      '<th style="padding:10px 12px;text-align:left;">電話番号</th>' +
-      '<th style="padding:10px 12px;text-align:left;">担当者</th>' +
-      '<th style="padding:10px 12px;text-align:left;">届出理由</th>' +
-      '<th style="padding:10px 12px;text-align:left;">届出日</th>' +
-      '<th style="padding:10px 12px;text-align:left;">ステータス</th>' +
+    let html = '<table><thead><tr>' +
+      '<th>受講生</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>ステータス</th>' +
       '</tr></thead><tbody>';
     rows.forEach(r => {
       const v = r.practiceVenue || {};
@@ -1919,15 +1911,15 @@ async function doLogin() {
       const statusCell = isDone
         ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
         : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
-      html += `<tr style="border-bottom:1px solid #eee;${isDone ? 'opacity:0.65;' : ''}">
-        <td style="padding:10px 12px;">${name}</td>
-        <td style="padding:10px 12px;">${v.name || '—'}</td>
-        <td style="padding:10px 12px;">${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
-        <td style="padding:10px 12px;">${v.phone || '—'}</td>
-        <td style="padding:10px 12px;">${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—')}</td>
-        <td style="padding:10px 12px;">${v.reason || '—'}</td>
-        <td style="padding:10px 12px;">${date}</td>
-        <td style="padding:10px 12px;white-space:nowrap;">${statusCell}</td>
+      html += `<tr${isDone ? ' style="opacity:0.65;"' : ''}>
+        <td>${name}</td>
+        <td>${v.name || '—'}</td>
+        <td>${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
+        <td>${v.phone || '—'}</td>
+        <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—')}</td>
+        <td>${v.reason || '—'}</td>
+        <td>${date}</td>
+        <td style="white-space:nowrap;">${statusCell}</td>
       </tr>`;
     });
     html += '</tbody></table>';
@@ -1985,35 +1977,29 @@ async function doLogin() {
         orderBy('ojtReportedAt', 'desc')
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">報告はまだありません。</p>'; return; }
-      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-      html += '<thead><tr style="background:var(--sidebar);color:white;">' +
-        '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
-        '<th style="padding:10px 12px;text-align:left;">実習施設名</th>' +
-        '<th style="padding:10px 12px;text-align:left;">実習期間</th>' +
-        '<th style="padding:10px 12px;text-align:left;">備考</th>' +
-        '<th style="padding:10px 12px;text-align:left;">報告日</th>' +
-        '<th style="padding:10px 12px;text-align:left;">ステータス</th>' +
-        '<th style="padding:10px 12px;text-align:left;">操作</th>' +
+      let html = '<table><thead><tr>' +
+        '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>備考</th><th>報告日</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
         const r = a.ojtReport || {};
         const date = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
         const isPassed = a.ojtPassed === true;
-        html += `<tr style="border-bottom:1px solid #eee;">
-          <td style="padding:10px 12px;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-          <td style="padding:10px 12px;">${r.facility||'—'}</td>
-          <td style="padding:10px 12px;">${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
-          <td style="padding:10px 12px;">${r.note||'—'}</td>
-          <td style="padding:10px 12px;">${date}</td>
-          <td style="padding:10px 12px;">${isPassed
+        html += `<tr>
+          <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+          <td>${r.facility||'—'}</td>
+          <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
+          <td>${r.note||'—'}</td>
+          <td>${date}</td>
+          <td>${isPassed
             ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>'
             : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">確認中</span>'
           }</td>
-          <td style="padding:10px 12px;">
+          <td>
             ${!isPassed ? `
-              <button onclick="approveOjt('${d.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">承認</button>
-              <button onclick="rejectOjt('${d.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>
+              <button onclick="approveOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">承認</button>
+              <button onclick="rejectOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>
             ` : '—'}
           </td>
         </tr>`;
@@ -2109,34 +2095,27 @@ async function doLogin() {
       pending.sort(byPassedAt); sent.sort(byPassedAt);
       function rows(arr, isSent) {
         return arr.map(a => {
+          const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
           const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
           const sentDate   = a.tempCertSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-          return `<tr style="border-bottom:1px solid #eee;${isSent ? 'opacity:0.6;' : ''}">
-            <td style="padding:10px 12px;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-            <td style="padding:10px 12px;">${a.studentNo||'—'}</td>
-            <td style="padding:10px 12px;">${a.zip ? '〒'+a.zip+'　' : ''}${a.address||''}${a.address2||''}</td>
-            <td style="padding:10px 12px;">${passedDate}</td>
-            <td style="padding:10px 12px;">${isSent
+          return `<tr${isSent ? ' style="opacity:0.6;"' : ''}>
+            <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+            <td>${a.studentNo||'—'}</td>
+            <td>${a.zip ? '〒'+a.zip+'　' : ''}${a.address||''}${a.address2||''}</td>
+            <td>${passedDate}</td>
+            <td>${isSent
               ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発送済み</span><br><span style="font-size:11px;color:#888;">'+sentDate+'</span>'
               : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未発送</span>'
             }</td>
-            <td style="padding:10px 12px;">
-              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📬 発送済みにする</button>` : '—'}
+            <td>
+              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📬 発送済みにする</button>` : '—'}
             </td>
           </tr>`;
         }).join('');
       }
-      const thead = `<thead><tr style="background:var(--sidebar);color:white;">
-        <th style="padding:10px 12px;text-align:left;">受講生</th>
-        <th style="padding:10px 12px;text-align:left;">受講番号</th>
-        <th style="padding:10px 12px;text-align:left;">送付先住所</th>
-        <th style="padding:10px 12px;text-align:left;">テスト２合格日</th>
-        <th style="padding:10px 12px;text-align:left;">ステータス</th>
-        <th style="padding:10px 12px;text-align:left;">操作</th>
-      </tr></thead>`;
-      let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">${thead}<tbody>`;
-      if (pending.length) html += `<tr><td colspan="6" style="padding:8px 12px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
-      if (sent.length)    html += `<tr><td colspan="6" style="padding:8px 12px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
+      let html = '<table><thead><tr><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>操作</th></tr></thead><tbody>';
+      if (pending.length) html += `<tr><td colspan="6" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
+      if (sent.length)    html += `<tr><td colspan="6" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
       html += '</tbody></table>';
       el.innerHTML = html;
     } catch(e) {
@@ -2188,33 +2167,27 @@ async function doLogin() {
         orderBy('ojtPassedAt', 'desc')
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
-      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-      html += '<thead><tr style="background:var(--sidebar);color:white;">' +
-        '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
-        '<th style="padding:10px 12px;text-align:left;">実習施設名</th>' +
-        '<th style="padding:10px 12px;text-align:left;">実習期間</th>' +
-        '<th style="padding:10px 12px;text-align:left;">送付先</th>' +
-        '<th style="padding:10px 12px;text-align:left;">承認日</th>' +
-        '<th style="padding:10px 12px;text-align:left;">ステータス</th>' +
-        '<th style="padding:10px 12px;text-align:left;">操作</th>' +
+      let html = '<table><thead><tr>' +
+        '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>送付先</th><th>承認日</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
         const r = a.ojtReport || {};
+        const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
         const approvedDate = a.ojtPassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
         const isIssued = a.certificateIssued === true;
-        html += `<tr style="border-bottom:1px solid #eee;${isIssued ? 'opacity:0.6;' : ''}">
-          <td style="padding:10px 12px;">${a.sei||''}${a.mei||''}<br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-          <td style="padding:10px 12px;">${r.facility||'—'}</td>
-          <td style="padding:10px 12px;">${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
-          <td style="padding:10px 12px;">${a.certDeliveryAddress||'—'}</td>
-          <td style="padding:10px 12px;">${approvedDate}</td>
-          <td style="padding:10px 12px;">${isIssued
+        html += `<tr${isIssued ? ' style="opacity:0.6;"' : ''}>
+          <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+          <td>${r.facility||'—'}</td>
+          <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
+          <td>${a.certDeliveryAddress||'—'}</td>
+          <td>${approvedDate}</td>
+          <td>${isIssued
             ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行済み</span>'
             : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未発行</span>'
           }</td>
-          <td style="padding:10px 12px;">
-            ${!isIssued ? `<button onclick="issueCertificate('${d.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : '—'}
+          <td>
+            ${!isIssued ? `<button onclick="issueCertificate('${d.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : '—'}
           </td>
         </tr>`;
       });
