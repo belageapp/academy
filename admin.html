@@ -649,6 +649,11 @@
 
       <div id="section-venue" style="display:none;">
         <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🏥 実習先届出一覧</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;" id="venue-filter-tabs">
+          <button onclick="window.setVenueFilter('pending')" id="vf-pending" style="padding:6px 16px;border-radius:20px;border:1.5px solid #F57C00;background:#FFF8E1;color:#F57C00;font-size:12px;font-weight:700;cursor:pointer;">対応待ち</button>
+          <button onclick="window.setVenueFilter('all')"     id="vf-all"     style="padding:6px 16px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">すべて</button>
+          <button onclick="window.setVenueFilter('done')"    id="vf-done"    style="padding:6px 16px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">対応済み</button>
+        </div>
         <div id="venue-list">読み込み中...</div>
       </div><!-- /section-venue -->
 
@@ -1813,50 +1818,111 @@ async function doLogin() {
     document.getElementById('image-modal').style.display = 'none';
   }
   window.closeImageModal = closeImageModal;
+  let __venueCache = null;
+  let __venueFilter = 'pending';
+
+  function setVenueFilter(f) {
+    __venueFilter = f;
+    ['pending','all','done'].forEach(k => {
+      const btn = document.getElementById('vf-' + k);
+      if (!btn) return;
+      const active = k === f;
+      btn.style.background = active ? (k === 'done' ? '#E8F5E9' : k === 'pending' ? '#FFF8E1' : '#E3F2FD') : '#fff';
+      btn.style.color      = active ? (k === 'done' ? '#2E7D32' : k === 'pending' ? '#F57C00' : '#1565C0') : '#666';
+      btn.style.borderColor= active ? (k === 'done' ? '#4CAF72' : k === 'pending' ? '#F57C00' : '#1565C0') : '#ccc';
+    });
+    renderVenueTable();
+  }
+  window.setVenueFilter = setVenueFilter;
+
+  function renderVenueTable() {
+    const el = document.getElementById('venue-list');
+    if (!__venueCache) return;
+    const rows = __venueCache.filter(r => {
+      if (__venueFilter === 'pending') return !r.venueChecked;
+      if (__venueFilter === 'done')    return !!r.venueChecked;
+      return true;
+    });
+    if (!rows.length) {
+      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">' +
+        (__venueFilter === 'pending' ? '対応待ちの届出はありません。' :
+         __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
+      return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+    html += '<thead><tr style="background:var(--sidebar);color:white;">' +
+      '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
+      '<th style="padding:10px 12px;text-align:left;">施設名</th>' +
+      '<th style="padding:10px 12px;text-align:left;">住所</th>' +
+      '<th style="padding:10px 12px;text-align:left;">電話番号</th>' +
+      '<th style="padding:10px 12px;text-align:left;">担当者</th>' +
+      '<th style="padding:10px 12px;text-align:left;">届出理由</th>' +
+      '<th style="padding:10px 12px;text-align:left;">届出日</th>' +
+      '<th style="padding:10px 12px;text-align:left;">ステータス</th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(r => {
+      const v = r.practiceVenue || {};
+      const date      = r.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+      const isDone    = !!r.venueChecked;
+      const name      = `<strong>${r.sei || ''}${r.mei || ''}</strong><br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
+      const statusCell = isDone
+        ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
+        : `<button onclick="markVenueChecked('${r.__id}','${(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
+      html += `<tr style="border-bottom:1px solid #eee;${isDone ? 'opacity:0.65;' : ''}">
+        <td style="padding:10px 12px;">${name}</td>
+        <td style="padding:10px 12px;">${v.name || '—'}</td>
+        <td style="padding:10px 12px;">${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
+        <td style="padding:10px 12px;">${v.phone || '—'}</td>
+        <td style="padding:10px 12px;">${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—')}</td>
+        <td style="padding:10px 12px;">${v.reason || '—'}</td>
+        <td style="padding:10px 12px;">${date}</td>
+        <td style="padding:10px 12px;white-space:nowrap;">${statusCell}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  }
+
   async function loadVenueList() {
     const el = document.getElementById('venue-list');
     el.innerHTML = '読み込み中...';
+    setVenueFilter(__venueFilter);
     try {
-      const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(query(
         collection(window.__db, 'applications'),
-        where('practiceVenueReported', '==', true),
-        orderBy('practiceVenueReportedAt', 'desc')
+        where('practiceVenueReported', '==', true)
       ));
-      const docs = snap.docs.filter(d => d.data().practiceVenue?.name !== '当校指定');
-      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
-      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-      html += '<thead><tr style="background:var(--sidebar);color:white;">' +
-        '<th style="padding:10px 12px;text-align:left;">受講生</th>' +
-        '<th style="padding:10px 12px;text-align:left;">施設名</th>' +
-        '<th style="padding:10px 12px;text-align:left;">住所</th>' +
-        '<th style="padding:10px 12px;text-align:left;">電話番号</th>' +
-        '<th style="padding:10px 12px;text-align:left;">担当者</th>' +
-        '<th style="padding:10px 12px;text-align:left;">届出理由</th>' +
-        '<th style="padding:10px 12px;text-align:left;">届出日</th>' +
-        '</tr></thead><tbody>';
-      docs.forEach(d => {
-        const a = d.data();
-        const v = a.practiceVenue || {};
-        const date = a.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const isSchool = v.name === '当校指定';
-        html += `<tr style="border-bottom:1px solid #eee;">
-          <td style="padding:10px 12px;">${a.sei || ''}${a.mei || ''}<br><span style="font-size:11px;color:#888;">${a.email || ''}</span></td>
-          <td style="padding:10px 12px;">${isSchool ? '<span style="color:#888;">当校指定</span>' : (v.name || '—')}</td>
-          <td style="padding:10px 12px;">${isSchool ? '—' : ((v.zip ? '〒' + v.zip + ' ' : '') + (v.address || '—'))}</td>
-          <td style="padding:10px 12px;">${isSchool ? '—' : (v.phone || '—')}</td>
-          <td style="padding:10px 12px;">${isSchool ? '—' : ((v.dept ? v.dept + '<br>' : '') + (v.contact || '—'))}</td>
-          <td style="padding:10px 12px;">${isSchool ? '—' : (v.reason || '—')}</td>
-          <td style="padding:10px 12px;">${date}</td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      __venueCache = snap.docs
+        .map(d => ({ __id: d.id, ...d.data() }))
+        .filter(r => r.practiceVenue?.name !== '当校指定')
+        .sort((a, b) => (b.practiceVenueReportedAt?.toMillis?.() || 0) - (a.practiceVenueReportedAt?.toMillis?.() || 0));
+      renderVenueTable();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
   }
   window.loadVenueList = loadVenueList;
+
+  async function markVenueChecked(docId, name) {
+    if (!confirm(`${name} さんの実習先届出を対応済みにしますか？`)) return;
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), {
+        venueChecked: true,
+        venueCheckedAt: serverTimestamp(),
+      });
+      if (__venueCache) {
+        const r = __venueCache.find(r => r.__id === docId);
+        if (r) { r.venueChecked = true; r.venueCheckedAt = { toDate: () => new Date(), toMillis: () => Date.now() }; }
+      }
+      renderVenueTable();
+    } catch(e) {
+      alert('エラー：' + e.message);
+    }
+  }
+  window.markVenueChecked = markVenueChecked;
 
   async function loadOjtList() {
     const el = document.getElementById('ojt-list');
@@ -2505,15 +2571,16 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 実習先届出：未確認
+      // 実習先届出：対応待ち
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
         const count = snap.docs.filter(d => {
-          const v = d.data().practiceVenue || {};
-          return v.name !== '当校指定';
+          const a = d.data();
+          return a.practiceVenue?.name !== '当校指定' && !a.venueChecked;
         }).length;
         const badge = document.getElementById('venue-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+        else if (badge) badge.style.display = 'none';
       } catch(e) {}
 
       // 実習修了報告：未承認
