@@ -1015,9 +1015,9 @@ async function doLogin() {
     const certState       = a.certificateIssued === true ? 'done' : 'none';
 
     document.getElementById('prog-active-items').innerHTML =
-      pi('eラーニングの完了',        eLearningState,  'taskAllDone',       a.taskAllDone===true) +
-      pi('動画教材（事例検討）の完了', videoCaseState,  'videoAllDone',      a.videoAllDone===true) +
       pi('動画教材（AEGIS）の完了',   videoAegisState, 'externalVideoDone', a.externalVideoDone===true) +
+      pi('動画教材（事例検討）の完了', videoCaseState,  'videoAllDone',      a.videoAllDone===true) +
+      pi('eラーニングの完了',        eLearningState,  'taskAllDone',       a.taskAllDone===true) +
       pi('テスト１の完了',           test1State,      'test1Passed',       a.test1Passed===true) +
       pi('テスト２の完了',           test2State,      'test2Passed',       a.test2Passed===true) +
       pi('仮修了証明書の発行',        tempCertState,   'tempCertIssued',    a.tempCertIssued===true) +

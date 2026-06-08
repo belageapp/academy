@@ -2140,13 +2140,6 @@
             const appSnap = await getDoc(doc(db, 'applications', window.__docId));
             if (appSnap.exists() && !appSnap.data().taskAllDone) {
               await updateDoc(doc(db, 'applications', window.__docId), { taskAllDone: true });
-              window.__sendCompletionNotice && window.__sendCompletionNotice('elearning');
-              // 全完了チェック
-              const appSnap2 = await getDoc(doc(db, 'applications', window.__docId));
-              const d2 = appSnap2.data();
-              if (d2.taskAllDone && d2.videoAllDone && d2.externalVideoDone) {
-                window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
-              }
             }
           }
         } else {
@@ -2625,13 +2618,6 @@
       import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(async ({ getFirestore, doc, updateDoc, getDoc }) => {
         const db = getFirestore();
         await updateDoc(doc(db, 'applications', window.__docId), { videoAllDone: true });
-        window.__sendCompletionNotice && window.__sendCompletionNotice('video');
-        // 全完了チェック
-        const appSnap = await getDoc(doc(db, 'applications', window.__docId));
-        const d = appSnap.data();
-        if (d.taskAllDone && d.videoAllDone && d.externalVideoDone) {
-          window.__sendCompletionNotice && window.__sendCompletionNotice('allDone');
-        }
       }).catch(e => console.error('videoAllDone更新エラー:', e));
     }
   }
