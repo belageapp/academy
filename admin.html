@@ -1865,10 +1865,11 @@ async function doLogin() {
       const date      = r.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
       const isDone    = !!r.venueChecked;
-      const name      = `<strong>${r.sei || ''}${r.mei || ''}</strong><br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
+      const fullName  = r.name || ((r.sei||'')+(r.mei||'')) || '—';
+      const name      = `<strong>${fullName}</strong><br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
       const statusCell = isDone
         ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
-        : `<button onclick="markVenueChecked('${r.__id}','${(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
+        : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
       html += `<tr style="border-bottom:1px solid #eee;${isDone ? 'opacity:0.65;' : ''}">
         <td style="padding:10px 12px;">${name}</td>
         <td style="padding:10px 12px;">${v.name || '—'}</td>
