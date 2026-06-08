@@ -340,6 +340,7 @@
     }
     .prog-dot.done { background: #D1FAE5; color: #065F46; }
     .prog-dot.pending { background: #FEF3C7; color: #92400E; }
+    .prog-dot.started { background: #E3F2FD; color: #1565C0; }
     .prog-dot.none { background: #F3F4F6; color: #9CA3AF; }
     .prog-label { color: var(--text); }
     .prog-badge {
@@ -348,6 +349,7 @@
     }
     .prog-badge.done { background: #D1FAE5; color: #065F46; }
     .prog-badge.pending { background: #FEF3C7; color: #92400E; }
+    .prog-badge.started { background: #E3F2FD; color: #1565C0; }
     .prog-badge.none { background: #F3F4F6; color: #9CA3AF; }
     .prog-toggle-btn {
       font-size: 11px; padding: 3px 10px; border-radius: 10px;
@@ -957,8 +959,8 @@ async function doLogin() {
 
     // ヘルパー：isTestの場合のみトグルボタンを表示
     function pi(label, state, field, currentVal) {
-      const icons = { done: '✓', pending: '…', none: '–' };
-      const labels = { done: '完了', pending: '確認中', none: '未完了' };
+      const icons = { done: '✓', pending: '…', started: '▶', none: '–' };
+      const labels = { done: '完了', pending: '確認中', started: '取り掛かり中', none: '未着手' };
       const toggleBtn = (isTest && field)
         ? `<button class="prog-toggle-btn" onclick="toggleProgressField('${id}','${field}',${currentVal})">${currentVal ? '✕ 戻す' : '✓ 完了にする'}</button>`
         : '';
@@ -1004,9 +1006,9 @@ async function doLogin() {
     document.getElementById('prog-confirmed-items').innerHTML = confirmedHtml;
 
     // ---- 受講中ブロック ----
-    const eLearningState  = a.taskAllDone === true ? 'done' : 'none';
-    const videoCaseState  = a.videoAllDone === true ? 'done' : 'none';
-    const videoAegisState = a.externalVideoDone === true ? 'done' : a.externalVideoPending === true ? 'pending' : 'none';
+    const eLearningState  = a.taskAllDone === true ? 'done' : a.taskStarted === true ? 'started' : 'none';
+    const videoCaseState  = a.videoAllDone === true ? 'done' : a.videoStarted === true ? 'started' : 'none';
+    const videoAegisState = a.externalVideoDone === true ? 'done' : a.externalVideoPending === true ? 'pending' : a.aegiscStarted === true ? 'started' : 'none';
     const test1State      = a.test1Passed === true ? 'done' : 'none';
     const test2State      = a.test2Passed === true ? 'done' : 'none';
     const tempCertState   = a.tempCertIssued === true ? 'done' : 'none';

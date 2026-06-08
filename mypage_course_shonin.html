@@ -1690,7 +1690,7 @@
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <a href="https://tlp.edulio.com/aegisc/" target="_blank" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 AEGISC-LMSで視聴する →</a>
+              <a href="https://tlp.edulio.com/aegisc/" target="_blank" onclick="window.__markAegiscStarted && window.__markAegiscStarted()" class="action-btn" style="text-decoration:none;flex:1;text-align:center;">🎬 AEGISC-LMSで視聴する →</a>
               <button onclick="window.__reportEdulioComplete && window.__reportEdulioComplete()" class="action-btn" id="edulio-complete-btn" style="flex:1;background:linear-gradient(135deg,#4CAF72,#2E7D47);${(data.externalVideoDone || data.externalVideoPending) ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${(data.externalVideoDone || data.externalVideoPending) ? 'disabled' : ''}>
                 ${data.externalVideoDone ? '✅ 視聴完了・承認済み' : data.externalVideoPending ? '⏳ 管理者の承認待ちです' : '✅ 視聴完了を報告する'}
               </button>
@@ -1940,6 +1940,7 @@
   }
 
   window.openTask = async function(themeNum, mode) {
+    if (!mode) markStarted('taskStarted');
     const theme = LEARNING_THEMES[themeNum - 1];
     const modal = document.getElementById('task-modal');
     const titleEl = document.getElementById('modal-title');
@@ -2230,7 +2231,17 @@
       itemsHtml +
       '<button class="quiz-result-btn primary" style="margin-top:16px;width:100%;" onclick="window.closeTask()">閉じる</button>';
   }
-// awaiting_payment時の再決済
+  async function markStarted(field) {
+    if (window.__appData?.[field]) return;
+    if (!window.__docId) return;
+    if (window.__appData) window.__appData[field] = true;
+    try {
+      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', window.__docId), { [field]: true });
+    } catch(e) { console.warn('markStarted error:', e); }
+  }
+  window.__markAegiscStarted = () => markStarted('aegiscStarted');
+
 // AEGISC-LMS視聴完了報告
   window.__reportEdulioComplete = async function() {
     if (!confirm('AEGISC-LMSの動画を全て視聴しましたか？')) return;
@@ -2577,6 +2588,7 @@
       if (!uid) return;
       const watched = window.__watchedVideos || [];
       if (watched.includes(id)) return;
+      if (watched.length === 0) markStarted('videoStarted');
       watched.push(id);
       window.__watchedVideos = watched;
       const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
