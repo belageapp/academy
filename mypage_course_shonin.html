@@ -631,8 +631,8 @@
           <div style="font-size:12px;color:var(--text-mid);line-height:1.7;">お支払いが確認されたら受講確定となります。顔写真・本人確認書類の提出、誓約書への同意、介護実習先の有無の届出を行ってください。全て完了すると受講開始となります。</div>
         </div>
         <div style="background:#E8F5E9;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:12px;font-weight:700;color:#2E7D47;margin-bottom:4px;">STEP 2　eラーニング・動画視聴</div>
-          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;">eラーニング（10科目）、動画教材（事例検討）、AEGISC-LMS動画の全てを完了してください。eラーニングは科目ごとに70%以上の正答率で合格となります。</div>
+          <div style="font-size:12px;font-weight:700;color:#2E7D47;margin-bottom:4px;">STEP 2　動画視聴・eラーニング</div>
+          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;">AEGISC-LMS動画、動画教材（事例検討・14本）、eラーニング（10科目）の全てを完了してください。eラーニングは科目ごとに70%以上の正答率で合格となります。</div>
         </div>
         <div style="background:#FFF8E1;border-radius:10px;padding:12px 14px;">
           <div style="font-size:12px;font-weight:700;color:#F57C00;margin-bottom:4px;">STEP 3　テスト受験・仮修了証明書発行</div>
@@ -774,28 +774,27 @@
             <div class="step-icon-wrap" style="background:#E6F1FB;">🎓</div>
             <div class="step-header-text">
               <div class="step-label" style="color:#185FA5;">Step 2　受講</div>
-              <div class="step-title">eラーニング・動画教材</div>
+              <div class="step-title">動画教材・eラーニング</div>
             </div>
           </div>
           <span class="step-tag step-tag-lock" id="step2-tag">未解放</span>
           <span class="toggle-arrow" id="arrow-step2-body">›</span>
         </button>
         <div class="step-body" id="step2-body">
-          <!-- eラーニングカード -->
+          <!-- 動画教材（AEGISC-LMS）カード -->
           <div class="card-toggle">
-            <button class="card-toggle-header" onclick="toggleCard('elearn-card')">
-              <span class="card-toggle-icon">📚</span>
+            <button class="card-toggle-header" onclick="toggleCard('AEGISC-LMS-card')">
+              <span class="card-toggle-icon">🎬</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">eラーニング</div>
-                <div class="card-toggle-sub" id="elearn-card-sub">全10科目のテキスト学習と問題への回答</div>
+                <div class="card-toggle-title">動画教材（AEGISC-LMS）</div>
+                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">介護の基本と技術（100本）</div>
               </div>
-              <span class="card-toggle-status" id="elearn-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
-              <span class="card-toggle-arrow" id="arrow-elearn-card">›</span>
+              <span class="card-toggle-status" id="AEGISC-LMS-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
+              <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
             </button>
-            <div class="card-toggle-body" id="elearn-card">
-              <p style="font-size:12px;color:var(--text-mid);margin:0 0 10px;line-height:1.7;">どの科目からでも学習を始められます。</p>
-              <div id="task-list">
-                <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
+            <div class="card-toggle-body" id="AEGISC-LMS-card">
+              <div id="edulio-section">
+                <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
               </div>
             </div>
           </div>
@@ -823,20 +822,21 @@
               </div>
             </div>
           </div>
-          <!-- 動画教材（AEGISC-LMS）カード -->
+          <!-- eラーニングカード -->
           <div class="card-toggle">
-            <button class="card-toggle-header" onclick="toggleCard('AEGISC-LMS-card')">
-              <span class="card-toggle-icon">🎬</span>
+            <button class="card-toggle-header" onclick="toggleCard('elearn-card')">
+              <span class="card-toggle-icon">📚</span>
               <div class="card-toggle-main">
-                <div class="card-toggle-title">動画教材（AEGISC-LMS）</div>
-                <div class="card-toggle-sub" id="AEGISC-LMS-card-sub">介護の基本と技術（100本）</div>
+                <div class="card-toggle-title">eラーニング</div>
+                <div class="card-toggle-sub" id="elearn-card-sub">全10科目のテキスト学習と問題への回答</div>
               </div>
-              <span class="card-toggle-status" id="AEGISC-LMS-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
-              <span class="card-toggle-arrow" id="arrow-AEGISC-LMS-card">›</span>
+              <span class="card-toggle-status" id="elearn-card-status" style="background:#F3F4F6;color:#6B7280;">—</span>
+              <span class="card-toggle-arrow" id="arrow-elearn-card">›</span>
             </button>
-            <div class="card-toggle-body" id="AEGISC-LMS-card">
-              <div id="edulio-section">
-                <div style="color:var(--text-light);font-size:13px;">読み込み中...</div>
+            <div class="card-toggle-body" id="elearn-card">
+              <p style="font-size:12px;color:var(--text-mid);margin:0 0 10px;line-height:1.7;">どの科目からでも学習を始められます。</p>
+              <div id="task-list">
+                <div class="task-item"><span style="color:var(--text-light);font-size:13px;">読み込み中...</span></div>
               </div>
             </div>
           </div>
@@ -3491,9 +3491,9 @@
     } else if (!test1Ok && step2Done) {
       icon = '✏️'; text = 'テスト１を受験してください'; targetSection = 'test-body';
     } else if (!step2Done && step1Done) {
-      if (!data.taskAllDone) { icon = '🎓'; text = 'eラーニングを進めてください'; targetSection = 'step2-body'; }
+      if (!data.externalVideoDone) { icon = '🎬'; text = 'AEGISC-LMS動画を視聴し、視聴完了を報告してください'; targetSection = 'step2-body'; }
       else if (!data.videoAllDone) { icon = '🎬'; text = '動画教材（事例検討）を視聴してください'; targetSection = 'step2-body'; }
-      else if (!data.externalVideoDone) { icon = '🎬'; text = 'AEGISC-LMS動画を視聴し、視聴完了を報告してください'; targetSection = 'step2-body'; }
+      else if (!data.taskAllDone) { icon = '🎓'; text = 'eラーニングを進めてください'; targetSection = 'step2-body'; }
     } else if (status === 'confirmed' && !step1Done) {
       if (!photoOk && docStatus.photo !== 'pending') { icon = '📷'; text = '顔写真を提出してください'; targetSection = 'step1-body'; }
       else if (!idOk && docStatus.idDocument !== 'pending') { icon = '🪪'; text = '本人確認書類を提出してください'; targetSection = 'step1-body'; }
@@ -3552,15 +3552,15 @@
       } else if (targetSection === 'step2-body') {
         // STEP2：対象カードに左ボーダー点滅
         const data = window.__appData || {};
-        if (!data.taskAllDone) {
-          const elearnCard = document.querySelector('button[onclick*="elearn-card"]')?.closest('.card-toggle');
-          if (elearnCard) elearnCard.classList.add('next-highlight');
+        if (!data.externalVideoDone) {
+          const aegiscCard = document.querySelector('button[onclick*="AEGISC-LMS-card"]')?.closest('.card-toggle');
+          if (aegiscCard) aegiscCard.classList.add('next-highlight');
         } else if (!data.videoAllDone) {
           const videoCard = document.querySelector('button[onclick*="video-card"]')?.closest('.card-toggle');
           if (videoCard) videoCard.classList.add('next-highlight');
-        } else if (!data.externalVideoDone) {
-          const aegiscCard = document.querySelector('button[onclick*="AEGISC-LMS-card"]')?.closest('.card-toggle');
-          if (aegiscCard) aegiscCard.classList.add('next-highlight');
+        } else if (!data.taskAllDone) {
+          const elearnCard = document.querySelector('button[onclick*="elearn-card"]')?.closest('.card-toggle');
+          if (elearnCard) elearnCard.classList.add('next-highlight');
         }
       } else if (targetSection === 'test-body') {
         // STEP3：対象カードに左ボーダー点滅
