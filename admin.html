@@ -653,10 +653,12 @@
         <div class="tcard">
           <div class="thead">
             <div class="thead-title">🏥 実習先届出一覧</div>
-            <div class="thead-acts" id="venue-filter-tabs">
-              <button onclick="window.setVenueFilter('pending')" id="vf-pending" style="padding:5px 14px;border-radius:20px;border:1.5px solid #F57C00;background:#FFF8E1;color:#F57C00;font-size:12px;font-weight:700;cursor:pointer;">対応待ち</button>
-              <button onclick="window.setVenueFilter('all')"     id="vf-all"     style="padding:5px 14px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">すべて</button>
-              <button onclick="window.setVenueFilter('done')"    id="vf-done"    style="padding:5px 14px;border-radius:20px;border:1.5px solid #ccc;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;">対応済み</button>
+            <div class="thead-acts">
+              <select id="venue-filter-sel" onchange="window.setVenueFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="pending">対応待ち</option>
+                <option value="all">すべて</option>
+                <option value="done">対応済み</option>
+              </select>
               <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
             </div>
           </div>
@@ -1872,14 +1874,8 @@ async function doLogin() {
 
   function setVenueFilter(f) {
     __venueFilter = f;
-    ['pending','all','done'].forEach(k => {
-      const btn = document.getElementById('vf-' + k);
-      if (!btn) return;
-      const active = k === f;
-      btn.style.background = active ? (k === 'done' ? '#E8F5E9' : k === 'pending' ? '#FFF8E1' : '#E3F2FD') : '#fff';
-      btn.style.color      = active ? (k === 'done' ? '#2E7D32' : k === 'pending' ? '#F57C00' : '#1565C0') : '#666';
-      btn.style.borderColor= active ? (k === 'done' ? '#4CAF72' : k === 'pending' ? '#F57C00' : '#1565C0') : '#ccc';
-    });
+    const sel = document.getElementById('venue-filter-sel');
+    if (sel) sel.value = f;
     renderVenueTable();
   }
   window.setVenueFilter = setVenueFilter;
@@ -1911,7 +1907,7 @@ async function doLogin() {
       const statusCell = isDone
         ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
         : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
-      html += `<tr${isDone ? ' style="opacity:0.65;"' : ''}>
+      html += `<tr>
         <td>${name}</td>
         <td>${v.name || '—'}</td>
         <td>${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
@@ -2098,7 +2094,7 @@ async function doLogin() {
           const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
           const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
           const sentDate   = a.tempCertSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-          return `<tr${isSent ? ' style="opacity:0.6;"' : ''}>
+          return `<tr>
             <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
             <td>${a.studentNo||'—'}</td>
             <td>${a.zip ? '〒'+a.zip+'　' : ''}${a.address||''}${a.address2||''}</td>
