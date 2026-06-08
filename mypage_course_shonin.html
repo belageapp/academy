@@ -2794,6 +2794,9 @@
     if (reason === '勤務予定') {
       wrap.style.display = 'block';
       lbl.textContent = 'いつからの予定ですか？';
+    } else if (reason === 'その他') {
+      wrap.style.display = 'block';
+      lbl.textContent = '理由の詳細を入力してください';
     } else {
       wrap.style.display = 'none';
       document.getElementById('venue-reason-detail').value = '';
@@ -2820,8 +2823,8 @@
             !document.getElementById('venue-address').value.trim() ||
             !document.getElementById('venue-phone').value.trim() ||
             !document.getElementById('venue-contact').value.trim() || !reason ||
-            (reason === '勤務予定' && !detail)) {
-          alert('必須項目を入力してください' + (reason === '勤務予定' && !detail ? '（勤務開始予定日を入力してください）' : ''));
+            ((reason === '勤務予定' || reason === 'その他') && !detail)) {
+          alert('必須項目を入力してください' + (reason === '勤務予定' && !detail ? '（勤務開始予定日を入力してください）' : reason === 'その他' && !detail ? '（理由の詳細を入力してください）' : ''));
           btn.textContent = '届出を送信する';
           btn.style.pointerEvents = 'auto';
           return;
