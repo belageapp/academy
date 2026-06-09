@@ -2,6 +2,78 @@
 
 ---
 
+## v1.17.0 - 2026/06/07〜08（構築１７）
+
+### mypage_course_shonin.html
+
+#### 仮修了証明書フロー刷新（PDF発行→郵送方式へ）
+- 受講生が PDF をダウンロードする旧フローを廃止
+- 管理者が仮修了証明書を郵送する新フローに変更
+- temp-cert-modal HTML・`openTempCert`・`closeTempCert`・`downloadTempCert` 関数を削除
+- tempCertItem 表示：「発行する」ボタンを廃止し、郵送ステータス（発送済み＋日付 / 郵送待ち / ロック中）を表示
+- `notifyTest2Passed()` を追加：テスト２合格時に管理者への Firestore お知らせ＋`sendTest2PassedMail` を送信
+
+#### STEP2 順序・タイトル変更
+- カード表示順を AEGISC-LMS → 動画事例検討 → eラーニング に変更
+- STEP2 タイトルを「動画教材・eラーニング」に変更
+- 受講ガイド STEP2 の説明文を「AEGISC-LMS動画、動画教材（事例検討）、eラーニング」の順に更新
+- 次のステップバナーの優先順位を AEGISC → 動画 → eラーニング に変更
+
+#### 実習先届出 理由選択肢変更（4択→3択）
+- 「受け入れ同意済み」を削除し、以下の3択に統一
+  - 現在勤務中
+  - 勤務予定（詳細入力欄あり：いつから）
+  - その他（詳細入力欄あり）
+- バリデーション：勤務予定・その他のどちらも詳細未入力はエラー
+
+#### 取り掛かりフラグ実装
+- `markStarted(field)` ヘルパー関数追加（初回のみ Firestore に書き込み）
+- `openTask()` 呼び出し時に `taskStarted` を記録
+- `markVideoWatched()` 初回視聴時に `videoStarted` を記録
+- AEGISC-LMS リンクのクリック時に `aegiscStarted` を記録（`window.__markAegiscStarted`）
+
+#### 重複お知らせ送信の修正
+- eラーニング完了・動画完了時の `sendCompletionNotice` 直接呼び出しを削除
+- onSnapshot の `__isFirstSnapshot` ガードに一本化し二重送信を解消
+
+---
+
+### admin.html
+
+#### 仮修了証明書発行管理セクション追加
+- サイドバーメニューに「仮修了証明書発行」を追加（実習先届出の直後）
+- `loadTempCertList()`：`test2Passed == true` の申し込みを取得し、未発送／発送済みグループに分けて表示
+- `markTempCertSent()`：`tempCertIssued: true`・`tempCertSentAt` を保存し、受講生にお知らせ＋`sendTempCertSentMail` 送信
+- `initAllBadges()` に仮修了証明書バッジ（`test2Passed && !tempCertIssued` の件数）を追加
+
+#### 実習先届出一覧 改善
+- 受講生名の表示を `r.name` フィールド優先に修正（`r.sei + r.mei` のみでは空欄になっていた問題を解消）
+- 「対応済みにする」ボタン（`markVenueChecked`）を追加
+- フィルターをボタン3つから `<select>` ドロップダウンに変更（テキスト発注一覧と同スタイル：対応待ち / すべて / 対応済み）
+- `setVenueFilter()` をシンプル化（ボタン style 更新ロジックを削除）
+
+#### 取り掛かりフラグ表示（申し込み詳細）
+- `pi()` 関数に `'started'` 状態を追加（青バッジ「▶ 取り掛かり中」）
+- CSS 追加：`.prog-dot.started`・`.prog-badge.started`（`#E3F2FD` / `#1565C0`）
+- eラーニング・動画事例検討・AEGISC の各項目に started 状態を反映
+  - `eLearningState = taskAllDone ? 'done' : taskStarted ? 'started' : 'none'`
+  - `videoState = videoAllDone ? 'done' : videoStarted ? 'started' : 'none'`
+  - `aegiscState = externalVideoDone ? 'done' : aegiscStarted ? 'started' : 'none'`
+
+#### 申し込み詳細 受講中ステータス表示順変更
+- 受講中の進捗表示順を AEGISC → 動画事例検討 → eラーニング に変更（mypage と統一）
+
+#### UI デザイン統一
+- 全セクション（実習先届出・実習修了報告・修了レポート・仮修了証明書発行・正式修了証明書・問い合わせ・変更届）を `.tcard` / `.thead` / `.thead-title` / `.thead-acts` 構造に統一
+- 全テーブルからインラインスタイルを除去し、グローバル CSS（`table`・`thead tr`・`th`・`td`）を適用
+- 受講生名表示を `<strong>` タグで統一し `a.name || ((a.sei||'')+(a.mei||''))` フォールバックを追加
+
+#### グレー表示の廃止
+- 実習先届出一覧：対応済み行の `opacity:0.65` を削除
+- 仮修了証明書発行管理：発送済み行の `opacity:0.6` を削除
+
+---
+
 ## v1.16.0 - 2026/05/23（構築１６）
 
 ### Firestore 定期バックアップ設定
