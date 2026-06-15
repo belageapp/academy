@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プレスリリース｜ホリスケアアカデミー 介護職員初任者研修（オンライン）開講</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+:root {
+  --teal: #2BBCD4;
+  --teal-dark: #1A9AB0;
+  --text: #1a1a1a;
+  --text-mid: #555;
+  --border: #ddd;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #f5f5f5;
+  color: var(--text);
+  font-size: 10pt;
+  line-height: 1.8;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 20px auto;
+  background: white;
+  padding: 18mm 20mm 16mm;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+/* ヘッダー */
+.pr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--teal);
+  margin-bottom: 18px;
+}
+.pr-label {
+  background: var(--teal);
+  color: white;
+  font-size: 10pt;
+  font-weight: 700;
+  padding: 4px 16px;
+  border-radius: 3px;
+  letter-spacing: 2px;
+}
+.pr-date {
+  font-size: 9pt;
+  color: var(--text-mid);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* タイトル */
+.pr-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 17pt;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.pr-subtitle {
+  font-size: 10pt;
+  color: var(--text-mid);
+  margin-bottom: 18px;
+  font-weight: 400;
+}
+
+/* リード */
+.pr-lead {
+  background: #F0FBFD;
+  border-left: 4px solid var(--teal);
+  padding: 12px 16px;
+  font-size: 9.5pt;
+  line-height: 1.85;
+  margin-bottom: 20px;
+  color: #1a2e35;
+}
+
+/* セクション */
+.section {
+  margin-bottom: 18px;
+}
+.section-title {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: var(--teal-dark);
+  border-bottom: 1.5px solid var(--teal);
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+}
+
+/* ポイントリスト */
+.point-list {
+  list-style: none;
+  padding: 0;
+}
+.point-list li {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 9.5pt;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: flex-start;
+}
+.point-list li:last-child { border-bottom: none; }
+.point-num {
+  background: var(--teal);
+  color: white;
+  font-size: 8pt;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.point-text strong {
+  display: block;
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--text);
+}
+.point-text span {
+  font-size: 8.5pt;
+  color: var(--text-mid);
+}
+
+/* ステップ */
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.step-box {
+  border: 1.5px solid var(--teal);
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.step-label {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 4px;
+}
+.step-title {
+  font-size: 8pt;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.step-desc {
+  font-size: 7.5pt;
+  color: var(--text-mid);
+  line-height: 1.6;
+  text-align: left;
+}
+.step-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12pt;
+  color: var(--teal);
+}
+
+/* テーブル */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+.info-table th {
+  background: #F0FBFD;
+  color: var(--teal-dark);
+  font-weight: 700;
+  padding: 7px 12px;
+  width: 28%;
+  border: 1px solid #d4eef3;
+  vertical-align: top;
+}
+.info-table td {
+  padding: 7px 12px;
+  border: 1px solid #d4eef3;
+  vertical-align: top;
+  line-height: 1.7;
+}
+
+/* 料金バナー */
+.price-banner {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white;
+  border-radius: 8px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.price-label { font-size: 9pt; opacity: 0.9; }
+.price-amount { font-size: 18pt; font-weight: 900; letter-spacing: 1px; }
+.price-note { font-size: 8pt; opacity: 0.8; margin-top: 2px; }
+.price-url { font-size: 8.5pt; opacity: 0.9; text-align: right; }
+.price-url a { color: white; }
+
+/* フッター */
+.pr-footer {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 2px solid var(--teal);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 8.5pt;
+  color: var(--text-mid);
+}
+.footer-contact strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 9pt; }
+.footer-logo {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--teal-dark);
+  text-align: right;
+}
+.footer-logo span { display: block; font-size: 8pt; font-weight: 400; color: var(--text-mid); margin-top: 2px; }
+
+/* 印刷 */
+@media print {
+  body { background: white; }
+  .page {
+    margin: 0;
+    box-shadow: none;
+    padding: 15mm 18mm 14mm;
+  }
+  @page { size: A4; margin: 0; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ヘッダー -->
+  <div class="pr-header">
+    <span class="pr-label">プレスリリース</span>
+    <div class="pr-date">
+      2026年6月<br>
+      特定非営利活動法人 Social Care Good<br>
+      ホリスケアアカデミー
+    </div>
+  </div>
+
+  <!-- タイトル -->
+  <h1 class="pr-title">介護職員初任者研修をオンラインで提供開始<br>
+    <span style="font-size:13pt;font-weight:500;color:#2BBCD4;">自分のペースで学べる・33,000円（税込）</span>
+  </h1>
+  <p class="pr-subtitle">NPO法人 Social Care Good（ホリスケアアカデミー）／広島県広島市</p>
+
+  <!-- リード文 -->
+  <div class="pr-lead">
+    特定非営利活動法人 Social Care Good が運営する「ホリスケアアカデミー」は、介護職員初任者研修（厚生労働大臣指定資格）のオンライン講座の提供を開始しました。eラーニング・動画教材（計114本）を組み合わせた学習カリキュラムにより、スマートフォンやパソコンからいつでもどこでも受講可能です。受講料は33,000円（税込）。介護施設での実習を経て正式修了証明書を発行し、介護職への就業をワンストップでサポートします。
+  </div>
+
+  <!-- 特徴 -->
+  <div class="section">
+    <div class="section-title">■ サービスの特徴</div>
+    <ul class="point-list">
+      <li>
+        <span class="point-num">1</span>
+        <div class="point-text">
+          <strong>完全オンラインで学習完結</strong>
+          <span>eラーニング（10科目）・事例検討動画（14本）・AEGISC-LMS動画（100本）をWebブラウザから受講。通学不要、スキマ時間に学習可能。</span>
+        </div>
+      </li>
+      <li>
+        <span class="point-num">2</span>
+        <div class="point-text">
+          <strong>業界最安水準の受講料 33,000円（税込）</strong>
+          <span>入学金・テキスト代不要。追加費用なしで修了証明書まで取得可能。</span>
+        </div>
+      </li>
+      <li>
+        <span class="point-num">3</span>
+        <div class="point-text">
+          <strong>マイページで進捗管理・サポート充実</strong>
+          <span>専用マイページで受講状況をリアルタイム確認。テスト合格後には仮修了証明書をPDF即時発行。不明点はシステム内から問い合わせ可能。</span>
+        </div>
+      </li>
+      <li>
+        <span class="point-num">4</span>
+        <div class="point-text">
+          <strong>実習サポートで正式修了証明書を発行</strong>
+          <span>仮修了証明書取得後、介護施設での実習・修了レポート提出を経て正式修了証明書を郵送。受講開始から8ヶ月以内に修了可能。</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 受講の流れ -->
+  <div class="section">
+    <div class="section-title">■ 受講の流れ</div>
+    <div class="step-grid">
+      <div class="step-box">
+        <div class="step-label">STEP 1</div>
+        <div class="step-title">受講準備</div>
+        <div class="step-desc">お申し込み・お支払い後、本人確認書類・誓約書・実習先届出を提出して受講開始</div>
+      </div>
+      <div class="step-box">
+        <div class="step-label">STEP 2</div>
+        <div class="step-title">eラーニング・動画視聴</div>
+        <div class="step-desc">eラーニング10科目（正答率70%以上で合格）＋動画教材14本＋AEGISC-LMS動画100本を完了</div>
+      </div>
+      <div class="step-box">
+        <div class="step-label">STEP 3</div>
+        <div class="step-title">テスト・仮修了証明書</div>
+        <div class="step-desc">テスト1・テスト2に合格（受講開始から3ヶ月以内）。仮修了証明書をPDFで即時発行</div>
+      </div>
+      <div class="step-box">
+        <div class="step-label">STEP 4</div>
+        <div class="step-title">実習・正式修了証明書</div>
+        <div class="step-desc">介護施設で実習後、修了レポートを提出。承認後に正式修了証明書を郵送（8ヶ月以内）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 料金・申込 -->
+  <div class="price-banner">
+    <div>
+      <div class="price-label">受講料（税込）</div>
+      <div class="price-amount">¥33,000</div>
+      <div class="price-note">入学金・テキスト代込み・追加費用なし</div>
+    </div>
+    <div class="price-url">
+      オンライン申込受付中<br>
+      <strong style="font-size:10pt;">https://holiscare.or.jp/academy/</strong>
+    </div>
+  </div>
+
+  <!-- コース概要 -->
+  <div class="section">
+    <div class="section-title">■ 講座概要</div>
+    <table class="info-table">
+      <tr>
+        <th>講座名</th>
+        <td>介護職員初任者研修（オンライン）</td>
+      </tr>
+      <tr>
+        <th>受講料</th>
+        <td>33,000円（税込）</td>
+      </tr>
+      <tr>
+        <th>学習方法</th>
+        <td>オンライン（eラーニング10科目・事例検討動画14本・AEGISC-LMS動画100本）＋介護施設実習</td>
+      </tr>
+      <tr>
+        <th>受講期間</th>
+        <td>受講開始から最大8ヶ月（仮修了：3ヶ月以内、正式修了：8ヶ月以内）</td>
+      </tr>
+      <tr>
+        <th>修了証明書</th>
+        <td>仮修了証明書（PDF）・正式修了証明書（郵送）</td>
+      </tr>
+      <tr>
+        <th>申込方法</th>
+        <td>ホリスケアアカデミーWebサイトよりオンライン申込</td>
+      </tr>
+      <tr>
+        <th>開講</th>
+        <td>2026年6月〜（随時受付）</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- フッター / 問い合わせ -->
+  <div class="pr-footer">
+    <div class="footer-contact">
+      <strong>■ 本件に関するお問い合わせ</strong>
+      特定非営利活動法人 Social Care Good　ホリスケアアカデミー<br>
+      〒730-0051　広島県広島市中区大手町3-1-7　ユナイテッドMKビル 総合受付4F<br>
+      TEL：082-545-2402　／　E-mail：info@holiscare.or.jp<br>
+      Web：https://holiscare.or.jp/academy/
+    </div>
+    <div class="footer-logo">
+      ホリスケアアカデミー
+      <span>特定非営利活動法人 Social Care Good</span>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;padding:16px;font-size:11px;color:#aaa;font-family:sans-serif;">
+  ブラウザの印刷機能（Ctrl+P / Cmd+P）→「PDFとして保存」でPDF出力できます
+</div>
+
+</body>
+</html>
