@@ -1065,7 +1065,14 @@ async function doLogin() {
     const reportState     = a.reportApproved === true ? 'done' : a.reportSubmitted === true ? 'pending' : 'none';
     const certState       = a.certificateIssued === true ? 'done' : 'none';
 
-    document.getElementById('prog-active-items').innerHTML =
+    const edulioBox = a.edulioId ? `
+      <div style="background:#F0FBFD;border:1.5px solid #2BBCD4;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;line-height:1.9;">
+        <div style="font-weight:700;color:#1A9AB0;margin-bottom:4px;">🔑 AEGISC-LMS アカウント</div>
+        <div>ID：<strong style="font-family:monospace;font-size:13px;">${a.edulioId}</strong></div>
+        <div>パスワード：<strong style="font-family:monospace;font-size:13px;">${a.edulioPassword || '—'}</strong></div>
+      </div>` : '';
+
+    document.getElementById('prog-active-items').innerHTML = edulioBox +
       pi('動画教材（AEGIS）の完了',   videoAegisState, 'externalVideoDone', a.externalVideoDone===true) +
       pi('動画教材（事例検討）の完了', videoCaseState,  'videoAllDone',      a.videoAllDone===true) +
       pi('eラーニングの完了',        eLearningState,  'taskAllDone',       a.taskAllDone===true) +
