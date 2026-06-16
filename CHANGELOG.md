@@ -2,6 +2,52 @@
 
 ---
 
+## v1.20.0 - 2026/06/16（構築２０）
+
+### admin.html / holiscare-functions/index.js
+
+#### AEGISC-LMS ID発行時の管理者通知メール
+- AEGISC-LMS IDが新規発行されたタイミングで `info@holiscare.or.jp` に通知メールを自動送信
+  - 送信タイミング：`saveStatus()`（手動でactiveに変更）・`approveDoc()`（書類承認によるactive移行）の両パス
+  - メール内容：氏名・ふりがな・メールアドレス・電話番号・受講番号・AEGISC-LMS ID・パスワード
+- Cloud Function `sendEdulioIssuedAdminMail` を追加（`holiscare-functions`）
+
+---
+
+## v1.19.0 - 2026/06/16（構築１９）
+
+### admin.html
+
+#### AEGISC-LMS ID発行ロジックをヘルパー関数に統一
+- `issueEdulioId()` ヘルパー関数を追加
+  - Firestore `counters/edulio` からカウンターを取得
+  - `all`（全受講者キャッシュ）の既存IDをセットに持ち、`do-while` で重複をスキップして次の未使用IDを自動検出
+  - counterを手動調整する必要をなくした（例：hca004が空いている場合も次の受講者が自動でhca004を取得）
+- `saveStatus()`・`approveDoc()` のインラインID発行コードを `issueEdulioId()` 呼び出しに置き換え
+
+---
+
+## v1.18.0 - 2026/06/15（構築１８）
+
+### admin.html
+
+#### AEGISC-LMS IDの上書き防止
+- `saveStatus()`・`approveDoc()` の両コードパスで、ID発行前にFirestoreから現在のドキュメントを取得し `edulioId` の有無をチェック
+- 発行済みの場合はスキップ（コンソールログ出力）し、上書きを防止
+- 背景：saveStatus() と approveDoc() の2つのパスが独立してIDを発行していたため、同一受講者に異なるIDが割り当てられる問題が発生していた（Q8RsYFZDvPfrzeXiWNpe が hca002 → hca004 に上書きされた事例）
+
+#### 申し込み詳細にAEGISC-LMS ID/パスワードを表示
+- 受講中ステータスの詳細ビュー（`.prog-active-items`）に `edulioBox` を追加
+- `edulioId` が存在する場合のみ表示：ID・パスワードをモノスペースフォントで表示
+
+### press_release.html（新規作成）
+
+- オンライン初任者研修のプレスリリース向けA4印刷対応HTML
+- 内容：受講料33,000円（税込）・STEP1〜4フロー・eラーニング10科目・動画114本
+- ブラウザの印刷機能（Cmd+P）からPDF出力可能
+
+---
+
 ## v1.17.0 - 2026/06/07〜08（構築１７）
 
 ### mypage_course_shonin.html
