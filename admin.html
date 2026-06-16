@@ -1260,6 +1260,11 @@ async function doLogin() {
             await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
               edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
             });
+            const d = existingSnap.data();
+            fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: d.name, kana: d.kana, email: d.email, phone: d.phone, studentNo: d.studentNo, edulioId, edulioPassword })
+            }).catch(e => console.warn('AEGISC-LMS ID発行通知メール失敗:', e));
           } else {
             console.log('edulio ID発行スキップ（発行済み）:', existingSnap.data().edulioId);
           }
@@ -1747,6 +1752,10 @@ async function doLogin() {
       if (!appData.edulioId) {
         const { edulioId, edulioPassword } = await issueEdulioId();
         Object.assign(activeUpdateData, { edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() });
+        fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: appData.name, kana: appData.kana, email: appData.email, phone: appData.phone, studentNo: appData.studentNo, edulioId, edulioPassword })
+        }).catch(e => console.warn('AEGISC-LMS ID発行通知メール失敗:', e));
       } else {
         console.log('edulio ID発行スキップ（発行済み）:', appData.edulioId);
       }
