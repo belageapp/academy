@@ -1223,6 +1223,24 @@ async function doLogin() {
   }
   window.markTextOrdered = markTextOrdered;
 
+  // 重複しない次のedulio IDを発行してcounterを更新する
+  const EDULIO_PASSWORD_MAP = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+  async function issueEdulioId() {
+    const counterRef = window.__doc(window.__db, 'counters', 'edulio');
+    const counterSnap = await window.__getDoc(counterRef);
+    let num = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
+    const usedIds = new Set(all.map(a => a.edulioId).filter(Boolean));
+    let candidate;
+    do {
+      num++;
+      candidate = 'hca' + String(num).padStart(3, '0');
+    } while (usedIds.has(candidate));
+    const edulioPassword = candidate + EDULIO_PASSWORD_MAP[(num - 1) % EDULIO_PASSWORD_MAP.length];
+    await window.__updateDoc(counterRef, { count: num });
+    console.log('edulio ID発行:', candidate, '（スキップ済み重複:', [...usedIds].filter(id => id < candidate).length, '件）');
+    return { edulioId: candidate, edulioPassword };
+  }
+
   async function saveStatus() {
     if (!curId) return;
     const ns = document.getElementById('m-status').value;
@@ -1238,18 +1256,10 @@ async function doLogin() {
         try {
           const existingSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
           if (!existingSnap.data()?.edulioId) {
-            const counterRef = window.__doc(window.__db, 'counters', 'edulio');
-            const counterSnap = await window.__getDoc(counterRef);
-            const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
-            const newNum = currentNum + 1;
-            const edulioId = 'hca' + String(newNum).padStart(3, '0');
-            const edulioPasswordMap2 = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
-            const edulioPassword = edulioId + edulioPasswordMap2[(newNum - 1) % edulioPasswordMap2.length];
-            await window.__updateDoc(counterRef, { count: newNum });
+            const { edulioId, edulioPassword } = await issueEdulioId();
             await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
               edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
             });
-            console.log('edulio ID発行:', edulioId);
           } else {
             console.log('edulio ID発行スキップ（発行済み）:', existingSnap.data().edulioId);
           }
@@ -1735,16 +1745,8 @@ async function doLogin() {
     if (photoOk && idOk && pledgeOk && venueOk) {
       const activeUpdateData = { status: 'active', activeAt: window.__serverTs() };
       if (!appData.edulioId) {
-        const counterRef = window.__doc(window.__db, 'counters', 'edulio');
-        const counterSnap = await window.__getDoc(counterRef);
-        const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
-        const newNum = currentNum + 1;
-        const edulioId = 'hca' + String(newNum).padStart(3, '0');
-        const edulioPasswordMap2 = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
-        const edulioPassword = edulioId + edulioPasswordMap2[(newNum - 1) % edulioPasswordMap2.length];
-        await window.__updateDoc(counterRef, { count: newNum });
+        const { edulioId, edulioPassword } = await issueEdulioId();
         Object.assign(activeUpdateData, { edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() });
-        console.log('edulio ID発行:', edulioId);
       } else {
         console.log('edulio ID発行スキップ（発行済み）:', appData.edulioId);
       }
