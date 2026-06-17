@@ -1564,7 +1564,10 @@ async function doLogin() {
       list.innerHTML = snap.docs.map(d => {
         const n = d.data();
         const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '—';
-        const targetLabel = n.target === 'all' ? '全受講生' : '特定受講生';
+        const targetLabel = n.target === 'all' ? '全受講生'
+          : (n.emails && n.emails.length > 0
+              ? n.emails.map(e => { const a = all.find(x => x.email === e); return a ? a.name : e; }).join('、')
+              : '特定受講生');
         return `
           <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;">
             <div style="flex:1;">
