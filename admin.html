@@ -793,6 +793,12 @@
               </button>
             </div>
       </div>
+
+      <!-- お問い合わせ履歴 -->
+      <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--teal-light);">
+        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;">📬 お問い合わせ履歴</div>
+        <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -971,6 +977,9 @@ async function doLogin() {
 
   // 進捗チェックリスト表示
   renderProgress(id, a);
+
+  // お問い合わせ履歴を読み込み
+  loadModalInquiries(id, a.email);
 
   document.getElementById('modal').classList.add('open');
   }
@@ -2557,8 +2566,50 @@ async function doLogin() {
     }
   }
 
+  async function loadModalInquiries(applicationId, email) {
+    const el = document.getElementById('modal-inquiry-list');
+    if (!el) return;
+    el.innerHTML = '<span style="font-size:13px;color:var(--text-light);">読み込み中…</span>';
+    try {
+      const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(
+        collection(window.__db, 'inquiries'),
+        where('applicationId', '==', applicationId),
+        orderBy('createdAt', 'desc')
+      ));
+      if (snap.empty) {
+        el.innerHTML = '<p style="font-size:13px;color:var(--text-light);">お問い合わせはありません。</p>';
+        return;
+      }
+      el.innerHTML = snap.docs.map(d => {
+        const t = d.data();
+        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isAnswered = t.status === 'answered';
+        return `<div style="background:white;border:1px solid ${isAnswered ? '#eee' : '#FDE68A'};border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;font-weight:700;color:var(--teal-dark);">${t.subject || '—'}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;">${date}</span>
+              ${isAnswered
+                ? '<span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;">回答済み</span>'
+                : '<span style="background:#FFF8E1;color:#F57C00;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;">未回答</span>'}
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-dark);line-height:1.7;margin-bottom:6px;">${t.body || ''}</div>
+          ${t.answer ? `<div style="background:#F0FBF4;border-left:3px solid var(--teal);padding:8px 10px;font-size:12px;color:var(--text-dark);border-radius:0 6px 6px 0;line-height:1.7;"><span style="font-size:11px;font-weight:700;color:var(--teal-dark);">回答：</span><br>${t.answer}</div>` : ''}
+          ${!isAnswered ? `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+            <textarea id="modal-reply-${d.id}" rows="2" placeholder="回答を入力…" style="width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;"></textarea>
+            <button onclick="replyInquiry('${d.id}','${applicationId}','${email}','${t.name||''}','${t.subject||''}')" style="padding:6px 14px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end;">返信する</button>
+          </div>` : ''}
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;font-size:12px;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+
   async function replyInquiry(inquiryId, applicationId, email, name, subject) {
-    const answer = document.getElementById('reply-' + inquiryId)?.value.trim();
+    const answer = (document.getElementById('modal-reply-' + inquiryId) || document.getElementById('reply-' + inquiryId))?.value.trim();
     if (!answer) { alert('回答を入力してください'); return; }
     try {
       const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -2583,6 +2634,7 @@ async function doLogin() {
       }).catch(e => console.warn('メール送信失敗:', e));
       alert('返信しました');
       loadInquiryList();
+      if (curId && applicationId) loadModalInquiries(applicationId, email);
     } catch(e) {
       alert('エラー：' + e.message);
     }
@@ -2590,6 +2642,7 @@ async function doLogin() {
 
   window.loadInquiryList = loadInquiryList;
   window.replyInquiry = replyInquiry;
+  window.loadModalInquiries = loadModalInquiries;
 
   // 初期ロード時に未回答バッジを表示
   async function initAllBadges() {
