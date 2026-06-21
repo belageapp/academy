@@ -2609,7 +2609,8 @@ async function doLogin() {
   }
 
   async function replyInquiry(inquiryId, applicationId, email, name, subject) {
-    const answer = (document.getElementById('modal-reply-' + inquiryId) || document.getElementById('reply-' + inquiryId))?.value.trim();
+    const answer = document.getElementById('reply-' + inquiryId)?.value?.trim()
+                || document.getElementById('modal-reply-' + inquiryId)?.value?.trim();
     if (!answer) { alert('回答を入力してください'); return; }
     try {
       const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
