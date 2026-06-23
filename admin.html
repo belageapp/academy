@@ -966,10 +966,18 @@ async function doLogin() {
     const a = all.find(x => x.id===id);
     if (!a) return;
     curId = id;
+    const ojtFacilityRow = (() => {
+      const vname = a.practiceVenue?.name;
+      const rname = a.ojtReport?.facility;
+      let html = '';
+      if (vname) html += `<div class="drow"><dt>OJT施設（届出）</dt><dd>${vname}</dd></div>`;
+      if (rname) html += `<div class="drow"><dt>OJT施設（修了報告）</dt><dd>${rname}</dd></div>`;
+      return html;
+    })();
     document.getElementById('modal-dl').innerHTML =
       Object.entries(LABELS).map(([k,lbl]) =>
         a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
-      ).join('');
+      ).join('') + ojtFacilityRow;
   document.getElementById('m-status').value = a.status || 'pending';
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
