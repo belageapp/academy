@@ -988,7 +988,7 @@ async function doLogin() {
       a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
     ).join('');
     const ojtRows = Object.entries(OJT_LABELS).map(([k,lbl]) =>
-      a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
+      a[k] ? `<div class="drow" style="border-bottom:1px solid var(--border);"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
     ).join('');
     const ojtSection = ojtRows
       ? `<div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--teal-light);">
