@@ -303,9 +303,12 @@
     .drow dt { min-width: 140px; font-size: 12px; color: var(--text-mid); font-weight: 500; padding-top: 1px; }
     .drow dd { font-size: 14px; flex: 1; word-break: break-all; font-weight: 500; }
 
+    .modal-sec { margin-top:20px; padding-top:16px; border-top:2px solid var(--teal-light); }
+    .modal-sec-hd { font-size:13px; font-weight:700; color:var(--teal-dark); margin-bottom:12px; }
+
     .modal-status {
       background: var(--teal-pale); border: 1px solid var(--border);
-      border-radius: 10px; padding: 16px 20px; margin-top: 18px;
+      border-radius: 10px; padding: 16px 20px; margin-top: 20px;
     }
     .modal-status label { font-size: 12px; font-weight: 500; color: var(--text-mid); display: block; margin-bottom: 8px; }
     .modal-status select {
@@ -753,8 +756,8 @@
     <div class="modal-body">
       <dl id="modal-dl"></dl>
       <!-- 進捗チェックリスト -->
-      <div id="progress-section" style="margin-top:24px;margin-bottom:20px;padding-top:12px;border-top:2px solid var(--teal-light);">
-        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;">📊 進捗状況</div>
+      <div id="progress-section" class="modal-sec" style="margin-bottom:20px;">
+        <div class="modal-sec-hd">📊 進捗状況</div>
 
         <!-- 入金待ち -->
         <div id="prog-block-pending" style="display:none;margin-bottom:14px;">
@@ -795,8 +798,8 @@
       </div>
 
       <!-- お問い合わせ履歴 -->
-      <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--teal-light);">
-        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;">📬 お問い合わせ履歴</div>
+      <div class="modal-sec">
+        <div class="modal-sec-hd">📬 お問い合わせ履歴</div>
         <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
       </div>
     </div>
@@ -991,12 +994,10 @@ async function doLogin() {
       a[k] ? `<div class="drow" style="border-bottom:1px solid var(--border);"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
     ).join('');
     const ojtSection = ojtRows
-      ? `<div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--teal-light);">
-           <div style="font-size:12px;font-weight:700;color:var(--teal-dark);letter-spacing:0.06em;margin-bottom:4px;">🏥 実習先情報</div>
-           ${ojtRows}
-         </div>`
+      ? `<div class="modal-sec"><div class="modal-sec-hd">🏥 実習先情報</div>${ojtRows}</div>`
       : '';
-    document.getElementById('modal-dl').innerHTML = baseRows + ojtSection;
+    document.getElementById('modal-dl').innerHTML =
+      `<div class="modal-sec-hd">📋 基本情報</div>${baseRows}${ojtSection}`;
   document.getElementById('m-status').value = a.status || 'pending';
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
