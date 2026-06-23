@@ -874,9 +874,11 @@
     birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
     zip:'郵便番号', address:'ご住所', altAddr:'確認書類の郵送先', altAddress:'別途郵送先住所',
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
-    _ojtVenueName:'OJT施設名', _ojtVenueAddress:'OJT施設住所', _ojtVenuePhone:'OJT施設電話番号',
-    _ojtVenueContact:'OJT施設担当者', _ojtVenueReason:'届出理由', _ojtVenueDate:'実習先届出日',
-    _ojtReportFacility:'OJT施設（修了報告）',
+  };
+  const OJT_LABELS = {
+    _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'電話番号',
+    _ojtVenueContact:'担当者', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
+    _ojtReportFacility:'実習修了報告の施設名',
   };
 
 async function doLogin() {
@@ -982,10 +984,19 @@ async function doLogin() {
     const a = all.find(x => x.id===id);
     if (!a) return;
     curId = id;
-    document.getElementById('modal-dl').innerHTML =
-      Object.entries(LABELS).map(([k,lbl]) =>
-        a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
-      ).join('');
+    const baseRows = Object.entries(LABELS).map(([k,lbl]) =>
+      a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
+    ).join('');
+    const ojtRows = Object.entries(OJT_LABELS).map(([k,lbl]) =>
+      a[k] ? `<div class="drow"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
+    ).join('');
+    const ojtSection = ojtRows
+      ? `<div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--teal-light);">
+           <div style="font-size:12px;font-weight:700;color:var(--teal-dark);letter-spacing:0.06em;margin-bottom:4px;">🏥 実習先情報</div>
+           ${ojtRows}
+         </div>`
+      : '';
+    document.getElementById('modal-dl').innerHTML = baseRows + ojtSection;
   document.getElementById('m-status').value = a.status || 'pending';
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
