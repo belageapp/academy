@@ -2,6 +2,30 @@
 
 ---
 
+## v1.25.0 - 2026/06/24（構築２５）
+
+### admin.html
+
+#### 申し込み詳細モーダルにOJT実習先情報を追加
+- 申込者の詳細モーダルにOJT実習先情報を表示するよう対応
+  - 表示項目：施設名・住所・電話番号・担当者・届出理由・届出日・実習修了報告の施設名
+  - データソース：`practiceVenue`（実習先届出フォーム）および `ojtReport`（実習修了報告）
+  - いずれかのデータが存在する場合のみセクションを表示
+
+#### 詳細モーダルの全セクションのスタイルを統一
+- `modal-sec` / `modal-sec-hd` クラスを新設し、全セクションの余白・罫線・タイトルスタイルを統一
+  - セクション区切り：上部に `border-top: 2px solid var(--teal-light)` + `margin-top: 20px` / `padding-top: 16px`
+  - セクションタイトル：`font-size: 13px` / `font-weight: 700` / `margin-bottom: 12px`
+  - 適用セクション：📋 基本情報（新規追加）・🏥 実習先情報・📊 進捗状況・📬 お問い合わせ履歴
+
+### その他
+
+#### プロジェクト構成を整理
+- `holiscare-functions` を `academy/` 配下に移動し `.gitignore` で除外
+- `firebase.json` を新規作成し Firebase Hosting デプロイに対応
+
+---
+
 ## v1.24.0 - 2026/06/21（バグ修正）
 
 ### admin.html
