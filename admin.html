@@ -874,7 +874,9 @@
     birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
     zip:'郵便番号', address:'ご住所', altAddr:'確認書類の郵送先', altAddress:'別途郵送先住所',
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
-    _ojtVenueName:'OJT施設（届出）', _ojtReportFacility:'OJT施設（修了報告）',
+    _ojtVenueName:'OJT施設名', _ojtVenueAddress:'OJT施設住所', _ojtVenuePhone:'OJT施設電話番号',
+    _ojtVenueContact:'OJT施設担当者', _ojtVenueReason:'届出理由', _ojtVenueDate:'実習先届出日',
+    _ojtReportFacility:'OJT施設（修了報告）',
   };
 
 async function doLogin() {
@@ -906,8 +908,13 @@ async function doLogin() {
         return {
           id: d.id,
           ...data,
-          _ojtVenueName:    data.practiceVenue?.name    || '',
-          _ojtReportFacility: data.ojtReport?.facility  || '',
+          _ojtVenueName:      data.practiceVenue?.name || '',
+          _ojtVenueAddress:   data.practiceVenue ? ((data.practiceVenue.zip ? '〒'+data.practiceVenue.zip+' ' : '') + (data.practiceVenue.address || '')) : '',
+          _ojtVenuePhone:     data.practiceVenue?.phone || '',
+          _ojtVenueContact:   data.practiceVenue ? ((data.practiceVenue.dept ? data.practiceVenue.dept+' ' : '') + (data.practiceVenue.contact || '')) : '',
+          _ojtVenueReason:    data.practiceVenue?.reason || '',
+          _ojtVenueDate:      data.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '',
+          _ojtReportFacility: data.ojtReport?.facility || '',
         };
       }).filter(a => showTest || !a.isTest);
       updateStats(); doFilter();
