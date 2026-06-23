@@ -1,0 +1,15 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git",
+      ".DS_Store",
+      "firebase-debug.log",
+      "README.md",
+      "CHANGELOG.md",
+      "holiscare-functions/**"
+    ]
+  }
+}
