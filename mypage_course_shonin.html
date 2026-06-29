@@ -560,16 +560,6 @@
       transition: background 0.2s;
     }
     .pw-submit:hover { background: var(--teal-dark); }
-  /* 管理者プレビューバナー */
-  #admin-preview-banner {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-    background: #F57C00; color: white;
-    padding: 8px 16px;
-    font-size: 13px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-  body.admin-preview-mode { padding-top: 38px; }
   body.admin-preview-mode * { cursor: not-allowed !important; }
   body.admin-preview-mode a, body.admin-preview-mode button,
   body.admin-preview-mode select, body.admin-preview-mode input,
@@ -1440,10 +1430,6 @@
   window.__isAdminPreview = isAdminPreview;
   if (isAdminPreview) {
     document.body.classList.add('admin-preview-mode');
-    const banner = document.createElement('div');
-    banner.id = 'admin-preview-banner';
-    banner.innerHTML = '&#128065; 管理者プレビューモード &nbsp;|&nbsp; 読み取り専用 — 操作はすべて無効です';
-    document.body.insertBefore(banner, document.body.firstChild);
     ['click', 'submit', 'touchend', 'mousedown', 'pointerdown'].forEach(type => {
       document.addEventListener(type, e => {
         e.preventDefault();
