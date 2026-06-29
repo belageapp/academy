@@ -1474,13 +1474,16 @@
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       try {
       const data = snap.data();
-      if (isAdminPreview && data.name) {
-        const nameEl = document.getElementById('course-name');
-        if (nameEl) nameEl.textContent = 'お名前：' + data.name;
-        const headerName = document.getElementById('header-name-pc');
-        if (headerName) headerName.textContent = data.name + ' さん';
-        const docName = document.getElementById('doc-name');
-        if (docName) docName.value = data.name;
+      if (isAdminPreview) {
+        const studentName = (data.sei || '') + (data.mei ? '　' + data.mei : '') || data.name || '';
+        if (studentName) {
+          const nameEl = document.getElementById('course-name');
+          if (nameEl) nameEl.textContent = 'お名前：' + studentName;
+          const headerName = document.getElementById('header-name-pc');
+          if (headerName) headerName.textContent = studentName + ' さん';
+          const docName = document.getElementById('doc-name');
+          if (docName) docName.value = studentName;
+        }
       }
       const prevData = __prevData || {};
       // 初回発火はスキップ（リロード時の誤発動防止）
