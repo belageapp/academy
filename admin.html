@@ -373,6 +373,79 @@
       .main { margin-left: 0; }
       .stats { grid-template-columns: repeat(2,1fr); }
     }
+  /* 仮修了証明書プレビューモーダル */
+  .cert-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 500;
+    align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 24px 16px;
+  }
+  .cert-modal-bg.open { display: flex; }
+  .cert-modal-wrap {
+    background: #f0f0f0; border-radius: 12px; padding: 20px;
+    width: 100%; max-width: 720px;
+  }
+  .cert-modal-actions {
+    display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .cert-print-btn {
+    background: var(--teal); color: white; border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .cert-print-btn:hover { background: var(--teal-dark); }
+  .cert-close-btn {
+    background: white; color: var(--text-mid); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  /* 証明書本体 */
+  .cert-paper {
+    background: white; width: 100%; aspect-ratio: 210 / 297;
+    padding: 8% 9%; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: 'Noto Serif JP', 'Noto Sans JP', serif;
+    border: 4px double #2BBCD4; position: relative; overflow: hidden;
+  }
+  .cert-seal-bg {
+    position: absolute; bottom: 12%; right: 8%;
+    width: 18%; opacity: 0.15; pointer-events: none;
+  }
+  .cert-logo { height: 36px; margin-bottom: 6%; }
+  .cert-title {
+    font-size: clamp(20px, 4vw, 36px); font-weight: 700; letter-spacing: 0.5em;
+    color: #1A3A40; border-bottom: 2px solid #2BBCD4;
+    padding-bottom: 3%; margin-bottom: 6%; width: 100%; text-align: center;
+  }
+  .cert-body { width: 100%; font-size: clamp(11px, 1.8vw, 15px); line-height: 2.2; color: #1A3A40; }
+  .cert-row { display: flex; border-bottom: 1px solid #e0e0e0; padding: 0.4em 0; }
+  .cert-label { width: 38%; color: #4A7A85; font-weight: 500; }
+  .cert-value { flex: 1; font-weight: 700; }
+  .cert-message {
+    margin-top: 6%; font-size: clamp(10px, 1.5vw, 13px);
+    color: #555; line-height: 1.9; text-align: center;
+  }
+  .cert-footer {
+    margin-top: auto; padding-top: 5%; width: 100%;
+    font-size: clamp(9px, 1.4vw, 12px); color: #4A7A85;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .cert-issuer { line-height: 1.8; }
+  .cert-issued-date { text-align: right; }
+
+  @media print {
+    body > *:not(#cert-print-root) { display: none !important; }
+    #cert-print-root {
+      display: block !important; position: fixed !important;
+      inset: 0; background: white; z-index: 9999; padding: 0; margin: 0;
+    }
+    .cert-paper {
+      width: 100vw; height: 100vh; border: none;
+      page-break-after: avoid;
+    }
+    .cert-modal-actions { display: none !important; }
+  }
+
   /* 生徒画面プレビューモーダル */
   .preview-modal-bg {
     display: none; position: fixed; inset: 0;
@@ -839,6 +912,44 @@
       <div class="modal-sec">
         <div class="modal-sec-hd">📬 お問い合わせ履歴</div>
         <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 仮修了証明書プレビューモーダル -->
+<div id="cert-print-root" style="display:none;">
+  <div class="cert-modal-bg" id="cert-modal">
+    <div class="cert-modal-wrap">
+      <div class="cert-modal-actions">
+        <button class="cert-print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+        <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
+      </div>
+      <div class="cert-paper" id="cert-paper">
+        <img class="cert-seal-bg" src="assets/seal.png" alt="">
+        <img class="cert-logo" src="assets/logo.png" alt="ホリスケアアカデミー">
+        <div class="cert-title">仮　修　了　証　明　書</div>
+        <div class="cert-body">
+          <div class="cert-row"><span class="cert-label">受講者氏名</span><span class="cert-value" id="cert-name"></span></div>
+          <div class="cert-row"><span class="cert-label">受講番号</span><span class="cert-value" id="cert-studentno"></span></div>
+          <div class="cert-row"><span class="cert-label">講座名</span><span class="cert-value" id="cert-course"></span></div>
+          <div class="cert-row"><span class="cert-label">仮修了日</span><span class="cert-value" id="cert-passed-date"></span></div>
+          <div class="cert-row"><span class="cert-label">正式修了期限</span><span class="cert-value" id="cert-expiry"></span></div>
+        </div>
+        <div class="cert-message">
+          上記の者は、ホリスケアアカデミーが定める所定の学習課程を修了したことを証明します。<br>
+          本証明書をもって、介護施設での実習（OJT）を開始することができます。
+        </div>
+        <div class="cert-footer">
+          <div class="cert-issuer">
+            特定非営利活動法人 Social Care Good<br>
+            ホリスケアアカデミー<br>
+            広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F
+          </div>
+          <div class="cert-issued-date">
+            発行日：<span id="cert-issued-date"></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2239,8 +2350,9 @@ async function doLogin() {
               ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発送済み</span><br><span style="font-size:11px;color:#888;">'+sentDate+'</span>'
               : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未発送</span>'
             }</td>
-            <td>
-              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📬 発送済みにする</button>` : '—'}
+            <td style="white-space:nowrap;">
+              <button onclick="openCertModal('${a.id}')" style="padding:6px 12px;background:#F57C00;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:4px;display:block;">📄 証明書を発行</button>
+              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 12px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:block;">📬 発送済みにする</button>` : ''}
             </td>
           </tr>`;
         }).join('');
@@ -2283,6 +2395,34 @@ async function doLogin() {
       alert('エラー：' + e.message);
     }
   }
+
+  function openCertModal(docId) {
+    const a = all.find(x => x.id === docId);
+    if (!a) return;
+    const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
+    const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+    const today = new Date().toLocaleDateString('ja-JP');
+    let expiry = '—';
+    if (a.activeAt) {
+      const d = new Date(a.activeAt.toMillis());
+      d.setMonth(d.getMonth() + 8);
+      expiry = d.toLocaleDateString('ja-JP');
+    }
+    document.getElementById('cert-name').textContent = name;
+    document.getElementById('cert-studentno').textContent = a.studentNo || '—';
+    document.getElementById('cert-course').textContent = a.course || 'オンライン初任者研修';
+    document.getElementById('cert-passed-date').textContent = passedDate;
+    document.getElementById('cert-expiry').textContent = expiry;
+    document.getElementById('cert-issued-date').textContent = today;
+    document.getElementById('cert-print-root').style.display = 'block';
+    document.getElementById('cert-modal').classList.add('open');
+  }
+  function closeCertModal() {
+    document.getElementById('cert-modal').classList.remove('open');
+    document.getElementById('cert-print-root').style.display = 'none';
+  }
+  window.openCertModal = openCertModal;
+  window.closeCertModal = closeCertModal;
 
   window.loadTempCertList = loadTempCertList;
   window.markTempCertSent = markTempCertSent;
