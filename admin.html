@@ -2333,7 +2333,12 @@ async function doLogin() {
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
       const pending = [], sent = [];
-      snap.docs.forEach(d => (d.data().tempCertIssued === true ? sent : pending).push({ id: d.id, ...d.data() }));
+      window.__tempCertCache = {};
+      snap.docs.forEach(d => {
+        const item = { id: d.id, ...d.data() };
+        window.__tempCertCache[d.id] = item;
+        (item.tempCertIssued === true ? sent : pending).push(item);
+      });
       const byPassedAt = (a, b) => (b.test2PassedAt?.toMillis?.() || 0) - (a.test2PassedAt?.toMillis?.() || 0);
       pending.sort(byPassedAt); sent.sort(byPassedAt);
       function rows(arr, isSent) {
@@ -2397,7 +2402,7 @@ async function doLogin() {
   }
 
   function openCertModal(docId) {
-    const a = all.find(x => x.id === docId);
+    const a = (window.__tempCertCache && window.__tempCertCache[docId]) || all.find(x => x.id === docId);
     if (!a) return;
     const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
     const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
