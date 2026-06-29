@@ -373,6 +373,40 @@
       .main { margin-left: 0; }
       .stats { grid-template-columns: repeat(2,1fr); }
     }
+  /* 生徒画面プレビューモーダル */
+  .preview-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,80,95,0.6); z-index: 400;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .preview-modal-bg.open { display: flex; }
+  .preview-modal {
+    background: white; border-radius: 20px;
+    width: min(420px, 95vw); height: min(820px, 92vh);
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+    animation: fadeUp 0.3s ease;
+  }
+  .preview-modal-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: #F57C00; flex-shrink: 0;
+  }
+  .preview-modal-hd-title { font-size: 13px; font-weight: 700; color: white; }
+  .preview-modal-hd-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .preview-modal-close {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    font-size: 18px; cursor: pointer; width: 30px; height: 30px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .preview-modal-close:hover { background: rgba(255,255,255,0.35); }
+  .preview-modal iframe { flex: 1; border: none; width: 100%; display: block; }
+  .preview-btn {
+    background: #F57C00; color: white; border: none; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif; white-space: nowrap;
+  }
+  .preview-btn:hover { background: #E65100; }
   </style>
 </head>
 <body>
@@ -751,7 +785,10 @@
   <div class="modal">
     <div class="modal-hd">
       <span class="modal-hd-title">📋 申し込み詳細</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="preview-btn" onclick="openPreview()">👁 生徒画面</button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <div class="modal-body">
       <dl id="modal-dl"></dl>
@@ -803,6 +840,20 @@
         <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- 生徒画面プレビューモーダル -->
+<div class="preview-modal-bg" id="preview-modal">
+  <div class="preview-modal">
+    <div class="preview-modal-hd">
+      <div>
+        <div class="preview-modal-hd-title">👁 生徒画面プレビュー</div>
+        <div class="preview-modal-hd-sub">読み取り専用 — 操作は無効です</div>
+      </div>
+      <button class="preview-modal-close" onclick="closePreview()">✕</button>
+    </div>
+    <iframe id="preview-iframe" src="" title="生徒画面プレビュー"></iframe>
   </div>
 </div>
 
@@ -1015,6 +1066,19 @@ async function doLogin() {
 
   function closeModal() { document.getElementById('modal').classList.remove('open'); curId=null; }
   window.closeModal = closeModal;
+
+  function openPreview() {
+    if (!curId) return;
+    const url = `mypage_course_shonin.html?id=${curId}&adminPreview=true`;
+    document.getElementById('preview-iframe').src = url;
+    document.getElementById('preview-modal').classList.add('open');
+  }
+  function closePreview() {
+    document.getElementById('preview-modal').classList.remove('open');
+    document.getElementById('preview-iframe').src = '';
+  }
+  window.openPreview = openPreview;
+  window.closePreview = closePreview;
 
   // 進捗チェックリスト描画
   function renderProgress(id, a) {
