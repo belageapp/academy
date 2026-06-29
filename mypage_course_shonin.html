@@ -1474,6 +1474,14 @@
       if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
       try {
       const data = snap.data();
+      if (isAdminPreview && data.name) {
+        const nameEl = document.getElementById('course-name');
+        if (nameEl) nameEl.textContent = 'お名前：' + data.name;
+        const headerName = document.getElementById('header-name-pc');
+        if (headerName) headerName.textContent = data.name + ' さん';
+        const docName = document.getElementById('doc-name');
+        if (docName) docName.value = data.name;
+      }
       const prevData = __prevData || {};
       // 初回発火はスキップ（リロード時の誤発動防止）
       if (!__isFirstSnapshot) {
