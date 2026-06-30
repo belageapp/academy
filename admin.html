@@ -373,17 +373,17 @@
       .main { margin-left: 0; }
       .stats { grid-template-columns: repeat(2,1fr); }
     }
-  /* 仮修了証明書プレビューモーダル */
+  /* 修了証明書プレビューモーダル */
   .cert-modal-bg {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); z-index: 500;
+    background: rgba(0,0,0,0.65); z-index: 500;
     align-items: flex-start; justify-content: center;
     overflow-y: auto; padding: 24px 16px;
   }
   .cert-modal-bg.open { display: flex; }
   .cert-modal-wrap {
-    background: #f0f0f0; border-radius: 12px; padding: 20px;
-    width: 100%; max-width: 720px;
+    background: #e8e8e8; border-radius: 12px; padding: 20px;
+    width: 100%; max-width: 680px;
   }
   .cert-modal-actions {
     display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap;
@@ -402,36 +402,55 @@
   /* 証明書本体 */
   .cert-paper {
     background: white; width: 100%; aspect-ratio: 210 / 297;
-    padding: 8% 9%; box-sizing: border-box;
-    display: flex; flex-direction: column; align-items: center;
-    font-family: 'Noto Serif JP', 'Noto Sans JP', serif;
-    border: 4px double #2BBCD4; position: relative; overflow: hidden;
+    padding: 10% 11%; box-sizing: border-box;
+    display: flex; flex-direction: column;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: #000; position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
-  .cert-seal-bg {
-    position: absolute; bottom: 12%; right: 8%;
-    width: 18%; opacity: 0.15; pointer-events: none;
+  .cert-docno {
+    text-align: right;
+    font-size: clamp(9px, 1.4vw, 12px);
+    margin-bottom: 5%;
   }
-  .cert-logo { height: 36px; margin-bottom: 6%; }
   .cert-title {
-    font-size: clamp(20px, 4vw, 36px); font-weight: 700; letter-spacing: 0.5em;
-    color: #1A3A40; border-bottom: 2px solid #2BBCD4;
-    padding-bottom: 3%; margin-bottom: 6%; width: 100%; text-align: center;
+    font-size: clamp(18px, 3.5vw, 30px); font-weight: 700;
+    letter-spacing: 0.6em; text-align: center;
+    margin-bottom: 8%;
   }
-  .cert-body { width: 100%; font-size: clamp(11px, 1.8vw, 15px); line-height: 2.2; color: #1A3A40; }
-  .cert-row { display: flex; border-bottom: 1px solid #e0e0e0; padding: 0.4em 0; }
-  .cert-label { width: 38%; color: #4A7A85; font-weight: 500; }
-  .cert-value { flex: 1; font-weight: 700; }
-  .cert-message {
-    margin-top: 6%; font-size: clamp(10px, 1.5vw, 13px);
-    color: #555; line-height: 1.9; text-align: center;
+  .cert-person-block {
+    margin: 0 auto 8%; padding-left: 10%;
+    font-size: clamp(11px, 1.7vw, 14px);
   }
-  .cert-footer {
-    margin-top: auto; padding-top: 5%; width: 100%;
-    font-size: clamp(9px, 1.4vw, 12px); color: #4A7A85;
+  .cert-person-row {
+    display: flex; align-items: baseline; margin-bottom: 0.8em;
+  }
+  .cert-person-label { width: 6em; flex-shrink: 0; letter-spacing: 0.3em; }
+  .cert-person-value {
+    border-bottom: 1px solid #000; min-width: 14em; padding: 0 0.5em 2px;
+    font-weight: 700; font-size: 1.05em;
+  }
+  .cert-body-text {
+    font-size: clamp(9px, 1.4vw, 12px); line-height: 2.2;
+    margin-bottom: auto; text-align: justify;
+  }
+  .cert-body-text p { margin: 0 0 0.5em; text-indent: 1em; }
+  .cert-date-line {
+    font-size: clamp(9px, 1.4vw, 12px);
+    margin-bottom: 4%;
+  }
+  .cert-sign-block {
     display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: clamp(9px, 1.4vw, 12px);
   }
-  .cert-issuer { line-height: 1.8; }
-  .cert-issued-date { text-align: right; }
+  .cert-sign-org { line-height: 2.2; }
+  .cert-seal {
+    width: clamp(36px, 6vw, 52px); height: clamp(36px, 6vw, 52px);
+    border: 1.5px solid #999; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(10px, 1.5vw, 13px); color: #999;
+    flex-shrink: 0;
+  }
 
   @media print {
     body > *:not(#cert-print-root) { display: none !important; }
@@ -440,10 +459,11 @@
       inset: 0; background: white; z-index: 9999; padding: 0; margin: 0;
     }
     .cert-paper {
-      width: 100vw; height: 100vh; border: none;
-      page-break-after: avoid;
+      width: 100vw; height: 100vh; box-shadow: none;
     }
     .cert-modal-actions { display: none !important; }
+    .cert-modal-wrap { background: white; padding: 0; border-radius: 0; }
+    .cert-modal-bg { background: white; padding: 0; overflow: visible; }
   }
 
   /* 生徒画面プレビューモーダル */
@@ -926,31 +946,29 @@
         <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
       </div>
       <div class="cert-paper" id="cert-paper">
-        <img class="cert-seal-bg" src="assets/seal.png" alt="">
-        <img class="cert-logo" src="assets/logo.png" alt="ホリスケアアカデミー">
+        <div class="cert-docno">第４００７００５１９７ー<span id="cert-studentno"></span>号</div>
         <div class="cert-title">修　了　証　明　書</div>
-        <div class="cert-body">
-          <div class="cert-row"><span class="cert-label">受講者氏名</span><span class="cert-value" id="cert-name"></span></div>
-          <div class="cert-row"><span class="cert-label">受講番号</span><span class="cert-value" id="cert-studentno"></span></div>
-          <div class="cert-row"><span class="cert-label">講座名</span><span class="cert-value" id="cert-course"></span></div>
-          <div class="cert-row"><span class="cert-label">仮修了日</span><span class="cert-value" id="cert-passed-date"></span></div>
-          <div class="cert-row"><span class="cert-label">正式修了期限</span><span class="cert-value" id="cert-expiry"></span></div>
-        </div>
-        <div class="cert-message">
-          介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の<br>
-          介護職員初任者研修課程を修了したことを証明する。<br><br>
-          ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じた<br>
-          ＯＪＴ等の実施を要するものとする。
-        </div>
-        <div class="cert-footer">
-          <div class="cert-issuer">
-            特定非営利活動法人 Social Care Good<br>
-            ホリスケアアカデミー<br>
-            広島市中区大手町3-1-7 ユナイテッドMKビル 総合受付4F
+        <div class="cert-person-block">
+          <div class="cert-person-row">
+            <span class="cert-person-label">氏　　名</span>
+            <span class="cert-person-value" id="cert-name"></span>
           </div>
-          <div class="cert-issued-date">
-            発行日：<span id="cert-issued-date"></span>
+          <div class="cert-person-row">
+            <span class="cert-person-label">生 年 月 日</span>
+            <span class="cert-person-value" id="cert-birthdate"></span>
           </div>
+        </div>
+        <div class="cert-body-text">
+          <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
+          <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+        </div>
+        <div class="cert-date-line" id="cert-issued-date"></div>
+        <div class="cert-sign-block">
+          <div class="cert-sign-org">
+            <div>研修事業者名　ホリスケアアカデミー</div>
+            <div>代表者職・氏名　代表理事　長谷川　剛</div>
+          </div>
+          <div class="cert-seal">印</div>
         </div>
       </div>
     </div>
@@ -2407,20 +2425,20 @@ async function doLogin() {
     const a = (window.__tempCertCache && window.__tempCertCache[docId]) || all.find(x => x.id === docId);
     if (!a) return;
     const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
-    const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-    const today = new Date().toLocaleDateString('ja-JP');
-    let expiry = '—';
-    if (a.activeAt) {
-      const d = new Date(a.activeAt.toMillis());
-      d.setMonth(d.getMonth() + 8);
-      expiry = d.toLocaleDateString('ja-JP');
+    const today = new Date();
+    const y = today.getFullYear(), m = today.getMonth() + 1, d = today.getDate();
+    const issuedDateStr = `${y}年${m}月${d}日`;
+    let birthdateStr = '—';
+    if (a.birthdate) {
+      const b = String(a.birthdate);
+      const match = b.match(/(\d{4})[^\d](\d{1,2})[^\d](\d{1,2})/);
+      if (match) birthdateStr = `${match[1]}年${match[2]}月${match[3]}日生`;
+      else birthdateStr = b;
     }
     document.getElementById('cert-name').textContent = name;
     document.getElementById('cert-studentno').textContent = a.studentNo || '—';
-    document.getElementById('cert-course').textContent = a.course || 'オンライン初任者研修';
-    document.getElementById('cert-passed-date').textContent = passedDate;
-    document.getElementById('cert-expiry').textContent = expiry;
-    document.getElementById('cert-issued-date').textContent = today;
+    document.getElementById('cert-birthdate').textContent = birthdateStr;
+    document.getElementById('cert-issued-date').textContent = issuedDateStr;
     document.getElementById('cert-print-root').style.display = 'block';
     document.getElementById('cert-modal').classList.add('open');
   }
