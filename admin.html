@@ -425,7 +425,7 @@
   .cert-person-row {
     display: flex; align-items: baseline; margin-bottom: 0.8em;
   }
-  .cert-person-label { width: 6em; flex-shrink: 0; letter-spacing: 0.3em; }
+  .cert-person-label { width: 6em; flex-shrink: 0; letter-spacing: 0.3em; white-space: nowrap; }
   .cert-person-value {
     border-bottom: 1px solid #000; min-width: 14em; padding: 0 0.5em 2px;
     font-weight: 700; font-size: 1.05em;
@@ -444,12 +444,9 @@
     font-size: clamp(9px, 1.4vw, 12px);
   }
   .cert-sign-org { line-height: 2.2; }
-  .cert-seal {
-    width: clamp(36px, 6vw, 52px); height: clamp(36px, 6vw, 52px);
-    border: 1.5px solid #999; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: clamp(10px, 1.5vw, 13px); color: #999;
-    flex-shrink: 0;
+  .cert-seal-img {
+    width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px);
+    object-fit: contain; flex-shrink: 0;
   }
 
   @media print {
@@ -946,7 +943,7 @@
         <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
       </div>
       <div class="cert-paper" id="cert-paper">
-        <div class="cert-docno">第４００７００５１９７ー<span id="cert-studentno"></span>号</div>
+        <div class="cert-docno">第4007005197-<span id="cert-studentno"></span>号</div>
         <div class="cert-title">修　了　証　明　書</div>
         <div class="cert-person-block">
           <div class="cert-person-row">
@@ -965,10 +962,10 @@
         <div class="cert-date-line" id="cert-issued-date"></div>
         <div class="cert-sign-block">
           <div class="cert-sign-org">
-            <div>研修事業者名　ホリスケアアカデミー</div>
-            <div>代表者職・氏名　代表理事　長谷川　剛</div>
+            <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
+            <div>代表理事　長谷川　剛</div>
           </div>
-          <div class="cert-seal">印</div>
+          <img src="assets/seal.png" class="cert-seal-img" alt="印">
         </div>
       </div>
     </div>
@@ -2425,9 +2422,11 @@ async function doLogin() {
     const a = (window.__tempCertCache && window.__tempCertCache[docId]) || all.find(x => x.id === docId);
     if (!a) return;
     const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
-    const today = new Date();
-    const y = today.getFullYear(), m = today.getMonth() + 1, d = today.getDate();
-    const issuedDateStr = `${y}年${m}月${d}日`;
+    let issuedDateStr = '—';
+    if (a.test2PassedAt) {
+      const t = a.test2PassedAt.toDate ? a.test2PassedAt.toDate() : new Date(a.test2PassedAt);
+      issuedDateStr = `${t.getFullYear()}年${t.getMonth()+1}月${t.getDate()}日`;
+    }
     let birthdateStr = '—';
     if (a.birthdate) {
       const b = String(a.birthdate);
