@@ -1115,14 +1115,13 @@
 <div id="bulk-card-print-all" style="display:none;"></div>
 
 <!-- 発行履歴スナップショットモーダル -->
-<div id="snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11000;align-items:center;justify-content:center;">
-  <div style="background:white;border-radius:14px;padding:28px 32px;max-width:480px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
+<div id="snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11000;align-items:center;justify-content:center;overflow:auto;">
+  <div style="background:white;border-radius:14px;padding:24px 28px;max-width:680px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;margin:24px auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div style="font-size:15px;font-weight:700;color:var(--teal-dark);">📋 発行時スナップショット</div>
       <button onclick="window.closeSnapshotModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#888;line-height:1;">✕</button>
     </div>
     <div id="snapshot-content"></div>
-    <p style="margin:16px 0 0;font-size:11px;color:#aaa;">印刷ボタンを押した時点の内容を記録しています。</p>
   </div>
 </div>
 
@@ -2722,13 +2721,15 @@ async function doLogin() {
   function bulkA4Next() { if(bulkA4Idx<bulkA4List.length-1){bulkA4Idx++;renderBulkA4Preview();} }
   function closeBulkA4Modal() { document.getElementById('bulk-a4-modal').style.display='none'; }
   function printBulkA4() {
-    bulkA4List.forEach(d => saveCertSnapshot(d.id, d));
+    const list = [...bulkA4List];
+    list.forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-a4-print-all');
-    c.innerHTML = bulkA4List.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d)}</div>`).join('');
+    c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d)}</div>`).join('');
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
     c.innerHTML = '';
+    list.forEach(d => captureAndUploadCertImage(d.id, d));
   }
 
   // --- カード一括 ---
@@ -2765,8 +2766,7 @@ async function doLogin() {
   async function saveCertSnapshot(docId, data) {
     if (!docId) return;
     try {
-      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await updateDoc(doc(window.__db, 'applications', docId), {
+      await updateDoc(doc(db, 'applications', docId), {
         certIssuedSnapshot: {
           issuedAt: new Date().toISOString(),
           orgName: '特定非営利活動法人Social Care Good ホリスケアアカデミー',
@@ -2782,15 +2782,62 @@ async function doLogin() {
     } catch(e) { console.warn('スナップショット保存失敗:', e); }
   }
 
+  async function loadHtml2Canvas() {
+    if (window.html2canvas) return window.html2canvas;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = () => resolve(window.html2canvas);
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function captureAndUploadCertImage(docId, data) {
+    if (!docId || !data) return;
+    try {
+      const h2c = await loadHtml2Canvas();
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;z-index:-9999;pointer-events:none;';
+      const certDiv = document.createElement('div');
+      certDiv.className = 'cert-paper';
+      certDiv.innerHTML = a4CertInnerHTML(data);
+      wrap.appendChild(certDiv);
+      document.body.appendChild(wrap);
+      const imgs = [...wrap.querySelectorAll('img')];
+      await Promise.all(imgs.map(img =>
+        img.complete ? Promise.resolve() :
+        new Promise(r => { img.onload = r; img.onerror = r; })
+      ));
+      await new Promise(r => setTimeout(r, 400));
+      const canvas = await h2c(certDiv, {
+        scale: 1.5, useCORS: true, allowTaint: true,
+        backgroundColor: '#ffffff', logging: false
+      });
+      document.body.removeChild(wrap);
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.82));
+      const sRef = ref(storage, `cert-snapshots/${docId}.jpg`);
+      await uploadBytes(sRef, blob);
+      const url = await getDownloadURL(sRef);
+      await updateDoc(doc(db, 'applications', docId), { 'certIssuedSnapshot.imageUrl': url });
+      if (window.__tempCertCache?.[docId]?.certIssuedSnapshot) {
+        window.__tempCertCache[docId].certIssuedSnapshot.imageUrl = url;
+      }
+    } catch(e) { console.warn('証明書画像の保存に失敗:', e); }
+  }
+
   function printSingleA4() {
     if (!currentCertData) return;
-    saveCertSnapshot(currentCertDocId, currentCertData);
+    const snapDocId = currentCertDocId;
+    const snapData = currentCertData;
+    saveCertSnapshot(snapDocId, snapData);
     const c = document.getElementById('bulk-a4-print-all');
-    c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(currentCertData)}</div>`;
+    c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(snapData)}</div>`;
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
     c.innerHTML = '';
+    captureAndUploadCertImage(snapDocId, snapData);
   }
 
   function printSingleCard() {
@@ -2851,24 +2898,33 @@ async function doLogin() {
     if (!a || !a.certIssuedSnapshot) return;
     const s = a.certIssuedSnapshot;
     const issuedAt = s.issuedAt ? new Date(s.issuedAt).toLocaleString('ja-JP') : '—';
-    const rows = [
-      ['発行日時', issuedAt],
-      ['氏名', s.name || '—'],
-      ['生年月日', s.birthdate || '—'],
-      ['受講番号', s.studentNo || '—'],
-      ['修了日', s.completionDate || '—'],
-      ['事業者番号', s.businessNo || '—'],
-      ['研修事業者名', s.orgName || '—'],
-      ['代表者', (s.repTitle || '') + (s.repName ? '　' + s.repName : '') || '—'],
-    ];
-    document.getElementById('snapshot-content').innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        ${rows.map(([label, val]) => `
-          <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:8px 12px 8px 0;color:#888;white-space:nowrap;width:110px;">${label}</td>
-            <td style="padding:8px 0;font-weight:600;">${val}</td>
-          </tr>`).join('')}
-      </table>`;
+    let html = '';
+    if (s.imageUrl) {
+      html = `
+        <img src="${s.imageUrl}" style="width:100%;border:1px solid #eee;border-radius:8px;display:block;margin-bottom:10px;" alt="証明書画像">
+        <div style="font-size:12px;color:#999;text-align:right;">発行日時: ${issuedAt}</div>`;
+    } else {
+      const rows = [
+        ['発行日時', issuedAt],
+        ['氏名', s.name || '—'],
+        ['生年月日', s.birthdate || '—'],
+        ['受講番号', s.studentNo || '—'],
+        ['修了日', s.completionDate || '—'],
+        ['事業者番号', s.businessNo || '—'],
+        ['研修事業者名', s.orgName || '—'],
+        ['代表者', (s.repTitle || '') + (s.repName ? '　' + s.repName : '') || '—'],
+      ];
+      html = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          ${rows.map(([label, val]) => `
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:8px 12px 8px 0;color:#888;white-space:nowrap;width:110px;">${label}</td>
+              <td style="padding:8px 0;font-weight:600;">${val}</td>
+            </tr>`).join('')}
+        </table>
+        <p style="margin:10px 0 0;font-size:11px;color:#bbb;">※印刷後に画像が自動保存されます。次回以降は証明書画像が表示されます。</p>`;
+    }
+    document.getElementById('snapshot-content').innerHTML = html;
     document.getElementById('snapshot-modal').style.display = 'flex';
   }
   function closeSnapshotModal() {
