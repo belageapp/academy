@@ -413,9 +413,13 @@
     font-size: clamp(9px, 1.4vw, 12px);
     margin-bottom: 5%;
   }
+  .cert-logo {
+    display: block; margin: 0 auto 4%;
+    height: clamp(20px, 3.5vw, 32px); width: auto;
+  }
   .cert-title {
-    font-size: clamp(18px, 3.5vw, 30px); font-weight: 700;
-    letter-spacing: 0.6em; text-align: center;
+    font-size: clamp(16px, 3vw, 26px); font-weight: 700;
+    letter-spacing: 0.4em; text-align: center;
     margin-bottom: 8%;
   }
   .cert-person-block {
@@ -423,27 +427,29 @@
     font-size: clamp(12px, 1.9vw, 16px);
   }
   .cert-person-value-only {
-    font-weight: 700; border-bottom: 1px solid #000;
+    font-weight: 700;
     padding: 0.2em 0; margin-bottom: 0.8em;
   }
   .cert-body-text {
-    font-size: clamp(9px, 1.4vw, 12px); line-height: 2.2;
+    font-size: clamp(10px, 1.6vw, 14px); line-height: 2.2;
     margin-bottom: auto; text-align: justify;
   }
   .cert-body-text p { margin: 0 0 0.5em; text-indent: 1em; }
   .cert-date-line {
-    font-size: clamp(9px, 1.4vw, 12px);
+    font-size: clamp(10px, 1.6vw, 14px);
     margin-bottom: 4%;
   }
   .cert-sign-block {
     display: flex; align-items: flex-end;
-    font-size: clamp(9px, 1.4vw, 12px);
+    font-size: clamp(10px, 1.6vw, 14px);
   }
   .cert-sign-spacer { flex: 1; }
-  .cert-sign-org { line-height: 2.2; margin-right: 8px; }
+  .cert-sign-right { position: relative; display: inline-block; }
+  .cert-sign-org { line-height: 2.2; position: relative; z-index: 1; }
   .cert-seal-img {
-    width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px);
-    object-fit: contain; flex-shrink: 0;
+    position: absolute; right: clamp(-30px, -4vw, -10px); bottom: 0;
+    width: clamp(55px, 9vw, 75px); height: clamp(55px, 9vw, 75px);
+    object-fit: contain; z-index: 2;
   }
 
   @media print {
@@ -941,6 +947,7 @@
       </div>
       <div class="cert-paper" id="cert-paper">
         <div class="cert-docno">第4007005197-<span id="cert-studentno"></span>号</div>
+        <img src="assets/logo.png" class="cert-logo" alt="ホリスケアアカデミー">
         <div class="cert-title">修　了　証　明　書</div>
         <div class="cert-person-block">
           <div class="cert-person-value-only" id="cert-name"></div>
@@ -953,11 +960,13 @@
         <div class="cert-date-line" id="cert-issued-date"></div>
         <div class="cert-sign-block">
           <div class="cert-sign-spacer"></div>
-          <div class="cert-sign-org">
-            <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
-            <div>代表理事　長谷川　剛</div>
+          <div class="cert-sign-right">
+            <div class="cert-sign-org">
+              <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
+              <div>代表理事　長谷川　剛</div>
+            </div>
+            <img src="assets/seal.png" class="cert-seal-img" alt="印">
           </div>
-          <img src="assets/seal.png" class="cert-seal-img" alt="印">
         </div>
       </div>
     </div>
