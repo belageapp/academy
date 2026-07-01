@@ -2,6 +2,44 @@
 
 ---
 
+## v1.29.0 - 2026/07/02（構築２９）
+
+### facility.html（新規作成）
+
+#### 実習先施設用マイページを新規作成
+- Firebaseメールアドレス認証でログイン（管理者が発行したアカウントを使用）
+- **生徒タブ**：紐付けられた受講生をカード形式で一覧表示
+  - STEP1 受け入れ同意：施設名・担当者名（自動入力・編集可）＋同意チェックボックス → `facilityConsent` を Firestore に保存
+  - STEP2 受講生情報：顔写真・全個人情報・修了期限（受講開始日＋8ヶ月）を表示
+  - STEP3 実習終了報告：OJT中項目チェックリスト（全チェック済みで送信解放）→ `facilityOjtChecks` / `facilityReported: true` / `facilityReportedAt` を保存し管理者へ通知
+- **実習手引きタブ**：OJT カリキュラム6章のアコーディオン表示（詳細ガイド・参照ページ付き）、PDFダウンロード・印刷対応（`@media print` で `#print-area` のみ表示）
+- **問い合わせタブ**：管理者へのメッセージ送信（`facilityInquiries` コレクション）＋過去の問い合わせ・返信履歴を表示
+
+### admin.html
+
+#### 実習先管理セクションを新設
+- サイドバーに「🏥 実習先管理」メニューを追加（実習先届出と動画視聴完了届出の間）
+  - 施設からの未返信問い合わせ件数をバッジ表示
+- **施設一覧タブ**
+  - 施設一覧カード（施設名・担当者名・メール・紐付け生徒タグ）を表示
+  - 「＋ 施設を登録」ボタン → Firebase 二次 App パターンでアカウント作成（管理者のセッションを維持したまま施設用 Auth アカウントを発行）、`facilities` コレクションにドキュメント保存
+  - 生徒リンクモーダル：`linkedApplicationIds` / `linkedFacilityId` を `arrayUnion` で紐付け、✕で `arrayRemove` / `deleteField` で解除
+- **施設からの問い合わせタブ**
+  - `facilityInquiries` コレクションを取得し、施設名・日時・本文・返信フォームを表示
+  - 返信送信（`reply` / `repliedAt` を保存）
+
+#### 正式修了証明書の発行条件を3条件に更新
+- 発行条件を「生徒OJT報告承認 + レポート承認」から「**生徒OJT報告承認 + レポート承認 + 施設報告**」の3条件に変更
+- `approveOjt()` / `approveReport()`：両条件がそろったとき `facilityReported === true` も確認してから `sendBothApprovedNotice()` を呼び出すよう更新
+- `sendBothApprovedNotice()`：通知文を3条件すべての完了を伝える文面に更新
+- `loadCertificateList()`：
+  - テーブルに「施設報告」列を追加（報告済み日付 / 待ち状態を色分けバッジで表示）
+  - ステータス列に「発行可能」「条件待ち」を追加
+  - 「📜 発行済みにする」ボタンは `facilityReported === true && !isIssued` のときのみ表示、未報告時は「施設報告を待っています」と表示
+- `initAllBadges()` 証明書カウント：`facilityReported === true` 条件を追加（施設未報告の件数はバッジに含めない）
+
+---
+
 ## v1.28.0 - 2026/07/01（構築２８）
 
 ### admin.html
