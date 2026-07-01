@@ -475,6 +475,52 @@
     }
     body.card-print-mode #cert-card { border: none; }
     body.card-print-mode .cert-card-actions { display: none !important; }
+
+    body.bulk-a4-print-mode > *:not(#bulk-a4-print-all) { display: none !important; }
+    #bulk-a4-print-all { display: block !important; }
+    .bulk-a4-print-page { width:100vw; height:100vh; page-break-after:always; box-shadow:none !important; display:flex; flex-direction:column; padding:10% 11%; box-sizing:border-box; font-family:'Noto Sans JP',sans-serif; color:#000; }
+    .bulk-a4-print-page:last-child { page-break-after:avoid; }
+
+    body.bulk-card-print-mode > *:not(#bulk-card-print-all) { display: none !important; }
+    #bulk-card-print-all { display: block !important; }
+    .bulk-card-print-sheet { width:100vw; height:100vh; position:relative; page-break-after:always; }
+    .bulk-card-print-sheet:last-child { page-break-after:avoid; }
+  }
+
+  /* 一括印刷 UI */
+  .cert-select-cb { width: 16px; height: 16px; cursor: pointer; }
+
+  .bulk-modal-header {
+    position: sticky; top: 0;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; border-radius: 10px 10px 0 0; z-index: 1;
+  }
+  .bulk-nav-btn {
+    background: rgba(255,255,255,0.2); color: white; border: none;
+    border-radius: 6px; padding: 6px 14px; font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif; cursor: pointer;
+  }
+  .bulk-nav-btn:disabled { opacity: 0.4; cursor: default; }
+  .bulk-nav-info {
+    flex: 1; text-align: center; font-size: 14px; font-weight: 700; color: white;
+  }
+  .bulk-print-action-btn {
+    background: var(--teal); color: white; border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .bulk-print-action-btn:hover { background: var(--teal-dark); }
+
+  .bulk-card-sheet {
+    background: white; width: 210mm; height: 297mm;
+    position: relative; margin: 0 auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .bulk-card-item {
+    position: absolute; width: 91mm; height: 55mm;
+    padding: 2.5mm 3mm; box-sizing: border-box;
+    font-family: 'Noto Sans JP', sans-serif; overflow: hidden;
   }
 
   /* カード版 A-one 31513 */
@@ -905,6 +951,8 @@
           <div class="thead">
             <div class="thead-title">📄 仮修了証明書発行管理</div>
             <div class="thead-acts">
+              <button class="refresh-btn" onclick="window.openBulkA4Modal()" style="background:#F57C00;">📄 通常版一括印刷</button>
+              <button class="refresh-btn" onclick="window.openBulkCardModal()" style="background:#5c7a6e;">🪪 携帯用一括印刷</button>
               <button class="refresh-btn" onclick="loadTempCertList()">🔄 更新</button>
             </div>
           </div>
@@ -1021,6 +1069,38 @@
     <button class="cert-close-btn" onclick="closeCardModal()">✕ 閉じる</button>
   </div>
 </div>
+
+<!-- A4一括印刷モーダル -->
+<div id="bulk-a4-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;overflow:auto;">
+  <div style="max-width:680px;margin:24px auto;padding:0 12px 40px;">
+    <div class="bulk-modal-header">
+      <button class="bulk-nav-btn" id="bulk-a4-prev-btn" onclick="window.bulkA4Prev()" disabled>◀ 前</button>
+      <div class="bulk-nav-info" id="bulk-a4-nav-info">1 / 1</div>
+      <button class="bulk-nav-btn" id="bulk-a4-next-btn" onclick="window.bulkA4Next()" disabled>次 ▶</button>
+      <button class="bulk-print-action-btn" onclick="window.printBulkA4()">🖨 印刷/PDF</button>
+      <button class="cert-close-btn" onclick="window.closeBulkA4Modal()">✕ 閉じる</button>
+    </div>
+    <div id="bulk-a4-paper" class="cert-paper"></div>
+  </div>
+</div>
+
+<!-- カード一括印刷モーダル -->
+<div id="bulk-card-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;overflow:auto;">
+  <div style="max-width:800px;margin:24px auto;padding:0 12px 40px;">
+    <div class="bulk-modal-header">
+      <button class="bulk-nav-btn" id="bulk-card-prev-btn" onclick="window.bulkCardPrev()" disabled>◀ 前</button>
+      <div class="bulk-nav-info" id="bulk-card-nav-info">ページ 1 / 1</div>
+      <button class="bulk-nav-btn" id="bulk-card-next-btn" onclick="window.bulkCardNext()" disabled>次 ▶</button>
+      <button class="bulk-print-action-btn" onclick="window.printBulkCard()">🖨 ラベル一括印刷</button>
+      <button class="cert-close-btn" onclick="window.closeBulkCardModal()">✕ 閉じる</button>
+    </div>
+    <div id="bulk-card-preview"></div>
+  </div>
+</div>
+
+<!-- 一括印刷用コンテナ（hidden） -->
+<div id="bulk-a4-print-all" style="display:none;"></div>
+<div id="bulk-card-print-all" style="display:none;"></div>
 
 <!-- 仮修了証明書プレビューモーダル -->
 <div id="cert-print-root" style="display:none;">
@@ -2451,6 +2531,7 @@ async function doLogin() {
           const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
           const sentDate   = a.tempCertSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
           return `<tr>
+            <td><input type="checkbox" class="cert-select-cb" data-id="${a.id}"></td>
             <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
             <td>${a.studentNo||'—'}</td>
             <td>${a.zip ? '〒'+a.zip+'　' : ''}${a.address||''}${a.address2||''}</td>
@@ -2466,9 +2547,9 @@ async function doLogin() {
           </tr>`;
         }).join('');
       }
-      let html = '<table><thead><tr><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>操作</th></tr></thead><tbody>';
-      if (pending.length) html += `<tr><td colspan="6" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
-      if (sent.length)    html += `<tr><td colspan="6" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
+      let html = '<table><thead><tr><th><input type="checkbox" id="cert-select-all" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>操作</th></tr></thead><tbody>';
+      if (pending.length) html += `<tr><td colspan="7" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
+      if (sent.length)    html += `<tr><td colspan="7" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
       html += '</tbody></table>';
       el.innerHTML = html;
     } catch(e) {
@@ -2503,6 +2584,147 @@ async function doLogin() {
     } catch(e) {
       alert('エラー：' + e.message);
     }
+  }
+
+  // カード位置定義 (A-one 31513: 2列×5行)
+  const CARD_POS = [
+    {top:'11mm',left:'14mm'}, {top:'11mm',left:'105mm'},
+    {top:'66mm',left:'14mm'}, {top:'66mm',left:'105mm'},
+    {top:'121mm',left:'14mm'},{top:'121mm',left:'105mm'},
+    {top:'176mm',left:'14mm'},{top:'176mm',left:'105mm'},
+    {top:'231mm',left:'14mm'},{top:'231mm',left:'105mm'},
+  ];
+  let bulkA4List = [], bulkA4Idx = 0;
+  let bulkCardPages = [], bulkCardPageIdx = 0;
+
+  function parseCertData(a) {
+    const name = (a.sei||'')+(a.mei?'　'+a.mei:'')||a.name||'—';
+    let issuedDateStr = '—';
+    if (a.test2PassedAt) {
+      const t = a.test2PassedAt.toDate ? a.test2PassedAt.toDate() : new Date(a.test2PassedAt);
+      issuedDateStr = `${t.getFullYear()}年${t.getMonth()+1}月${t.getDate()}日`;
+    }
+    let birthdateStr = '—';
+    if (a.birthdate) {
+      const b = String(a.birthdate);
+      const m = b.match(/(\d{4})[^\d](\d{1,2})[^\d](\d{1,2})/);
+      if (m) birthdateStr = `${m[1]}年${m[2]}月${m[3]}日生`; else birthdateStr = b;
+    }
+    return { name, issuedDateStr, birthdateStr, studentNo: a.studentNo||'—' };
+  }
+
+  function getSelectedCerts() {
+    return Array.from(document.querySelectorAll('.cert-select-cb:checked'))
+      .map(cb => window.__tempCertCache && window.__tempCertCache[cb.dataset.id])
+      .filter(Boolean)
+      .map(parseCertData);
+  }
+
+  function toggleAllCertSelect(cb) {
+    document.querySelectorAll('.cert-select-cb').forEach(c => c.checked = cb.checked);
+  }
+
+  function a4CertInnerHTML(d) {
+    return `
+      <img src="assets/logo.png" class="cert-logo" alt="">
+      <div class="cert-docno">第4007005197-${d.studentNo}号</div>
+      <div class="cert-title">修　了　証　明　書</div>
+      <div class="cert-person-block">
+        <div class="cert-person-value-only">${d.name}</div>
+        <div class="cert-person-value-only">${d.birthdateStr}</div>
+      </div>
+      <div class="cert-body-text">
+        <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
+        <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+      </div>
+      <div class="cert-date-line">${d.issuedDateStr}</div>
+      <div class="cert-sign-block">
+        <div class="cert-sign-spacer"></div>
+        <div class="cert-sign-right">
+          <div class="cert-sign-org">
+            <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
+            <div>代表理事　長谷川　剛</div>
+          </div>
+          <img src="assets/seal.png" class="cert-seal-img" alt="印">
+        </div>
+      </div>`;
+  }
+
+  function cardInnerHTML(d) {
+    return `
+      <img src="assets/seal.png" class="cert-card-seal" alt="印">
+      <div class="cert-card-content">
+        <div class="cert-card-docno">第4007005197-${d.studentNo}号</div>
+        <div class="cert-card-title">修　了　証　明　書（携帯用）</div>
+        <div class="cert-card-person"><div>${d.name}</div><div>${d.birthdateStr}</div></div>
+        <div class="cert-card-body">
+          <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
+          <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+        </div>
+        <div class="cert-card-date">${d.issuedDateStr}</div>
+        <div class="cert-card-sign">
+          <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
+          <div>代表理事　長谷川　剛</div>
+        </div>
+      </div>`;
+  }
+
+  function cardSheetHTML(slice, sheetClass='bulk-card-sheet') {
+    return `<div class="${sheetClass}">${slice.map((d,i)=>`<div class="bulk-card-item" style="top:${CARD_POS[i].top};left:${CARD_POS[i].left};">${cardInnerHTML(d)}</div>`).join('')}</div>`;
+  }
+
+  // --- A4一括 ---
+  function openBulkA4Modal() {
+    const list = getSelectedCerts();
+    if (!list.length) { alert('印刷する受講生にチェックを入れてください'); return; }
+    bulkA4List = list; bulkA4Idx = 0;
+    renderBulkA4Preview();
+    document.getElementById('bulk-a4-modal').style.display = 'block';
+  }
+  function renderBulkA4Preview() {
+    document.getElementById('bulk-a4-paper').innerHTML = a4CertInnerHTML(bulkA4List[bulkA4Idx]);
+    document.getElementById('bulk-a4-nav-info').textContent = `${bulkA4Idx+1} / ${bulkA4List.length}`;
+    document.getElementById('bulk-a4-prev-btn').disabled = bulkA4Idx === 0;
+    document.getElementById('bulk-a4-next-btn').disabled = bulkA4Idx === bulkA4List.length-1;
+  }
+  function bulkA4Prev() { if(bulkA4Idx>0){bulkA4Idx--;renderBulkA4Preview();} }
+  function bulkA4Next() { if(bulkA4Idx<bulkA4List.length-1){bulkA4Idx++;renderBulkA4Preview();} }
+  function closeBulkA4Modal() { document.getElementById('bulk-a4-modal').style.display='none'; }
+  function printBulkA4() {
+    const c = document.getElementById('bulk-a4-print-all');
+    c.innerHTML = bulkA4List.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d)}</div>`).join('');
+    document.body.classList.add('bulk-a4-print-mode');
+    window.print();
+    document.body.classList.remove('bulk-a4-print-mode');
+    c.innerHTML = '';
+  }
+
+  // --- カード一括 ---
+  function openBulkCardModal() {
+    const list = getSelectedCerts();
+    if (!list.length) { alert('印刷する受講生にチェックを入れてください'); return; }
+    bulkCardPages = [];
+    for (let i=0; i<list.length; i+=10) bulkCardPages.push(list.slice(i,i+10));
+    bulkCardPageIdx = 0;
+    renderBulkCardPreview();
+    document.getElementById('bulk-card-modal').style.display = 'block';
+  }
+  function renderBulkCardPreview() {
+    document.getElementById('bulk-card-preview').innerHTML = cardSheetHTML(bulkCardPages[bulkCardPageIdx]);
+    document.getElementById('bulk-card-nav-info').textContent = `ページ ${bulkCardPageIdx+1} / ${bulkCardPages.length}`;
+    document.getElementById('bulk-card-prev-btn').disabled = bulkCardPageIdx === 0;
+    document.getElementById('bulk-card-next-btn').disabled = bulkCardPageIdx === bulkCardPages.length-1;
+  }
+  function bulkCardPrev() { if(bulkCardPageIdx>0){bulkCardPageIdx--;renderBulkCardPreview();} }
+  function bulkCardNext() { if(bulkCardPageIdx<bulkCardPages.length-1){bulkCardPageIdx++;renderBulkCardPreview();} }
+  function closeBulkCardModal() { document.getElementById('bulk-card-modal').style.display='none'; }
+  function printBulkCard() {
+    const c = document.getElementById('bulk-card-print-all');
+    c.innerHTML = bulkCardPages.map(pg=>cardSheetHTML(pg,'bulk-card-print-sheet')).join('');
+    document.body.classList.add('bulk-card-print-mode');
+    window.print();
+    document.body.classList.remove('bulk-card-print-mode');
+    c.innerHTML = '';
   }
 
   function openCertModal(docId) {
@@ -2550,6 +2772,17 @@ async function doLogin() {
     window.print();
     document.body.classList.remove('card-print-mode');
   }
+  window.toggleAllCertSelect = toggleAllCertSelect;
+  window.openBulkA4Modal = openBulkA4Modal;
+  window.bulkA4Prev = bulkA4Prev;
+  window.bulkA4Next = bulkA4Next;
+  window.closeBulkA4Modal = closeBulkA4Modal;
+  window.printBulkA4 = printBulkA4;
+  window.openBulkCardModal = openBulkCardModal;
+  window.bulkCardPrev = bulkCardPrev;
+  window.bulkCardNext = bulkCardNext;
+  window.closeBulkCardModal = closeBulkCardModal;
+  window.printBulkCard = printBulkCard;
   window.openCertModal = openCertModal;
   window.closeCertModal = closeCertModal;
   window.openCardModal = openCardModal;
