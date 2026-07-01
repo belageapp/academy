@@ -1129,7 +1129,7 @@
   <div class="cert-modal-bg" id="cert-modal">
     <div class="cert-modal-wrap">
       <div class="cert-modal-actions">
-        <button class="cert-print-btn" onclick="window.print()">🖨 A4印刷 / PDF</button>
+        <button class="cert-print-btn" onclick="printSingleA4()">🖨 A4印刷 / PDF</button>
         <button class="cert-print-btn" style="background:#5c7a6e;" onclick="openCardModal()">🪪 カード印刷</button>
         <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
       </div>
@@ -2635,14 +2635,13 @@ async function doLogin() {
       const m = b.match(/(\d{4})[^\d](\d{1,2})[^\d](\d{1,2})/);
       if (m) birthdateStr = `${m[1]}年${m[2]}月${m[3]}日生`; else birthdateStr = b;
     }
-    return { name, issuedDateStr, birthdateStr, studentNo: a.studentNo||'—' };
+    return { id: a.id, name, issuedDateStr, birthdateStr, studentNo: a.studentNo||'—' };
   }
 
   function getSelectedCerts() {
     return Array.from(document.querySelectorAll('.cert-select-cb:checked'))
-      .map(cb => window.__tempCertCache && window.__tempCertCache[cb.dataset.id])
-      .filter(Boolean)
-      .map(parseCertData);
+      .map(cb => { const a = window.__tempCertCache && window.__tempCertCache[cb.dataset.id]; return a ? parseCertData(a) : null; })
+      .filter(Boolean);
   }
 
   function toggleAllCertSelect(cb) {
@@ -2716,6 +2715,7 @@ async function doLogin() {
   function bulkA4Next() { if(bulkA4Idx<bulkA4List.length-1){bulkA4Idx++;renderBulkA4Preview();} }
   function closeBulkA4Modal() { document.getElementById('bulk-a4-modal').style.display='none'; }
   function printBulkA4() {
+    bulkA4List.forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-a4-print-all');
     c.innerHTML = bulkA4List.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d)}</div>`).join('');
     document.body.classList.add('bulk-a4-print-mode');
@@ -2744,8 +2744,53 @@ async function doLogin() {
   function bulkCardNext() { if(bulkCardPageIdx<bulkCardPages.length-1){bulkCardPageIdx++;renderBulkCardPreview();} }
   function closeBulkCardModal() { document.getElementById('bulk-card-modal').style.display='none'; }
   function printBulkCard() {
+    bulkCardPages.flat().forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-card-print-all');
     c.innerHTML = bulkCardPages.map(pg=>cardSheetHTML(pg,'bulk-card-print-sheet')).join('');
+    document.body.classList.add('bulk-card-print-mode');
+    window.print();
+    document.body.classList.remove('bulk-card-print-mode');
+    c.innerHTML = '';
+  }
+
+  let currentCertDocId = null, currentCertData = null;
+
+  async function saveCertSnapshot(docId, data) {
+    if (!docId) return;
+    try {
+      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), {
+        certIssuedSnapshot: {
+          issuedAt: new Date().toISOString(),
+          orgName: '特定非営利活動法人Social Care Good ホリスケアアカデミー',
+          repTitle: '代表理事',
+          repName: '長谷川　剛',
+          businessNo: '4007005197',
+          name: data.name,
+          birthdate: data.birthdateStr,
+          studentNo: data.studentNo,
+          completionDate: data.issuedDateStr,
+        }
+      });
+    } catch(e) { console.warn('スナップショット保存失敗:', e); }
+  }
+
+  function printSingleA4() {
+    if (!currentCertData) return;
+    saveCertSnapshot(currentCertDocId, currentCertData);
+    const c = document.getElementById('bulk-a4-print-all');
+    c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(currentCertData)}</div>`;
+    document.body.classList.add('bulk-a4-print-mode');
+    window.print();
+    document.body.classList.remove('bulk-a4-print-mode');
+    c.innerHTML = '';
+  }
+
+  function printSingleCard() {
+    if (!currentCertData) return;
+    saveCertSnapshot(currentCertDocId, currentCertData);
+    const c = document.getElementById('bulk-card-print-all');
+    c.innerHTML = cardSheetHTML([currentCertData], 'bulk-card-print-sheet');
     document.body.classList.add('bulk-card-print-mode');
     window.print();
     document.body.classList.remove('bulk-card-print-mode');
@@ -2755,28 +2800,16 @@ async function doLogin() {
   function openCertModal(docId) {
     const a = (window.__tempCertCache && window.__tempCertCache[docId]) || all.find(x => x.id === docId);
     if (!a) return;
-    const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
-    let issuedDateStr = '—';
-    if (a.test2PassedAt) {
-      const t = a.test2PassedAt.toDate ? a.test2PassedAt.toDate() : new Date(a.test2PassedAt);
-      issuedDateStr = `${t.getFullYear()}年${t.getMonth()+1}月${t.getDate()}日`;
-    }
-    let birthdateStr = '—';
-    if (a.birthdate) {
-      const b = String(a.birthdate);
-      const match = b.match(/(\d{4})[^\d](\d{1,2})[^\d](\d{1,2})/);
-      if (match) birthdateStr = `${match[1]}年${match[2]}月${match[3]}日生`;
-      else birthdateStr = b;
-    }
-    document.getElementById('cert-name').textContent = name;
-    document.getElementById('cert-studentno').textContent = a.studentNo || '—';
-    document.getElementById('cert-birthdate').textContent = birthdateStr;
-    document.getElementById('cert-issued-date').textContent = issuedDateStr;
-    // カード版にも同じデータをセット
-    document.getElementById('card-name').textContent = name;
-    document.getElementById('card-studentno').textContent = a.studentNo || '—';
-    document.getElementById('card-birthdate').textContent = birthdateStr;
-    document.getElementById('card-issued-date').textContent = issuedDateStr;
+    currentCertDocId = docId;
+    currentCertData = parseCertData(a);
+    document.getElementById('cert-name').textContent = currentCertData.name;
+    document.getElementById('cert-studentno').textContent = currentCertData.studentNo;
+    document.getElementById('cert-birthdate').textContent = currentCertData.birthdateStr;
+    document.getElementById('cert-issued-date').textContent = currentCertData.issuedDateStr;
+    document.getElementById('card-name').textContent = currentCertData.name;
+    document.getElementById('card-studentno').textContent = currentCertData.studentNo;
+    document.getElementById('card-birthdate').textContent = currentCertData.birthdateStr;
+    document.getElementById('card-issued-date').textContent = currentCertData.issuedDateStr;
     document.getElementById('cert-print-root').style.display = 'block';
     document.getElementById('cert-modal').classList.add('open');
   }
@@ -2793,9 +2826,7 @@ async function doLogin() {
     document.getElementById('cert-card-wrapper').style.display = 'none';
   }
   function printCardMode() {
-    document.body.classList.add('card-print-mode');
-    window.print();
-    document.body.classList.remove('card-print-mode');
+    printSingleCard();
   }
   window.toggleAllCertSelect = toggleAllCertSelect;
   window.openBulkA4Modal = openBulkA4Modal;
@@ -2811,6 +2842,8 @@ async function doLogin() {
   window.openCertModal = openCertModal;
   window.closeCertModal = closeCertModal;
   window.openCardModal = openCardModal;
+  window.printSingleA4 = printSingleA4;
+  window.printSingleCard = printSingleCard;
   window.closeCardModal = closeCardModal;
   window.printCardMode = printCardMode;
 
