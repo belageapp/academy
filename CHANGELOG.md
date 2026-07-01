@@ -2,6 +2,25 @@
 
 ---
 
+## v1.28.0 - 2026/07/01（構築２８）
+
+### admin.html
+
+#### 動画視聴完了届出を独立セクションとして分離
+- サイドバーに「🎬 動画視聴完了届出」メニューを新設（実習先届出と仮修了証明書発行の間）
+  - 承認待ち件数をバッジ表示（`initAllBadges()` で `externalVideoPending === true && externalVideoDone !== true` をカウント）
+- `section-video` セクション・`loadVideoList()` 関数を追加
+  - 絞り込みフィルタ（対応待ち / すべて / 承認済み）を実装、デフォルトは「対応待ち」
+  - キャッシュ＋レンダー方式（`__videoCache` / `renderVideoTable()`）で承認・差し戻し後は再フェッチなしで即時反映
+  - 差し戻し時はキャッシュからレコードを削除し、どのフィルタでも表示されなくなる仕様
+- 承認（`approveEdulioVideo`）・差し戻し（`rejectEdulioVideo`）・取り消し（`cancelEdulioVideo`）の操作後リフレッシュ先を `loadDocuments()` → `renderVideoTable()` に変更
+
+#### 書類確認（loadDocuments）から外部動画（edulio）ブロックを削除
+- `externalVideoPending` / `externalVideoDone` の変数・フィルタ条件・pendingCountへの加算・HTMLブロックをすべて除去
+- 書類確認は「📷 顔写真」「🪪 本人確認書類」の2項目のみに整理
+
+---
+
 ## v1.27.0 - 2026/07/01（構築２７）
 
 ### admin.html
