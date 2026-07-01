@@ -453,38 +453,24 @@
   }
 
   @media print {
-    body.a4-print-mode > *:not(#cert-print-root),
-    body:not(.card-print-mode):not(.a4-print-mode) > *:not(#cert-print-root) { display: none !important; }
-    #cert-print-root {
-      display: block !important; position: fixed !important;
-      inset: 0; background: white; z-index: 9999; padding: 0; margin: 0;
+    /* A4単票・一括: body に bulk-a4-print-mode を付けて bulk-a4-print-all だけ表示 */
+    body.bulk-a4-print-mode > * { display: none !important; }
+    body.bulk-a4-print-mode > #bulk-a4-print-all { display: block !important; }
+    .bulk-a4-print-page {
+      width: 100vw; height: 100vh; page-break-after: always;
+      box-shadow: none !important; display: flex; flex-direction: column;
+      padding: 10% 11%; box-sizing: border-box;
+      font-family: 'Noto Sans JP', sans-serif; color: #000;
     }
-    .cert-paper { width: 100vw; height: 100vh; box-shadow: none; }
-    .cert-modal-actions { display: none !important; }
-    .cert-modal-wrap { background: white; padding: 0; border-radius: 0; }
-    .cert-modal-bg { background: white; padding: 0; overflow: visible; }
+    .bulk-a4-print-page:last-child { page-break-after: avoid; }
 
-    body.card-print-mode > *:not(#cert-card-wrapper) { display: none !important; }
-    body.card-print-mode #cert-card-wrapper {
-      display: block !important; position: fixed !important;
-      inset: 0; background: white; z-index: 10000;
+    /* カード単票・一括: body に bulk-card-print-mode を付けて bulk-card-print-all だけ表示 */
+    body.bulk-card-print-mode > * { display: none !important; }
+    body.bulk-card-print-mode > #bulk-card-print-all { display: block !important; }
+    .bulk-card-print-sheet {
+      width: 100vw; height: 100vh; position: relative; page-break-after: always;
     }
-    body.card-print-mode #cert-card-a4-bg {
-      position: fixed; inset: 0; width: 100vw; height: 100vh;
-      box-shadow: none; margin: 0;
-    }
-    body.card-print-mode #cert-card { border: none; }
-    body.card-print-mode .cert-card-actions { display: none !important; }
-
-    body.bulk-a4-print-mode > *:not(#bulk-a4-print-all) { display: none !important; }
-    #bulk-a4-print-all { display: block !important; }
-    .bulk-a4-print-page { width:100vw; height:100vh; page-break-after:always; box-shadow:none !important; display:flex; flex-direction:column; padding:10% 11%; box-sizing:border-box; font-family:'Noto Sans JP',sans-serif; color:#000; }
-    .bulk-a4-print-page:last-child { page-break-after:avoid; }
-
-    body.bulk-card-print-mode > *:not(#bulk-card-print-all) { display: none !important; }
-    #bulk-card-print-all { display: block !important; }
-    .bulk-card-print-sheet { width:100vw; height:100vh; position:relative; page-break-after:always; }
-    .bulk-card-print-sheet:last-child { page-break-after:avoid; }
+    .bulk-card-print-sheet:last-child { page-break-after: avoid; }
   }
 
   /* 一括印刷 UI */
