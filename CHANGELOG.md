@@ -2,6 +2,44 @@
 
 ---
 
+## v1.27.0 - 2026/07/01（構築２７）
+
+### admin.html
+
+#### 携帯用カード印刷の位置ずれ修正
+- `@page { margin: 0; size: A4 portrait; }` を追加し、ブラウザのデフォルト余白を排除
+  - 従来はブラウザが約10mmの余白を追加するため、A-one 31513のラベル位置とずれていた
+- `@media print` 内の `.bulk-card-print-sheet`・`.bulk-a4-print-page` のサイズを `100vw/100vh` から `210mm/297mm` に変更
+- カード一括印刷モーダルのプレビューコンテナ幅を `max-width:800px` → `width:210mm` に変更（A4シートと幅を一致させて左端揃えを修正）
+- `.bulk-card-sheet` の `margin: 0 auto` を `margin: 0` に変更
+
+#### 発行時証明書画像のスナップショット保存機能
+- 印刷ボタン押下後、証明書のA4レイアウトを**画像**としてFirebase Storageに自動保存
+  - 保存先：`cert-snapshots/{ドキュメントID}.jpg`
+  - タイミング：印刷ダイアログを閉じた直後にバックグラウンドで処理
+  - 単票印刷・一括印刷の両方で動作（一括時は全員分を順次保存）
+- `html2canvas`（CDN遅延ロード）で証明書DOMをキャプチャしてJPEG（品質0.82）に変換
+  - 画像・フォントのCORS問題回避のため `assets/logo.png`・`assets/seal.png` を事前に `fetch()` でdata URLに変換してからhtml2canvasに渡す
+- キャプチャ後にFirebase Storageへアップロードし、取得したURLをFirestoreの `certIssuedSnapshot.imageUrl` に保存
+- 発行履歴ボタン（📋）クリック時、`imageUrl` が存在すれば証明書画像を表示
+  - 画像未保存の場合はデータ一覧（氏名・修了日等）をフォールバック表示
+- 保存状況をトースト通知で表示
+  - 📸 青：「証明書画像を保存中...」
+  - ✅ 緑：「証明書画像を保存しました」
+  - ⚠️ 赤：「保存失敗: {エラーメッセージ}」
+- スナップショットモーダルの幅を `max-width:480px` → `max-width:680px` に拡大（証明書画像表示に対応）
+
+#### Firebase Storage ルール更新
+- `storage.rules` を新規作成しCLIデプロイ（`firebase deploy --only storage`）
+- `/cert-snapshots/{docId}` の読み書きを認証済みユーザーに許可
+- 既存の `/documents/`・`/videos/` ルールは維持
+
+#### バグ修正
+- `saveCertSnapshot`・`captureAndUploadCertImage` 関数が別スクリプトスコープから Firebase 関数を参照しようとしてエラーになっていた問題を修正
+  - `updateDoc`・`ref`・`storage`・`uploadBytes`・`getDownloadURL` → `window.__updateDoc`・`window.__ref`・`window.__storage`・`window.__uploadBytes`・`window.__getDownloadURL` に統一
+
+---
+
 ## v1.26.0 - 2026/06/29（構築２６）
 
 ### admin.html
