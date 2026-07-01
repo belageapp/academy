@@ -648,6 +648,7 @@
     <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書<span id="change-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-facility" onclick="if(window.showSection)window.showSection('facility')"><span class="ico">🏢</span>実習先管理<span id="facility-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-video" onclick="if(window.showSection)window.showSection('video')"><span class="ico">🎬</span>動画視聴完了届出<span id="video-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-tempcert" onclick="if(window.showSection)window.showSection('tempcert')"><span class="ico">📄</span>仮修了証明書発行<span id="tempcert-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
@@ -905,6 +906,25 @@
           <div class="tbl-wrap"><div id="venue-list" style="min-height:60px;">読み込み中...</div></div>
         </div>
       </div><!-- /section-venue -->
+
+      <div id="section-facility" style="display:none;">
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">🏢 実習先管理</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadFacilityList()">🔄 更新</button>
+              <button onclick="openFacilityRegModal()" style="padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋ 施設を登録</button>
+            </div>
+          </div>
+          <!-- タブ -->
+          <div style="display:flex;border-bottom:1px solid var(--border);padding:0 16px;background:#fff;">
+            <button id="ftab-btn-list"    onclick="switchFacilityTab('list')"    style="padding:12px 16px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid var(--teal);color:var(--teal);font-family:inherit;">施設一覧</button>
+            <button id="ftab-btn-inquiry" onclick="switchFacilityTab('inquiry')" style="padding:12px 16px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-mid);font-family:inherit;">施設からの問い合わせ<span id="facility-inq-badge" style="display:none;margin-left:6px;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></button>
+          </div>
+          <div id="ftab-list"    style="padding:16px;"><div id="facility-list">読み込み中...</div></div>
+          <div id="ftab-inquiry" style="display:none;padding:16px;"><div id="facility-inquiry-list">読み込み中...</div></div>
+        </div>
+      </div><!-- /section-facility -->
 
       <div id="section-video" style="display:none;">
         <div class="tcard">
@@ -1196,9 +1216,9 @@
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const cfg = {
@@ -1234,6 +1254,16 @@
   window.__uploadBytes    = uploadBytes;
   window.__getDownloadURL = getDownloadURL;
   window.__deleteObject   = deleteObject;
+  window.__arrayUnion  = arrayUnion;
+  window.__arrayRemove = arrayRemove;
+  window.__createFacilityUser = async (email, password) => {
+    const secApp  = initializeApp(cfg, 'fac_' + Date.now());
+    const secAuth = getAuth(secApp);
+    const cred = await createUserWithEmailAndPassword(secAuth, email, password);
+    const uid  = cred.user.uid;
+    await deleteApp(secApp);
+    return uid;
+  };
 
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -1817,6 +1847,7 @@ async function doLogin() {
     document.getElementById('section-textorder').style.display    = section === 'textorder'    ? 'block' : 'none';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
+    document.getElementById('section-facility').style.display     = section === 'facility'     ? 'block' : 'none';
     document.getElementById('section-video').style.display        = section === 'video'        ? 'block' : 'none';
     document.getElementById('section-ojt').style.display          = section === 'ojt'          ? 'block' : 'none';
     document.getElementById('section-inquiry').style.display      = section === 'inquiry'      ? 'block' : 'none';
@@ -1828,6 +1859,7 @@ async function doLogin() {
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
     if (section === 'venue') loadVenueList();
+    if (section === 'facility') loadFacilityList();
     if (section === 'video') loadVideoList();
     if (section === 'ojt') loadOjtList();
     if (section === 'inquiry') loadInquiryList();
@@ -1842,6 +1874,7 @@ async function doLogin() {
       section === 'textorder'    ? '📦 テキスト発注' :
       section === 'documents'    ? '🪪 書類確認' :
       section === 'venue'        ? '🏥 実習先届出' :
+      section === 'facility'     ? '🏢 実習先管理' :
       section === 'video'        ? '🎬 動画教材（AEGISC-LMS）視聴完了届出' :
       section === 'ojt'          ? '📋 実習修了報告' :
       section === 'inquiry'      ? '📬 問い合わせ' :
@@ -2371,6 +2404,197 @@ async function doLogin() {
     document.getElementById('image-modal').style.display = 'none';
   }
   window.closeImageModal = closeImageModal;
+  // ===== 実習先管理 =====
+  let __facilityLinkTarget = null;
+
+  function switchFacilityTab(tab) {
+    document.getElementById('ftab-list').style.display    = tab === 'list'    ? 'block' : 'none';
+    document.getElementById('ftab-inquiry').style.display = tab === 'inquiry' ? 'block' : 'none';
+    document.getElementById('ftab-btn-list').style.borderBottomColor    = tab === 'list'    ? 'var(--teal)' : 'transparent';
+    document.getElementById('ftab-btn-inquiry').style.borderBottomColor = tab === 'inquiry' ? 'var(--teal)' : 'transparent';
+    document.getElementById('ftab-btn-list').style.color    = tab === 'list'    ? 'var(--teal)' : 'var(--text-mid)';
+    document.getElementById('ftab-btn-inquiry').style.color = tab === 'inquiry' ? 'var(--teal)' : 'var(--text-mid)';
+    if (tab === 'inquiry') loadFacilityInquiries();
+  }
+  window.switchFacilityTab = switchFacilityTab;
+
+  async function loadFacilityList() {
+    const el = document.getElementById('facility-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'facilities'), orderBy('createdAt', 'desc')));
+      if (snap.empty) {
+        el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">施設はまだ登録されていません。</p>';
+        return;
+      }
+      el.innerHTML = snap.docs.map(d => {
+        const f = d.data();
+        const linked = (f.linkedApplicationIds || []);
+        const studentTags = linked.map(aid => {
+          const s = all.find(a => a.id === aid);
+          const name = s ? (s.name || ((s.sei||'')+(s.mei||''))) : aid;
+          return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--teal-light);color:var(--teal-dark);border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px;">
+            ${name}
+            <button onclick="unlinkStudent('${d.id}','${aid}')" title="紐付け解除" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;padding:0 0 0 4px;line-height:1;">✕</button>
+          </span>`;
+        }).join('');
+        return `<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:15px;font-weight:700;">${f.name||'—'}</div>
+              <div style="font-size:12px;color:var(--text-mid);margin-top:3px;">${f.address||''} ${f.phone ? '　☎ '+f.phone : ''}</div>
+              <div style="font-size:12px;color:var(--text-mid);">担当者：${f.contactPerson||'—'}　メール：${f.email||'—'}</div>
+            </div>
+            <button onclick="openFacilityLinkModal('${d.id}','${(f.name||'').replace(/'/g,'')}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 受講生紐付け</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">紐付け受講生（${linked.length}名）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;min-height:24px;">${studentTags || '<span style="font-size:12px;color:#ccc;">なし</span>'}</div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadFacilityList = loadFacilityList;
+
+  function openFacilityRegModal() {
+    ['freg-name','freg-address','freg-phone','freg-person','freg-email','freg-password'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('freg-error').textContent = '';
+    document.getElementById('facility-reg-modal').style.display = 'block';
+  }
+  window.openFacilityRegModal = openFacilityRegModal;
+
+  function closeFacilityRegModal() {
+    document.getElementById('facility-reg-modal').style.display = 'none';
+  }
+  window.closeFacilityRegModal = closeFacilityRegModal;
+
+  async function registerFacility() {
+    const name     = document.getElementById('freg-name').value.trim();
+    const address  = document.getElementById('freg-address').value.trim();
+    const phone    = document.getElementById('freg-phone').value.trim();
+    const person   = document.getElementById('freg-person').value.trim();
+    const email    = document.getElementById('freg-email').value.trim();
+    const password = document.getElementById('freg-password').value;
+    const errEl    = document.getElementById('freg-error');
+    errEl.textContent = '';
+    if (!name || !email || !password) { errEl.textContent = '施設名・メールアドレス・パスワードは必須です'; return; }
+    if (password.length < 8) { errEl.textContent = 'パスワードは8文字以上で設定してください'; return; }
+    try {
+      errEl.textContent = '登録中...';
+      const uid = await window.__createFacilityUser(email, password);
+      const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await addDoc(collection(window.__db, 'facilities'), {
+        name, address, phone, contactPerson: person, email, uid,
+        linkedApplicationIds: [],
+        createdAt: serverTimestamp(),
+      });
+      closeFacilityRegModal();
+      showToast('施設を登録しました', 'success');
+      loadFacilityList();
+    } catch(e) {
+      errEl.textContent = 'エラー：' + (e.code === 'auth/email-already-in-use' ? 'このメールアドレスはすでに使用されています' : e.message);
+    }
+  }
+  window.registerFacility = registerFacility;
+
+  function openFacilityLinkModal(facilityId, facilityName) {
+    __facilityLinkTarget = facilityId;
+    document.getElementById('flink-facility-name').textContent = '施設：' + facilityName;
+    const sel = document.getElementById('flink-student-sel');
+    sel.innerHTML = all
+      .filter(a => !a.isTest && ['active','confirmed','completed'].includes(a.status))
+      .sort((a,b) => (a.name||'').localeCompare(b.name||''))
+      .map(a => `<option value="${a.id}">${a.name || ((a.sei||'')+(a.mei||''))} (${a.studentNo||a.id})</option>`)
+      .join('');
+    document.getElementById('facility-link-modal').style.display = 'block';
+  }
+  window.openFacilityLinkModal = openFacilityLinkModal;
+
+  function closeFacilityLinkModal() {
+    document.getElementById('facility-link-modal').style.display = 'none';
+    __facilityLinkTarget = null;
+  }
+  window.closeFacilityLinkModal = closeFacilityLinkModal;
+
+  async function linkStudent() {
+    const facilityId = __facilityLinkTarget;
+    const studentId  = document.getElementById('flink-student-sel').value;
+    if (!facilityId || !studentId) return;
+    try {
+      const { doc, updateDoc, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayUnion(studentId) });
+      await updateDoc(doc(window.__db, 'applications', studentId), { linkedFacilityId: facilityId });
+      closeFacilityLinkModal();
+      showToast('受講生を紐付けました', 'success');
+      loadFacilityList();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.linkStudent = linkStudent;
+
+  async function unlinkStudent(facilityId, studentId) {
+    if (!confirm('紐付けを解除しますか？')) return;
+    try {
+      const { doc, updateDoc, arrayRemove, deleteField } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayRemove(studentId) });
+      await updateDoc(doc(window.__db, 'applications', studentId), { linkedFacilityId: deleteField() });
+      showToast('紐付けを解除しました', 'info');
+      loadFacilityList();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.unlinkStudent = unlinkStudent;
+
+  async function loadFacilityInquiries() {
+    const el = document.getElementById('facility-inquiry-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'facilityInquiries'), orderBy('createdAt', 'desc')));
+      if (snap.empty) { el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">問い合わせはありません。</p>'; return; }
+      el.innerHTML = snap.docs.map(d => {
+        const m = d.data();
+        const dt = m.createdAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
+        const replied = !!m.reply;
+        return `<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:700;">${m.facilityName||'—'}</div>
+            <span style="font-size:11px;background:${replied?'var(--green-light)':'#FFF3E0'};color:${replied?'var(--green)':'#E65100'};padding:3px 10px;border-radius:10px;font-weight:700;">${replied?'返信済み':'未返信'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">${dt}</div>
+          <div style="font-size:13px;margin-bottom:12px;line-height:1.7;">${m.body||''}</div>
+          ${replied
+            ? `<div style="background:var(--green-light);border-radius:8px;padding:10px 14px;font-size:13px;border-left:3px solid var(--green);">
+                <div style="font-size:11px;color:var(--text-mid);margin-bottom:4px;">管理者の返信</div>${m.reply}
+               </div>`
+            : `<div style="display:flex;gap:8px;align-items:flex-end;">
+                <textarea id="fiq-reply-${d.id}" rows="3" placeholder="返信内容を入力..." style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;"></textarea>
+                <button onclick="replyToFacilityInquiry('${d.id}')" style="padding:9px 16px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">返信する</button>
+               </div>`
+          }
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadFacilityInquiries = loadFacilityInquiries;
+
+  async function replyToFacilityInquiry(docId) {
+    const reply = document.getElementById('fiq-reply-' + docId)?.value.trim();
+    if (!reply) { alert('返信内容を入力してください'); return; }
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'facilityInquiries', docId), {
+        reply, repliedAt: window.__serverTs(),
+      });
+      showToast('返信しました', 'success');
+      loadFacilityInquiries();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.replyToFacilityInquiry = replyToFacilityInquiry;
+
   let __venueCache = null;
   let __venueFilter = 'pending';
 
@@ -3637,10 +3861,64 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
+      // 施設からの問い合わせ：未返信
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'facilityInquiries'), where('reply', '==', null)));
+        const snap2 = await getDocs(collection(window.__db, 'facilityInquiries'));
+        const count = snap2.docs.filter(d => !d.data().reply).length;
+        const badge  = document.getElementById('facility-badge');
+        const badge2 = document.getElementById('facility-inq-badge');
+        if (badge  && count > 0) { badge.style.display  = 'inline'; badge.textContent  = count; }
+        else if (badge)  badge.style.display = 'none';
+        if (badge2 && count > 0) { badge2.style.display = 'inline'; badge2.textContent = count; }
+        else if (badge2) badge2.style.display = 'none';
+      } catch(e) {}
+
     } catch(e) {}
   }
   window.initAllBadges = initAllBadges;
 </script>
+
+<!-- 施設登録モーダル -->
+<div id="facility-reg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;overflow:auto;">
+  <div style="max-width:480px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="padding:16px 20px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:700;">🏢 施設を登録</div>
+      <button onclick="closeFacilityRegModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div style="display:grid;gap:12px;">
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名 *</label><input id="freg-name" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="freg-address" type="text" placeholder="東京都◯◯区..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="freg-phone" type="text" placeholder="03-XXXX-XXXX" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者名</label><input id="freg-person" type="text" placeholder="担当者名" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;font-weight:700;">ログイン情報（施設マイページ用）</div>
+          <div style="margin-bottom:10px;"><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">メールアドレス *</label><input id="freg-email" type="email" placeholder="facility@example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">パスワード *（8文字以上）</label><input id="freg-password" type="password" placeholder="パスワード" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        </div>
+        <div id="freg-error" style="color:var(--red);font-size:13px;"></div>
+        <button onclick="registerFacility()" style="padding:11px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">登録する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 受講生紐付けモーダル -->
+<div id="facility-link-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;overflow:auto;">
+  <div style="max-width:480px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="padding:16px 20px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:700;">👤 受講生を紐付け</div>
+      <button onclick="closeFacilityLinkModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;" id="flink-facility-name"></div>
+      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">紐付ける受講生を選択</label>
+      <select id="flink-student-sel" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></select>
+      <button onclick="linkStudent()" style="margin-top:14px;padding:10px 24px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">紐付ける</button>
+    </div>
+  </div>
+</div>
 
 <!-- 画像拡大モーダル -->
 <div id="image-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;justify-content:center;align-items:center;" onclick="closeImageModal()">
