@@ -911,6 +911,11 @@
           <div class="thead">
             <div class="thead-title">🎬 動画教材（AEGISC-LMS）視聴完了届出</div>
             <div class="thead-acts">
+              <select id="video-filter-sel" onchange="window.setVideoFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="pending">対応待ち</option>
+                <option value="all">すべて</option>
+                <option value="done">承認済み</option>
+              </select>
               <button class="refresh-btn" onclick="loadVideoList()">🔄 更新</button>
             </div>
           </div>
@@ -2297,8 +2302,12 @@ async function doLogin() {
         });
       } catch(e) { console.warn('全完了通知失敗:', e); }
     }
+    if (__videoCache) {
+      const r = __videoCache.find(r => r.__id === docId);
+      if (r) { r.externalVideoDone = true; r.externalVideoPending = false; r.externalVideoDoneAt = { toDate: () => new Date(), toMillis: () => Date.now() }; }
+    }
     alert('承認しました');
-    loadVideoList();
+    renderVideoTable();
   }
   window.approveEdulioVideo = approveEdulioVideo;
 
@@ -2319,8 +2328,12 @@ async function doLogin() {
         body: JSON.stringify({ name: appData.name, email: appData.email, reason })
       });
     } catch(e) { console.warn('外部動画差し戻しメール送信失敗:', e); }
+    if (__videoCache) {
+      const idx = __videoCache.findIndex(r => r.__id === docId);
+      if (idx !== -1) __videoCache.splice(idx, 1);
+    }
     alert('差し戻しました');
-    loadVideoList();
+    renderVideoTable();
   }
   window.rejectEdulioVideo = rejectEdulioVideo;
 
@@ -2330,7 +2343,11 @@ async function doLogin() {
       externalVideoDone: false,
       externalVideoPending: true,
     });
-    loadVideoList();
+    if (__videoCache) {
+      const r = __videoCache.find(r => r.__id === docId);
+      if (r) { r.externalVideoDone = false; r.externalVideoPending = true; }
+    }
+    renderVideoTable();
   }
   window.cancelEdulioVideo = cancelEdulioVideo;
 
@@ -2447,55 +2464,84 @@ async function doLogin() {
   }
   window.markVenueChecked = markVenueChecked;
 
+  let __videoCache = null;
+  let __videoFilter = 'pending';
+
+  function setVideoFilter(f) {
+    __videoFilter = f;
+    const sel = document.getElementById('video-filter-sel');
+    if (sel) sel.value = f;
+    renderVideoTable();
+  }
+  window.setVideoFilter = setVideoFilter;
+
+  function renderVideoTable() {
+    const el = document.getElementById('video-list');
+    if (!el || !__videoCache) return;
+    const rows = __videoCache.filter(r => {
+      if (__videoFilter === 'pending') return r.externalVideoPending === true && r.externalVideoDone !== true;
+      if (__videoFilter === 'done')    return r.externalVideoDone === true;
+      return true;
+    });
+    if (!rows.length) {
+      el.innerHTML = '<p style="padding:16px;color:#888;">' +
+        (__videoFilter === 'pending' ? '対応待ちの届出はありません。' :
+         __videoFilter === 'done'    ? '承認済みの届出はありません。' : '届出はまだありません。') + '</p>';
+      return;
+    }
+    el.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#f5f5f5;border-bottom:2px solid #e0e0e0;">
+            <th style="padding:10px 12px;text-align:left;">氏名</th>
+            <th style="padding:10px 12px;text-align:left;">届出日時</th>
+            <th style="padding:10px 12px;text-align:left;">ステータス</th>
+            <th style="padding:10px 12px;text-align:left;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(d => {
+            const name = d.name || ((d.sei || '') + (d.mei || '')) || '—';
+            const pendingAt = d.externalVideoPendingAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
+            const doneAt    = d.externalVideoDoneAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
+            if (d.externalVideoDone) {
+              return `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:10px 12px;">${name}</td>
+                <td style="padding:10px 12px;">${pendingAt}</td>
+                <td style="padding:10px 12px;"><span style="background:#e8f5e9;color:#2e7d32;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">✓ 承認済み</span><br><span style="font-size:11px;color:#888;">${doneAt}</span></td>
+                <td style="padding:10px 12px;">
+                  <button onclick="cancelEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
+                </td>
+              </tr>`;
+            } else {
+              return `<tr style="border-bottom:1px solid #eee;background:#fffde7;">
+                <td style="padding:10px 12px;">${name}</td>
+                <td style="padding:10px 12px;">${pendingAt}</td>
+                <td style="padding:10px 12px;"><span style="background:#fff3e0;color:#e65100;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">⏳ 承認待ち</span></td>
+                <td style="padding:10px 12px;display:flex;gap:8px;">
+                  <button onclick="approveEdulioVideo('${d.__id}')" style="padding:5px 12px;background:var(--teal,#00897B);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
+                  <button onclick="rejectEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
+                </td>
+              </tr>`;
+            }
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+  window.renderVideoTable = renderVideoTable;
+
   async function loadVideoList() {
     const el = document.getElementById('video-list');
     el.innerHTML = '読み込み中...';
+    setVideoFilter(__videoFilter);
     try {
       const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(collection(window.__db, 'applications'));
-      const rows = snap.docs
+      __videoCache = snap.docs
         .map(d => ({ __id: d.id, ...d.data() }))
         .filter(r => !r.isTest && (r.externalVideoPending === true || r.externalVideoDone === true))
         .sort((a, b) => (b.externalVideoPendingAt?.toMillis?.() || 0) - (a.externalVideoPendingAt?.toMillis?.() || 0));
-      if (!rows.length) { el.innerHTML = '<p style="padding:16px;color:#888;">該当する届出はありません。</p>'; return; }
-      el.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="background:#f5f5f5;border-bottom:2px solid #e0e0e0;">
-              <th style="padding:10px 12px;text-align:left;">氏名</th>
-              <th style="padding:10px 12px;text-align:left;">届出日時</th>
-              <th style="padding:10px 12px;text-align:left;">ステータス</th>
-              <th style="padding:10px 12px;text-align:left;">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(d => {
-              const name = d.name || ((d.sei || '') + (d.mei || '')) || '—';
-              const pendingAt = d.externalVideoPendingAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
-              const doneAt    = d.externalVideoDoneAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
-              if (d.externalVideoDone) {
-                return `<tr style="border-bottom:1px solid #eee;">
-                  <td style="padding:10px 12px;">${name}</td>
-                  <td style="padding:10px 12px;">${pendingAt}</td>
-                  <td style="padding:10px 12px;"><span style="background:#e8f5e9;color:#2e7d32;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">✓ 承認済み</span><br><span style="font-size:11px;color:#888;">${doneAt}</span></td>
-                  <td style="padding:10px 12px;">
-                    <button onclick="cancelEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
-                  </td>
-                </tr>`;
-              } else {
-                return `<tr style="border-bottom:1px solid #eee;background:#fffde7;">
-                  <td style="padding:10px 12px;">${name}</td>
-                  <td style="padding:10px 12px;">${pendingAt}</td>
-                  <td style="padding:10px 12px;"><span style="background:#fff3e0;color:#e65100;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">⏳ 承認待ち</span></td>
-                  <td style="padding:10px 12px;display:flex;gap:8px;">
-                    <button onclick="approveEdulioVideo('${d.__id}')" style="padding:5px 12px;background:var(--teal,#00897B);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
-                    <button onclick="rejectEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
-                  </td>
-                </tr>`;
-              }
-            }).join('')}
-          </tbody>
-        </table>`;
+      renderVideoTable();
     } catch(e) {
       el.innerHTML = '<p style="color:red;padding:16px;">読み込みエラー：' + e.message + '</p>';
     }
