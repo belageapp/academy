@@ -2782,6 +2782,15 @@ async function doLogin() {
     } catch(e) { console.warn('スナップショット保存失敗:', e); }
   }
 
+  function showToast(msg, type = 'info') {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    const bg = type === 'success' ? '#2E7D32' : type === 'error' ? '#C62828' : '#1565C0';
+    t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:99999;padding:13px 22px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.25);background:${bg};color:#fff;transition:opacity 0.4s;`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3500);
+  }
+
   async function loadHtml2Canvas() {
     if (window.html2canvas) return window.html2canvas;
     return new Promise((resolve, reject) => {
@@ -2795,10 +2804,11 @@ async function doLogin() {
 
   async function captureAndUploadCertImage(docId, data) {
     if (!docId || !data) return;
+    showToast('📸 証明書画像を保存中...', 'info');
     try {
       const h2c = await loadHtml2Canvas();
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;z-index:-9999;pointer-events:none;';
+      wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;pointer-events:none;';
       const certDiv = document.createElement('div');
       certDiv.className = 'cert-paper';
       certDiv.innerHTML = a4CertInnerHTML(data);
@@ -2809,9 +2819,9 @@ async function doLogin() {
         img.complete ? Promise.resolve() :
         new Promise(r => { img.onload = r; img.onerror = r; })
       ));
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 500));
       const canvas = await h2c(certDiv, {
-        scale: 1.5, useCORS: true, allowTaint: true,
+        scale: 1.5, useCORS: true, allowTaint: false,
         backgroundColor: '#ffffff', logging: false
       });
       document.body.removeChild(wrap);
@@ -2823,7 +2833,11 @@ async function doLogin() {
       if (window.__tempCertCache?.[docId]?.certIssuedSnapshot) {
         window.__tempCertCache[docId].certIssuedSnapshot.imageUrl = url;
       }
-    } catch(e) { console.warn('証明書画像の保存に失敗:', e); }
+      showToast('✅ 証明書画像を保存しました', 'success');
+    } catch(e) {
+      console.error('証明書画像の保存に失敗:', e);
+      showToast('⚠️ 証明書画像の保存に失敗しました', 'error');
+    }
   }
 
   function printSingleA4() {
