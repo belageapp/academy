@@ -452,12 +452,16 @@
     object-fit: contain; z-index: 1;
   }
 
+  @page { margin: 0; size: A4 portrait; }
+
   @media print {
+    html, body { margin: 0; padding: 0; }
+
     /* A4単票・一括: body に bulk-a4-print-mode を付けて bulk-a4-print-all だけ表示 */
     body.bulk-a4-print-mode > * { display: none !important; }
     body.bulk-a4-print-mode > #bulk-a4-print-all { display: block !important; }
     .bulk-a4-print-page {
-      width: 100vw; height: 100vh; page-break-after: always;
+      width: 210mm; height: 297mm; page-break-after: always;
       box-shadow: none !important; display: flex; flex-direction: column;
       padding: 10% 11%; box-sizing: border-box;
       font-family: 'Noto Sans JP', sans-serif; color: #000;
@@ -468,7 +472,7 @@
     body.bulk-card-print-mode > * { display: none !important; }
     body.bulk-card-print-mode > #bulk-card-print-all { display: block !important; }
     .bulk-card-print-sheet {
-      width: 100vw; height: 100vh; position: relative; page-break-after: always;
+      width: 210mm; height: 297mm; position: relative; page-break-after: always;
     }
     .bulk-card-print-sheet:last-child { page-break-after: avoid; }
   }
@@ -517,7 +521,7 @@
 
   .bulk-card-sheet {
     background: white; width: 210mm; height: 297mm;
-    position: relative; margin: 0 auto;
+    position: relative; margin: 0;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
   .bulk-card-item {
@@ -1094,7 +1098,7 @@
 
 <!-- カード一括印刷モーダル -->
 <div id="bulk-card-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;overflow:auto;">
-  <div style="max-width:800px;margin:24px auto;padding:0 12px 40px;">
+  <div style="width:210mm;margin:24px auto;padding:0 0 40px;">
     <div class="bulk-modal-header">
       <button class="bulk-nav-btn" id="bulk-card-prev-btn" onclick="window.bulkCardPrev()" disabled>◀ 前</button>
       <div class="bulk-nav-info" id="bulk-card-nav-info">ページ 1 / 1</div>
