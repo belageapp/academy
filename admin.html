@@ -2766,7 +2766,7 @@ async function doLogin() {
   async function saveCertSnapshot(docId, data) {
     if (!docId) return;
     try {
-      await updateDoc(doc(db, 'applications', docId), {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), {
         certIssuedSnapshot: {
           issuedAt: new Date().toISOString(),
           orgName: '特定非営利活動法人Social Care Good ホリスケアアカデミー',
@@ -2833,10 +2833,10 @@ async function doLogin() {
       });
       document.body.removeChild(wrap);
       const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.82));
-      const sRef = ref(storage, `cert-snapshots/${docId}.jpg`);
-      await uploadBytes(sRef, blob);
-      const url = await getDownloadURL(sRef);
-      await updateDoc(doc(db, 'applications', docId), { 'certIssuedSnapshot.imageUrl': url });
+      const sRef = window.__ref(window.__storage, `cert-snapshots/${docId}.jpg`);
+      await window.__uploadBytes(sRef, blob);
+      const url = await window.__getDownloadURL(sRef);
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { 'certIssuedSnapshot.imageUrl': url });
       if (window.__tempCertCache?.[docId]?.certIssuedSnapshot) {
         window.__tempCertCache[docId].certIssuedSnapshot.imageUrl = url;
       }
