@@ -3872,7 +3872,6 @@ async function doLogin() {
 
       // 施設からの問い合わせ：未返信
       try {
-        const snap = await getDocs(query(collection(window.__db, 'facilityInquiries'), where('reply', '==', null)));
         const snap2 = await getDocs(collection(window.__db, 'facilityInquiries'));
         const count = snap2.docs.filter(d => !d.data().reply).length;
         const badge  = document.getElementById('facility-badge');
