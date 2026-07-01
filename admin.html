@@ -1870,11 +1870,13 @@ async function doLogin() {
       let targetUids = [];
       let targetEmails = [];
       let targetApplicationIds = [];
+      let targetNames = [];
       if (target === 'selected') {
         const checked = document.querySelectorAll('#student-checkboxes input[type=checkbox]:checked');
         checked.forEach(cb => {
           targetUids.push(cb.value);
           targetEmails.push(cb.dataset.email);
+          targetNames.push(cb.dataset.name || '');
           if (cb.dataset.applicationId) targetApplicationIds.push(cb.dataset.applicationId);
         });
       }
@@ -1889,8 +1891,26 @@ async function doLogin() {
         createdBy: window.__auth.currentUser.email,
       });
 
+      // メール通知送信
+      const activeStatuses = ['confirmed', 'active', 'completed'];
+      let mailRecipients = [];
+      if (target === 'all') {
+        mailRecipients = all
+          .filter(a => a.email && activeStatuses.includes(a.status))
+          .map(a => ({ name: a.name || ((a.sei||'')+(a.mei||'')), email: a.email }));
+      } else if (target === 'selected') {
+        mailRecipients = targetEmails.map((email, i) => ({ name: targetNames[i] || '', email }));
+      }
+      if (mailRecipients.length > 0) {
+        fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendNoticeMail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipients: mailRecipients, title, body }),
+        }).catch(e => console.warn('お知らせメール送信失敗:', e));
+      }
+
       msg.style.background = '#D1FAE5'; msg.style.color = '#065F46';
-      msg.textContent = '投稿しました！';
+      msg.textContent = `投稿しました！${mailRecipients.length > 0 ? `（${mailRecipients.length}名にメール通知）` : ''}`;
       document.getElementById('n-title').value = '';
       document.getElementById('n-body').value  = '';
       document.getElementById('n-file').value  = '';
