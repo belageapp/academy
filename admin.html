@@ -419,16 +419,12 @@
     margin-bottom: 8%;
   }
   .cert-person-block {
-    margin: 0 auto 8%; padding-left: 10%;
-    font-size: clamp(11px, 1.7vw, 14px);
+    text-align: right; margin-bottom: 8%;
+    font-size: clamp(12px, 1.9vw, 16px);
   }
-  .cert-person-row {
-    display: flex; align-items: baseline; margin-bottom: 0.8em;
-  }
-  .cert-person-label { width: 6em; flex-shrink: 0; letter-spacing: 0.3em; white-space: nowrap; }
-  .cert-person-value {
-    border-bottom: 1px solid #000; min-width: 14em; padding: 0 0.5em 2px;
-    font-weight: 700; font-size: 1.05em;
+  .cert-person-value-only {
+    font-weight: 700; border-bottom: 1px solid #000;
+    padding: 0.2em 0; margin-bottom: 0.8em;
   }
   .cert-body-text {
     font-size: clamp(9px, 1.4vw, 12px); line-height: 2.2;
@@ -440,10 +436,11 @@
     margin-bottom: 4%;
   }
   .cert-sign-block {
-    display: flex; justify-content: space-between; align-items: flex-end;
+    display: flex; align-items: flex-end;
     font-size: clamp(9px, 1.4vw, 12px);
   }
-  .cert-sign-org { line-height: 2.2; }
+  .cert-sign-spacer { flex: 1; }
+  .cert-sign-org { line-height: 2.2; margin-right: 8px; }
   .cert-seal-img {
     width: clamp(50px, 8vw, 70px); height: clamp(50px, 8vw, 70px);
     object-fit: contain; flex-shrink: 0;
@@ -946,14 +943,8 @@
         <div class="cert-docno">第4007005197-<span id="cert-studentno"></span>号</div>
         <div class="cert-title">修　了　証　明　書</div>
         <div class="cert-person-block">
-          <div class="cert-person-row">
-            <span class="cert-person-label">氏　　名</span>
-            <span class="cert-person-value" id="cert-name"></span>
-          </div>
-          <div class="cert-person-row">
-            <span class="cert-person-label">生 年 月 日</span>
-            <span class="cert-person-value" id="cert-birthdate"></span>
-          </div>
+          <div class="cert-person-value-only" id="cert-name"></div>
+          <div class="cert-person-value-only" id="cert-birthdate"></div>
         </div>
         <div class="cert-body-text">
           <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
@@ -961,6 +952,7 @@
         </div>
         <div class="cert-date-line" id="cert-issued-date"></div>
         <div class="cert-sign-block">
+          <div class="cert-sign-spacer"></div>
           <div class="cert-sign-org">
             <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
             <div>代表理事　長谷川　剛</div>
