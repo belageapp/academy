@@ -1110,6 +1110,18 @@
 <div id="bulk-a4-print-all" style="display:none;"></div>
 <div id="bulk-card-print-all" style="display:none;"></div>
 
+<!-- 発行履歴スナップショットモーダル -->
+<div id="snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:14px;padding:28px 32px;max-width:480px;width:95%;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:15px;font-weight:700;color:var(--teal-dark);">📋 発行時スナップショット</div>
+      <button onclick="window.closeSnapshotModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#888;line-height:1;">✕</button>
+    </div>
+    <div id="snapshot-content"></div>
+    <p style="margin:16px 0 0;font-size:11px;color:#aaa;">印刷ボタンを押した時点の内容を記録しています。</p>
+  </div>
+</div>
+
 <!-- 仮修了証明書プレビューモーダル -->
 <div id="cert-print-root" style="display:none;">
   <div class="cert-modal-bg" id="cert-modal">
@@ -2538,6 +2550,10 @@ async function doLogin() {
           const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
           const passedDate = a.test2PassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
           const sentDate   = a.tempCertSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+          const snap = a.certIssuedSnapshot;
+          const snapCell = snap
+            ? `<button onclick="window.showSnapshotModal('${a.id}')" style="padding:5px 10px;background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 ${new Date(snap.issuedAt).toLocaleDateString('ja-JP')} 発行</button>`
+            : '<span style="font-size:11px;color:#ccc;">未発行</span>';
           return `<tr>
             <td><input type="checkbox" class="cert-select-cb" data-id="${a.id}"></td>
             <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
@@ -2548,6 +2564,7 @@ async function doLogin() {
               ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発送済み</span><br><span style="font-size:11px;color:#888;">'+sentDate+'</span>'
               : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未発送</span>'
             }</td>
+            <td style="white-space:nowrap;">${snapCell}</td>
             <td style="white-space:nowrap;">
               ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 12px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:block;">📬 発送済みにする</button>` : '<span style="font-size:11px;color:#aaa;">—</span>'}
             </td>
@@ -2557,10 +2574,10 @@ async function doLogin() {
       const filter = document.getElementById('tempcert-filter-sel')?.value || 'all';
       const showPending = filter === 'all' || filter === 'pending';
       const showSent    = filter === 'all' || filter === 'sent';
-      let html = '<table><thead><tr><th><input type="checkbox" id="cert-select-all" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>操作</th></tr></thead><tbody>';
-      if (showPending && pending.length) html += `<tr><td colspan="7" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
-      if (showSent    && sent.length)    html += `<tr><td colspan="7" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
-      if (!html.includes('<tr>')) html += `<tr><td colspan="7" style="padding:16px;color:var(--text-light);font-size:13px;">該当する受講生はいません。</td></tr>`;
+      let html = '<table><thead><tr><th><input type="checkbox" id="cert-select-all" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>発行履歴</th><th>操作</th></tr></thead><tbody>';
+      if (showPending && pending.length) html += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
+      if (showSent    && sent.length)    html += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
+      if (!html.includes('<tr>')) html += `<tr><td colspan="8" style="padding:16px;color:var(--text-light);font-size:13px;">該当する受講生はいません。</td></tr>`;
       html += '</tbody></table>';
       el.innerHTML = html;
     } catch(e) {
@@ -2825,6 +2842,36 @@ async function doLogin() {
   window.bulkCardNext = bulkCardNext;
   window.closeBulkCardModal = closeBulkCardModal;
   window.printBulkCard = printBulkCard;
+  function showSnapshotModal(docId) {
+    const a = window.__tempCertCache && window.__tempCertCache[docId];
+    if (!a || !a.certIssuedSnapshot) return;
+    const s = a.certIssuedSnapshot;
+    const issuedAt = s.issuedAt ? new Date(s.issuedAt).toLocaleString('ja-JP') : '—';
+    const rows = [
+      ['発行日時', issuedAt],
+      ['氏名', s.name || '—'],
+      ['生年月日', s.birthdate || '—'],
+      ['受講番号', s.studentNo || '—'],
+      ['修了日', s.completionDate || '—'],
+      ['事業者番号', s.businessNo || '—'],
+      ['研修事業者名', s.orgName || '—'],
+      ['代表者', (s.repTitle || '') + (s.repName ? '　' + s.repName : '') || '—'],
+    ];
+    document.getElementById('snapshot-content').innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        ${rows.map(([label, val]) => `
+          <tr style="border-bottom:1px solid #f0f0f0;">
+            <td style="padding:8px 12px 8px 0;color:#888;white-space:nowrap;width:110px;">${label}</td>
+            <td style="padding:8px 0;font-weight:600;">${val}</td>
+          </tr>`).join('')}
+      </table>`;
+    document.getElementById('snapshot-modal').style.display = 'flex';
+  }
+  function closeSnapshotModal() {
+    document.getElementById('snapshot-modal').style.display = 'none';
+  }
+  window.showSnapshotModal = showSnapshotModal;
+  window.closeSnapshotModal = closeSnapshotModal;
   window.openCertModal = openCertModal;
   window.closeCertModal = closeCertModal;
   window.openCardModal = openCardModal;
