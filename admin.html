@@ -492,24 +492,29 @@
   #cert-card {
     position: absolute; top: 11mm; left: 14mm;
     width: 91mm; height: 55mm;
-    padding: 3mm 3.5mm; box-sizing: border-box;
+    padding: 2.5mm 3mm; box-sizing: border-box;
     font-family: 'Noto Sans JP', sans-serif; color: #000;
-    display: flex; flex-direction: column;
-    border: 0.5px solid #aaa;
+    border: 0.5px solid #aaa; overflow: hidden;
   }
-  .cert-card-header {
-    display: flex; align-items: center; gap: 3mm;
-    border-bottom: 0.3mm solid #333;
-    padding-bottom: 1.5mm; margin-bottom: 1.5mm;
+  .cert-card-seal {
+    position: absolute; right: 1.5mm; bottom: 1.5mm;
+    width: 15mm; height: 15mm;
+    object-fit: contain; z-index: 0;
   }
-  .cert-card-logo { height: 6mm; width: auto; }
-  .cert-card-title { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.05em; }
-  .cert-card-name { font-size: 12pt; font-weight: 700; text-align: center; margin-bottom: 1.5mm; }
-  .cert-card-info { font-size: 6.5pt; line-height: 2; flex: 1; }
-  .cert-card-footer {
-    border-top: 0.3mm solid #333; padding-top: 1mm;
-    font-size: 5.5pt; line-height: 1.7; color: #222;
+  .cert-card-content {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; height: 100%;
   }
+  .cert-card-docno { text-align: right; font-size: 5pt; margin-bottom: 1.5mm; }
+  .cert-card-title {
+    font-size: 7pt; font-weight: 700;
+    letter-spacing: 0.15em; text-align: center;
+    margin-bottom: 1.5mm;
+  }
+  .cert-card-person { text-align: right; font-size: 6pt; font-weight: 700; line-height: 1.9; margin-bottom: 1mm; }
+  .cert-card-body { font-size: 4.5pt; line-height: 1.75; text-indent: 0.5em; margin-bottom: auto; }
+  .cert-card-date { font-size: 5pt; margin-bottom: 1mm; }
+  .cert-card-sign { font-size: 5pt; line-height: 1.9; text-align: right; }
   .cert-card-actions {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 12px; z-index: 10001;
@@ -987,22 +992,23 @@
 </div>
 
 <!-- カード版 A-one 31513 (上左1枚目) -->
-<div id="cert-card-wrapper">
+<div id="cert-card-wrapper" style="display:none;">
   <div id="cert-card-a4-bg">
     <div id="cert-card">
-      <div class="cert-card-header">
-        <img src="assets/logo.png" class="cert-card-logo" alt="ホリスケアアカデミー">
-        <div class="cert-card-title">仮　修　了　証　明　書</div>
-      </div>
-      <div class="cert-card-name" id="card-name"></div>
-      <div class="cert-card-info">
-        <div>生年月日：<span id="card-birthdate"></span></div>
-        <div>受講番号：<span id="card-studentno"></span></div>
-        <div>修 了 日：<span id="card-issued-date"></span></div>
-      </div>
-      <div class="cert-card-footer">
-        特定非営利活動法人Social Care Good ホリスケアアカデミー<br>
-        第4007005197号　代表理事　長谷川　剛
+      <img src="assets/seal.png" class="cert-card-seal" alt="印">
+      <div class="cert-card-content">
+        <div class="cert-card-docno">第4007005197-<span id="card-studentno"></span>号</div>
+        <div class="cert-card-title">修　了　証　明　書（携帯用）</div>
+        <div class="cert-card-person">
+          <div id="card-name"></div>
+          <div id="card-birthdate"></div>
+        </div>
+        <div class="cert-card-body">介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</div>
+        <div class="cert-card-date" id="card-issued-date"></div>
+        <div class="cert-card-sign">
+          <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
+          <div>代表理事　長谷川　剛</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2528,10 +2534,12 @@ async function doLogin() {
     document.getElementById('cert-print-root').style.display = 'none';
   }
   function openCardModal() {
-    document.getElementById('cert-card-wrapper').classList.add('open');
+    document.getElementById('cert-modal').classList.remove('open');
+    document.getElementById('cert-print-root').style.display = 'none';
+    document.getElementById('cert-card-wrapper').style.display = 'block';
   }
   function closeCardModal() {
-    document.getElementById('cert-card-wrapper').classList.remove('open');
+    document.getElementById('cert-card-wrapper').style.display = 'none';
   }
   function printCardMode() {
     document.body.classList.add('card-print-mode');
@@ -2540,6 +2548,9 @@ async function doLogin() {
   }
   window.openCertModal = openCertModal;
   window.closeCertModal = closeCertModal;
+  window.openCardModal = openCardModal;
+  window.closeCardModal = closeCardModal;
+  window.printCardMode = printCardMode;
 
   window.loadTempCertList = loadTempCertList;
   window.markTempCertSent = markTempCertSent;
