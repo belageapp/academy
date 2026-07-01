@@ -453,17 +453,66 @@
   }
 
   @media print {
-    body > *:not(#cert-print-root) { display: none !important; }
+    body.a4-print-mode > *:not(#cert-print-root),
+    body:not(.card-print-mode):not(.a4-print-mode) > *:not(#cert-print-root) { display: none !important; }
     #cert-print-root {
       display: block !important; position: fixed !important;
       inset: 0; background: white; z-index: 9999; padding: 0; margin: 0;
     }
-    .cert-paper {
-      width: 100vw; height: 100vh; box-shadow: none;
-    }
+    .cert-paper { width: 100vw; height: 100vh; box-shadow: none; }
     .cert-modal-actions { display: none !important; }
     .cert-modal-wrap { background: white; padding: 0; border-radius: 0; }
     .cert-modal-bg { background: white; padding: 0; overflow: visible; }
+
+    body.card-print-mode > *:not(#cert-card-wrapper) { display: none !important; }
+    body.card-print-mode #cert-card-wrapper {
+      display: block !important; position: fixed !important;
+      inset: 0; background: white; z-index: 10000;
+    }
+    body.card-print-mode #cert-card-a4-bg {
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
+      box-shadow: none; margin: 0;
+    }
+    body.card-print-mode #cert-card { border: none; }
+    body.card-print-mode .cert-card-actions { display: none !important; }
+  }
+
+  /* カード版 A-one 31513 */
+  #cert-card-wrapper {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 10000;
+    overflow: auto;
+  }
+  #cert-card-wrapper.open { display: block; }
+  #cert-card-a4-bg {
+    background: white; width: 210mm; height: 297mm;
+    position: relative; margin: 32px auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  #cert-card {
+    position: absolute; top: 11mm; left: 14mm;
+    width: 91mm; height: 55mm;
+    padding: 3mm 3.5mm; box-sizing: border-box;
+    font-family: 'Noto Sans JP', sans-serif; color: #000;
+    display: flex; flex-direction: column;
+    border: 0.5px solid #aaa;
+  }
+  .cert-card-header {
+    display: flex; align-items: center; gap: 3mm;
+    border-bottom: 0.3mm solid #333;
+    padding-bottom: 1.5mm; margin-bottom: 1.5mm;
+  }
+  .cert-card-logo { height: 6mm; width: auto; }
+  .cert-card-title { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.05em; }
+  .cert-card-name { font-size: 12pt; font-weight: 700; text-align: center; margin-bottom: 1.5mm; }
+  .cert-card-info { font-size: 6.5pt; line-height: 2; flex: 1; }
+  .cert-card-footer {
+    border-top: 0.3mm solid #333; padding-top: 1mm;
+    font-size: 5.5pt; line-height: 1.7; color: #222;
+  }
+  .cert-card-actions {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 12px; z-index: 10001;
   }
 
   /* 生徒画面プレビューモーダル */
@@ -937,12 +986,39 @@
   </div>
 </div>
 
+<!-- カード版 A-one 31513 (上左1枚目) -->
+<div id="cert-card-wrapper">
+  <div id="cert-card-a4-bg">
+    <div id="cert-card">
+      <div class="cert-card-header">
+        <img src="assets/logo.png" class="cert-card-logo" alt="ホリスケアアカデミー">
+        <div class="cert-card-title">仮　修　了　証　明　書</div>
+      </div>
+      <div class="cert-card-name" id="card-name"></div>
+      <div class="cert-card-info">
+        <div>生年月日：<span id="card-birthdate"></span></div>
+        <div>受講番号：<span id="card-studentno"></span></div>
+        <div>修 了 日：<span id="card-issued-date"></span></div>
+      </div>
+      <div class="cert-card-footer">
+        特定非営利活動法人Social Care Good ホリスケアアカデミー<br>
+        第4007005197号　代表理事　長谷川　剛
+      </div>
+    </div>
+  </div>
+  <div class="cert-card-actions">
+    <button class="cert-print-btn" onclick="printCardMode()">🖨 ラベル印刷</button>
+    <button class="cert-close-btn" onclick="closeCardModal()">✕ 閉じる</button>
+  </div>
+</div>
+
 <!-- 仮修了証明書プレビューモーダル -->
 <div id="cert-print-root" style="display:none;">
   <div class="cert-modal-bg" id="cert-modal">
     <div class="cert-modal-wrap">
       <div class="cert-modal-actions">
-        <button class="cert-print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+        <button class="cert-print-btn" onclick="window.print()">🖨 A4印刷 / PDF</button>
+        <button class="cert-print-btn" style="background:#5c7a6e;" onclick="openCardModal()">🪪 カード印刷</button>
         <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
       </div>
       <div class="cert-paper" id="cert-paper">
@@ -2439,12 +2515,28 @@ async function doLogin() {
     document.getElementById('cert-studentno').textContent = a.studentNo || '—';
     document.getElementById('cert-birthdate').textContent = birthdateStr;
     document.getElementById('cert-issued-date').textContent = issuedDateStr;
+    // カード版にも同じデータをセット
+    document.getElementById('card-name').textContent = name;
+    document.getElementById('card-studentno').textContent = a.studentNo || '—';
+    document.getElementById('card-birthdate').textContent = birthdateStr;
+    document.getElementById('card-issued-date').textContent = issuedDateStr;
     document.getElementById('cert-print-root').style.display = 'block';
     document.getElementById('cert-modal').classList.add('open');
   }
   function closeCertModal() {
     document.getElementById('cert-modal').classList.remove('open');
     document.getElementById('cert-print-root').style.display = 'none';
+  }
+  function openCardModal() {
+    document.getElementById('cert-card-wrapper').classList.add('open');
+  }
+  function closeCardModal() {
+    document.getElementById('cert-card-wrapper').classList.remove('open');
+  }
+  function printCardMode() {
+    document.body.classList.add('card-print-mode');
+    window.print();
+    document.body.classList.remove('card-print-mode');
   }
   window.openCertModal = openCertModal;
   window.closeCertModal = closeCertModal;
