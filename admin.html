@@ -511,6 +511,23 @@
     font-family: 'Noto Sans JP', sans-serif;
   }
   .bulk-print-action-btn:hover { background: var(--teal-dark); }
+  .bulk-cert-btn {
+    border: none; border-radius: 20px; padding: 8px 18px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif; color: white;
+    display: inline-flex; align-items: center; gap: 6px;
+    letter-spacing: 0.03em; transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  }
+  .bulk-cert-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .bulk-cert-btn.a4  { background: linear-gradient(135deg,#E8701A,#C85A10); }
+  .bulk-cert-btn.card{ background: linear-gradient(135deg,#3D7A68,#2A5B4E); }
+  .tempcert-filter-sel {
+    border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 8px 28px 8px 14px; font-family: 'Noto Sans JP',sans-serif;
+    font-size: 13px; outline: none; cursor: pointer; appearance: none;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E") no-repeat right 10px center;
+  }
 
   .bulk-card-sheet {
     background: white; width: 210mm; height: 297mm;
@@ -951,8 +968,13 @@
           <div class="thead">
             <div class="thead-title">📄 仮修了証明書発行管理</div>
             <div class="thead-acts">
-              <button class="refresh-btn" onclick="window.openBulkA4Modal()" style="background:#F57C00;">📄 通常版一括印刷</button>
-              <button class="refresh-btn" onclick="window.openBulkCardModal()" style="background:#5c7a6e;">🪪 携帯用一括印刷</button>
+              <select class="tempcert-filter-sel" id="tempcert-filter-sel" onchange="loadTempCertList()">
+                <option value="all">すべて</option>
+                <option value="pending">未発送</option>
+                <option value="sent">発送済み</option>
+              </select>
+              <button class="bulk-cert-btn a4"   onclick="window.openBulkA4Modal()">📄 通常版一括印刷</button>
+              <button class="bulk-cert-btn card" onclick="window.openBulkCardModal()">🪪 携帯用一括印刷</button>
               <button class="refresh-btn" onclick="loadTempCertList()">🔄 更新</button>
             </div>
           </div>
@@ -2541,15 +2563,18 @@ async function doLogin() {
               : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未発送</span>'
             }</td>
             <td style="white-space:nowrap;">
-              <button onclick="openCertModal('${a.id}')" style="padding:6px 12px;background:#F57C00;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:4px;display:block;">📄 証明書を発行</button>
-              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 12px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:block;">📬 発送済みにする</button>` : ''}
+              ${!isSent ? `<button onclick="markTempCertSent('${a.id}','${a.email}','${name}')" style="padding:6px 12px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:block;">📬 発送済みにする</button>` : '<span style="font-size:11px;color:#aaa;">—</span>'}
             </td>
           </tr>`;
         }).join('');
       }
+      const filter = document.getElementById('tempcert-filter-sel')?.value || 'all';
+      const showPending = filter === 'all' || filter === 'pending';
+      const showSent    = filter === 'all' || filter === 'sent';
       let html = '<table><thead><tr><th><input type="checkbox" id="cert-select-all" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>受講番号</th><th>送付先住所</th><th>テスト２合格日</th><th>ステータス</th><th>操作</th></tr></thead><tbody>';
-      if (pending.length) html += `<tr><td colspan="7" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
-      if (sent.length)    html += `<tr><td colspan="7" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
+      if (showPending && pending.length) html += `<tr><td colspan="7" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未発送 (${pending.length}件)</td></tr>` + rows(pending, false);
+      if (showSent    && sent.length)    html += `<tr><td colspan="7" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発送済み (${sent.length}件)</td></tr>` + rows(sent, true);
+      if (!html.includes('<tr>')) html += `<tr><td colspan="7" style="padding:16px;color:var(--text-light);font-size:13px;">該当する受講生はいません。</td></tr>`;
       html += '</tbody></table>';
       el.innerHTML = html;
     } catch(e) {
