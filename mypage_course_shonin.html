@@ -1404,7 +1404,7 @@
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot,
-    collection, query, orderBy, getDocs, where
+    collection, query, orderBy, getDocs, where, limit
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const cfg = {
@@ -1733,7 +1733,7 @@
     const noticeList = document.getElementById('notice-list');
     try {
       
-      const q = query(collection(db, 'notices'), where('applicationId', '==', window.__docId), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(200));
       onSnapshot(q, async (snap) => {
       const uid = user.uid;
       const email = user.email;
@@ -1742,8 +1742,8 @@
           const appCreatedAt = (window.__appData?.createdAt || data?.createdAt)?.toMillis?.() || 0;
           const noticeCreatedAt = n.createdAt?.toMillis?.() || 0;
           if (n.target === 'all') return noticeCreatedAt >= appCreatedAt;
-          if (n.target === 'specific') return n.emails?.includes(email);
-          if (n.target === 'selected') return n.targetUids?.includes(uid);
+          if (n.target === 'specific') return n.emails?.includes(email) || n.applicationId === window.__docId;
+          if (n.target === 'selected') return n.targetUids?.includes(uid) || n.applicationIds?.includes(window.__docId);
           return false;
         });
       const readSnap = await getDocs(collection(db, 'users', uid, 'readNotices'));
