@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>実習先マイページ | ホリスケアアカデミー</title>
+  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal:#2BBCD4; --teal-dark:#1A9AB0; --teal-light:#E0F7FB; --teal-pale:#F0FBFD;
+      --green:#4CAF72; --green-light:#EBF7EF;
+      --orange:#E8823A; --orange-light:#FEF3E8;
+      --red:#E05050; --bg:#F2F8FA; --white:#fff;
+      --text:#1A3A40; --text-mid:#4A7A85; --text-light:#8AB8C0;
+      --border:#C8EAF0; --shadow:rgba(43,188,212,0.10);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    /* ===== ログイン ===== */
+    #login-view{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E0F7FB,#F2F8FA);}
+    .login-box{background:#fff;border-radius:16px;padding:40px 36px;box-shadow:0 4px 24px var(--shadow);max-width:400px;width:100%;text-align:center;}
+    .login-logo{height:44px;margin-bottom:16px;}
+    .login-title{font-size:20px;font-weight:700;margin-bottom:4px;}
+    .login-sub{font-size:13px;color:var(--text-mid);margin-bottom:28px;}
+    .login-field{margin-bottom:14px;text-align:left;}
+    .login-field label{font-size:12px;color:var(--text-mid);display:block;margin-bottom:5px;}
+    .login-field input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;}
+    .login-field input:focus{border-color:var(--teal);}
+    .login-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;}
+    .login-error{color:var(--red);font-size:13px;margin-top:12px;min-height:18px;}
+
+    /* ===== ヘッダー ===== */
+    .facility-header{background:#fff;border-bottom:3px solid var(--teal);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px var(--shadow);}
+    .header-logo{height:30px;}
+    .header-facility-name{font-size:14px;font-weight:700;}
+    .logout-btn{background:none;border:1.5px solid var(--border);color:var(--text-mid);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+    .logout-btn:hover{background:var(--teal-light);}
+
+    /* ===== タブ ===== */
+    .tab-nav{background:#fff;border-bottom:1px solid var(--border);display:flex;padding:0 24px;}
+    .tab-btn{padding:14px 18px;font-size:13px;font-weight:700;color:var(--text-mid);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .2s;}
+    .tab-btn.active{color:var(--teal);border-bottom-color:var(--teal);}
+    .tab-btn:hover:not(.active){color:var(--text);background:var(--bg);}
+    .tab-content{max-width:860px;margin:0 auto;padding:24px 16px;}
+
+    /* ===== 受講生カード ===== */
+    .student-card{background:#fff;border-radius:14px;margin-bottom:20px;box-shadow:0 2px 12px var(--shadow);overflow:hidden;}
+    .student-card-hd{padding:16px 20px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;display:flex;align-items:center;justify-content:space-between;}
+    .student-card-name{font-size:17px;font-weight:700;}
+    .student-card-no{font-size:12px;opacity:.85;margin-top:2px;}
+    .student-card-badge{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;background:rgba(255,255,255,.25);}
+
+    /* ===== ステップ ===== */
+    .step-item{border-bottom:1px solid var(--border);}
+    .step-item:last-child{border-bottom:none;}
+    .step-hd{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background .15s;user-select:none;}
+    .step-hd:hover{background:var(--bg);}
+    .step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+    .step-num.done{background:var(--green);color:#fff;}
+    .step-num.cur{background:var(--teal);color:#fff;}
+    .step-num.locked{background:#e0e0e0;color:#aaa;}
+    .step-title{font-size:14px;font-weight:700;flex:1;}
+    .step-status{font-size:12px;color:var(--text-mid);white-space:nowrap;}
+    .step-arrow{font-size:11px;color:var(--text-light);transition:transform .2s;}
+    .step-arrow.open{transform:rotate(180deg);}
+    .step-body{display:none;padding:18px 20px 22px;border-top:1px solid var(--border);background:#fafeff;}
+    .step-body.open{display:block;}
+
+    /* ===== フォーム共通 ===== */
+    .form-group{margin-bottom:14px;}
+    .form-group label{font-size:12px;color:var(--text-mid);display:block;margin-bottom:5px;}
+    .form-group input[type=text]{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;max-width:360px;}
+    .form-group input:focus{border-color:var(--teal);}
+    .consent-note{font-size:12px;color:var(--text-mid);background:var(--teal-light);border-radius:8px;padding:10px 14px;margin-bottom:14px;line-height:1.7;}
+    .consent-check-row{display:flex;align-items:flex-start;gap:10px;margin:14px 0;}
+    .consent-check-row input[type=checkbox]{margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;}
+    .submit-btn{padding:10px 24px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .submit-btn:disabled{background:#ccc;cursor:not-allowed;}
+    .submit-btn.outline{background:#fff;color:var(--teal);border:2px solid var(--teal);}
+    .done-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-light);color:var(--green);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;}
+
+    /* ===== 受講生情報 ===== */
+    .info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+    @media(max-width:600px){.info-grid{grid-template-columns:1fr;}}
+    .info-label{font-size:11px;color:var(--text-mid);margin-bottom:3px;}
+    .info-value{font-size:13px;font-weight:500;}
+    .student-photo{width:80px;height:80px;border-radius:8px;object-fit:cover;border:2px solid var(--border);margin-bottom:14px;display:block;}
+    .deadline-badge{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);color:var(--orange);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;margin-top:14px;}
+
+    /* ===== チェックリスト ===== */
+    .checklist-chapter{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+    .checklist-chapter-hd{padding:10px 14px;background:#f0fafb;font-size:13px;font-weight:700;color:var(--teal-dark);}
+    .check-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #eef7f9;cursor:pointer;transition:background .1s;}
+    .check-row:hover{background:#f8fdff;}
+    .check-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex-shrink:0;}
+    .check-row-title{font-size:13px;flex:1;}
+    .detail-toggle{font-size:11px;color:var(--teal);border:1px solid var(--teal);border-radius:10px;padding:2px 8px;background:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+    .check-detail{display:none;padding:12px 14px 14px 40px;background:#fff;border-top:1px solid #eef7f9;font-size:12px;line-height:1.8;color:var(--text-mid);}
+    .check-detail.open{display:block;}
+    .check-detail strong{color:var(--text);font-weight:700;}
+    .report-actions{margin-top:20px;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;}
+    .report-hint{font-size:12px;color:var(--text-mid);}
+    .reported-box{background:var(--green-light);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:14px;}
+    .reported-icon{font-size:28px;}
+    .reported-text{font-size:14px;font-weight:700;color:var(--green);}
+    .reported-sub{font-size:12px;color:var(--text-mid);margin-top:3px;}
+
+    /* ===== OJTガイド ===== */
+    .guide-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+    .guide-ttl{font-size:16px;font-weight:700;}
+    .guide-desc{font-size:12px;color:var(--text-mid);margin-top:4px;line-height:1.6;}
+    .print-btn{padding:9px 18px;background:#fff;color:var(--teal);border:2px solid var(--teal);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+    .print-btn:hover{background:var(--teal-light);}
+    .guide-chapter{background:#fff;border-radius:12px;margin-bottom:12px;box-shadow:0 1px 6px var(--shadow);overflow:hidden;}
+    .guide-chap-hd{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .15s;}
+    .guide-chap-hd:hover{background:var(--bg);}
+    .guide-chap-num{width:30px;height:30px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+    .guide-chap-info{flex:1;}
+    .guide-chap-title{font-size:14px;font-weight:700;}
+    .guide-chap-meta{font-size:11px;color:var(--text-mid);margin-top:2px;}
+    .guide-chap-arrow{font-size:11px;color:var(--text-light);transition:transform .2s;}
+    .guide-chap-arrow.open{transform:rotate(180deg);}
+    .guide-chap-body{display:none;border-top:1px solid var(--border);}
+    .guide-chap-body.open{display:block;}
+    .guide-item{padding:14px 18px;border-bottom:1px solid #f0f5f7;}
+    .guide-item:last-child{border-bottom:none;}
+    .guide-item-title{font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:6px;}
+    .guide-item-ref{font-size:11px;color:var(--text-light);margin-bottom:8px;}
+    .guide-item-block{margin-bottom:8px;}
+    .guide-item-block:last-child{margin-bottom:0;}
+    .guide-item-lbl{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px;}
+    .guide-item-txt{font-size:12px;line-height:1.8;}
+
+    /* ===== 問い合わせ ===== */
+    .inq-form{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px var(--shadow);}
+    .inq-ttl{font-size:15px;font-weight:700;margin-bottom:14px;}
+    .inq-textarea{width:100%;min-height:130px;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;resize:vertical;}
+    .inq-textarea:focus{border-color:var(--teal);}
+    .inq-history{margin-top:24px;}
+    .inq-history-ttl{font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:12px;}
+    .inq-msg{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--teal);box-shadow:0 1px 4px var(--shadow);}
+    .inq-msg.reply{border-left-color:var(--green);}
+    .inq-msg-meta{font-size:11px;color:var(--text-light);margin-bottom:5px;}
+    .inq-msg-body{font-size:13px;line-height:1.6;}
+    .loading{padding:40px;text-align:center;color:var(--text-mid);font-size:14px;}
+
+    /* ===== 印刷 ===== */
+    @media print {
+      body>*:not(#print-area){display:none!important;}
+      #print-area{display:block!important;position:fixed;top:0;left:0;width:100%;padding:16px;}
+      .guide-chap-body{display:block!important;}
+      .guide-chap-arrow,.print-btn{display:none!important;}
+      .guide-chap-hd{cursor:default;}
+      .guide-chapter{box-shadow:none;border:1px solid #ddd;margin-bottom:8px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== ログイン ===== -->
+<div id="login-view">
+  <div class="login-box">
+    <img src="assets/logo.png" class="login-logo" alt="ホリスケアアカデミー">
+    <div class="login-title">実習先マイページ</div>
+    <div class="login-sub">担当者ID・パスワードでログインしてください</div>
+    <div class="login-field"><label>メールアドレス</label><input type="email" id="login-email" placeholder="info@example.com" autocomplete="email"></div>
+    <div class="login-field"><label>パスワード</label><input type="password" id="login-password" placeholder="パスワード" autocomplete="current-password"></div>
+    <button class="login-btn" onclick="doLogin()">ログイン</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ===== メイン ===== -->
+<div id="main-view" style="display:none;">
+  <header class="facility-header">
+    <img src="assets/logo.png" class="header-logo" alt="">
+    <div class="header-facility-name" id="hdr-facility-name"></div>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+  </header>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tbtn-students" onclick="showTab('students')">📋 受講生管理</button>
+    <button class="tab-btn" id="tbtn-guide"    onclick="showTab('guide')">📖 OJTガイド</button>
+    <button class="tab-btn" id="tbtn-inquiry"  onclick="showTab('inquiry')">📬 問い合わせ</button>
+  </div>
+
+  <div id="tab-students" class="tab-content">
+    <div id="students-container"><div class="loading">読み込み中...</div></div>
+  </div>
+
+  <div id="tab-guide" class="tab-content" style="display:none;">
+    <div class="guide-top">
+      <div>
+        <div class="guide-ttl">施設用OJT 実技指導ポイント・チェックガイド</div>
+        <div class="guide-desc">受講生がテキストの手順通りに安全・確実な介助を行えているかを確認するためのOJT担当者用リファレンスです。</div>
+      </div>
+      <button class="print-btn" onclick="printGuide()">🖨 印刷 / PDF</button>
+    </div>
+    <div id="print-area" style="display:block;"></div>
+  </div>
+
+  <div id="tab-inquiry" class="tab-content" style="display:none;">
+    <div class="inq-form">
+      <div class="inq-ttl">📬 管理者への問い合わせ</div>
+      <div style="margin-bottom:12px;"><textarea class="inq-textarea" id="inq-body" placeholder="お問い合わせ内容を入力してください"></textarea></div>
+      <button class="submit-btn" onclick="sendInquiry()">送信する</button>
+    </div>
+    <div class="inq-history">
+      <div class="inq-history-ttl">過去のやりとり</div>
+      <div id="inq-history-list"><div class="loading">読み込み中...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Firebase ===== -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, getDocs, updateDoc, addDoc, collection, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const cfg = {
+    apiKey:"AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
+    authDomain:"holiscare-academy.firebaseapp.com",
+    projectId:"holiscare-academy",
+    storageBucket:"holiscare-academy.firebasestorage.app",
+    messagingSenderId:"698886904450",
+    appId:"1:698886904450:web:04b9202840ffd321da329b",
+  };
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  window.__auth = auth; window.__db = db;
+  window.__signOut = () => signOut(auth);
+  window.__login  = (e,p) => signInWithEmailAndPassword(auth,e,p);
+  window.__serverTs = serverTimestamp;
+  window.__updateDoc = (ref,data) => updateDoc(ref,data);
+  window.__addDoc    = (col,data) => addDoc(col,data);
+  window.__getDoc    = (ref) => getDoc(ref);
+  window.__getDocs   = (q) => getDocs(q);
+  window.__doc  = (db,col,id) => doc(db,col,id);
+  window.__col  = (db,col) => collection(db,col);
+  window.__q    = (...args) => query(...args);
+  window.__where    = (f,op,v) => where(f,op,v);
+  window.__orderBy  = (f,d) => orderBy(f,d);
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      document.getElementById('login-view').style.display = 'flex';
+      document.getElementById('main-view').style.display  = 'none';
+      return;
+    }
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('main-view').style.display  = 'block';
+    await loadFacility(user.uid);
+  });
+</script>
+
+<script>
+/* ========== OJTカリキュラムデータ ========== */
+const OJT = [
+  { id:'1', title:'ベッドメイキング・シーツ交換', hours:'2時間', ref:'P.122〜125', items:[
+    { id:'1-1', title:'事前準備と環境整備', ref:'P.122-123',
+      check:'介助前に「窓を開け、換気をする」行動がとれているか。ベッド周りに作業しやすい空間を確保し、ベッドの高さを自分の腰の高さに調節しているか。',
+      guide:'シーツ類は絶対に床に触れさせないよう（衛生管理）注意させます。' },
+    { id:'1-2', title:'シーツの敷き方とコーナー作り', ref:'P.123',
+      check:'マットレスの中央とシーツの中央を合わせられているか。',
+      guide:'コーナーを作る際、シワやたるみを作らないよう「手でしっかりと押さえながら」頭側からコーナーを作る技術を反復させます。' },
+    { id:'1-3', title:'臥床時のシーツ交換', ref:'P.124',
+      check:'利用者に説明し同意を得る声かけができているか。側臥位になってもらい、古いシーツの「汚れた面を内側に丸め込みながら」身体の下に入れているか。',
+      guide:'「利用者に負担・不安を与えない、不必要な露出を避ける、ほこりを立てない」配慮を徹底させます。' },
+    { id:'1-4', title:'自立支援の視点', ref:'P.125',
+      check:'',
+      guide:'「なるべく利用者に離床を働きかけ、ふとんを干すなど乾燥させる」など、利用者の能力を引き出す声かけができるかを確認します。' },
+  ]},
+  { id:'2', title:'体位変換・移動介助・移乗介助', hours:'計5時間', ref:'P.202〜213、P.218〜228、P.231〜236', items:[
+    { id:'2-1', title:'水平移動・上方向への移動', ref:'P.202-206',
+      check:'介助者が「両膝をベッドサイドに当てて膝を曲げ、重心を落とす」ボディメカニクスを活用できているか。',
+      guide:'上方向へ移動する際、利用者に両膝を立ててもらい、「利用者が健側の足でベッドを踏み込むのと同時に」タイミングを合わせて斜め上にスライドさせる動きを練習させます。' },
+    { id:'2-2', title:'仰臥位から側臥位への体位変換', ref:'P.207-208',
+      check:'腕を胸の上で組ませ、健側の膝を立てる準備ができているか。',
+      guide:'介助者は利用者の膝・腰・肩を支持し、手前に向ける（対面法）か奥へ倒す（背面法）動きを指導します。' },
+    { id:'2-3', title:'仰臥位から端座位・立位へ', ref:'P.209-213',
+      check:'側臥位から、大転子部を支点にしてややカーブを描くように上半身を起こせているか。',
+      guide:'立ち上がり時は「肩と臀部を対角線上にして重心を前に移動」させながら、介助者が利用者の膝を自分の膝で挟んで支持して立ち上がる技術を徹底します。' },
+    { id:'2-4', title:'車いすの操作', ref:'P.218-222',
+      check:'操作前後の「ブレーキ」の徹底。',
+      guide:'段差を上がる際は「ティッピングレバーを強く踏み込みながらキャスタを上げる」。段差を下る際は「後ろ向き」になり後輪から静かに下ろし、最後にキャスタを下ろす手順を厳守させます。' },
+    { id:'2-5', title:'ベッドから車いすへの移乗（片まひ）', ref:'P.223-228',
+      check:'車いすを利用者の「健側」に置き、浅く座ってもらっているか。',
+      guide:'利用者の健側の手で車いすの遠い方のアームサポートを握らせ、前かがみになって健側に体重を乗せてもらう。介助者は患側の膝折れを防ぐため自分の膝で患側の膝をしっかり支えながら回転して座る一連の動作をチェックします。' },
+    { id:'2-6', title:'杖歩行介助', ref:'P.231-234',
+      check:'介助者が「患側やや後方」に立っているか。段差を上がる時「杖⇒健側⇒患側」、段差を下る時「杖⇒患側⇒健側」の順を声に出させながら実践できているか。',
+      guide:'足の運びの順番を声に出させながら実践させます。' },
+    { id:'2-7', title:'視覚障害者の歩行介助', ref:'P.235-236',
+      check:'介助者は「半歩前」を歩き、利用者に「肘の少し上」を握ってもらっているか。階段では直前で止まり「上がります（下ります）」と声をかけているか。',
+      guide:'終わったら「終わりました」と伝えるコミュニケーションを評価します。' },
+  ]},
+  { id:'3', title:'着脱介助（基本）', hours:'2.5時間', ref:'P.158〜167', items:[
+    { id:'3-1', title:'脱健着患の原則と事前準備', ref:'P.158',
+      check:'「脱ぐときは健側から、着るときは患側から（脱健着患）」の原則を完全に理解しているかを毎回確認する。室温の調整とプライバシーの配慮（カーテン等）ができているか。',
+      guide:'脱健着患の原則は最重要事項として毎回確認します。' },
+    { id:'3-2', title:'座位での着脱（片まひ・前開き）', ref:'P.159-161',
+      check:'脱ぐ時：健側の肩を引きながら健側の袖を脱ぎ、次に患側の袖を脱がせているか。着る時：患側の袖に手を通す際、介助者が袖口から手を入れて患側の手を支えながら通しているか。',
+      guide:'脱健着患の順序を口頭で確認しながら実施させます。' },
+    { id:'3-3', title:'ズボンの着脱（片まひ）', ref:'P.162-163',
+      check:'立ち上がる際、介助者が患側の膝や足先を支えて前傾姿勢を促しているか。着る際は患側の足から通し、脱ぐ際は健側の足から脱いでいるか。',
+      guide:'立位保持の安全確保と脱健着患の原則遵守を徹底します。' },
+    { id:'3-4', title:'臥床時の着脱（ベッド上）', ref:'P.164-167',
+      check:'側臥位を活用し、脱ぐ浴衣を背中の下に丸め込み、新しい浴衣の背縫いを背中の中央に合わせてシワを伸ばし、反対側へ転がって引き出す一連の手順をスムーズに行えているか。',
+      guide:'シーツ交換と同様の技術を活用します。側臥位の保持と衣類のシワ防止を重点的に指導します。' },
+  ]},
+  { id:'4', title:'食事介助・口腔ケア', hours:'1時間', ref:'P.418〜419', items:[
+    { id:'4-1', title:'姿勢の確認と環境設定', ref:'P.418',
+      check:'安定した座位姿勢（足底が床についているか、体幹の傾きがないか）を確認し、テーブルの高さが適切かを見ているか。',
+      guide:'食事介助前の姿勢確認は誤嚥防止のために必須です。' },
+    { id:'4-2', title:'ベッド上での食事介助', ref:'P.419',
+      check:'車いすをベッドにつける際、健側がベッド側になるように斜め（15〜20度）に配置できているかをチェック。',
+      guide:'斜め配置による安全な移乗補助の技術を確認します。' },
+  ]},
+  { id:'5', title:'トイレ介助・おむつ交換', hours:'1.5時間', ref:'P.348〜350、P.353〜354', items:[
+    { id:'5-1', title:'ポータブルトイレ介助', ref:'P.348-349',
+      check:'スクリーン等でプライバシーを保護し、羞恥心へ配慮する言葉かけがあるか。浅めに腰掛けてもらい、前かがみになって体重移動しながら立ち上がる動作のサポートができているか。',
+      guide:'プライバシー配慮と安全な立ち上がり支援を重点的に指導します。' },
+    { id:'5-2', title:'おむつ交換', ref:'P.350、P.353-354',
+      check:'室温調節と介助者の手・新しいおむつを温めておく配慮ができているか。側臥位にし、汚れたおむつの汚れを内側に丸め込んでいるか。陰部清拭（前から後ろへ）を正しく行い、テープは上側やや下向き・下側やや上向き（クロス）に止め、腹部を圧迫しすぎていないか確認しているか。',
+      guide:'衛生的な手順と利用者の尊厳保持の両立を指導します。排泄物の性状や皮膚状態の観察も評価します。' },
+  ]},
+  { id:'6', title:'入浴介助', hours:'1.5時間', ref:'P.299〜303', items:[
+    { id:'6-1', title:'入浴前・洗い場', ref:'P.299-301',
+      check:'バイタルサインの確認。かけ湯を「心臓に遠い足先から」行っているか。健側の手で手すりを握らせ、介助者は患側の下肢や腰をしっかり支えながら移動させる手順を確認。',
+      guide:'バイタルチェックと安全な入浴動作の順序を徹底指導します。' },
+    { id:'6-2', title:'浴槽内・入浴後・機械浴', ref:'P.302-303',
+      check:'浴槽内では健側の膝を曲げて踏ん張るよう声かけできているか。湯に浸かる時間は5〜10分程度にとどめているか。入浴後は立ちくらみに注意させながらゆっくり立ち上がらせ、水分補給とバイタルチェックを行えているか。機械浴は「必ず事前準備・常に2名・尊厳の保持」を徹底しているか。',
+      guide:'入浴時間の管理と入浴後のバイタルチェックを必ず実施させます。機械浴は2名体制を厳守します。' },
+  ]},
+];
+
+/* ========== 状態 ========== */
+let __facility = null;
+let __students = [];
+
+/* ========== 施設データ読み込み ========== */
+async function loadFacility(uid) {
+  try {
+    const snap = await window.__getDocs(window.__q(
+      window.__col(window.__db,'facilities'),
+      window.__where('uid','==',uid)
+    ));
+    if (snap.empty) {
+      document.getElementById('students-container').innerHTML =
+        '<p style="color:var(--red);padding:20px;">施設情報が見つかりません。管理者にお問い合わせください。</p>';
+      return;
+    }
+    const fd = snap.docs[0];
+    __facility = { id:fd.id, ...fd.data() };
+    document.getElementById('hdr-facility-name').textContent = __facility.name || '';
+
+    const ids = __facility.linkedApplicationIds || [];
+    __students = [];
+    for (const aid of ids) {
+      const as = await window.__getDoc(window.__doc(window.__db,'applications',aid));
+      if (as.exists()) __students.push({ id:as.id, ...as.data() });
+    }
+    renderStudents();
+    renderGuide();
+    loadInquiryHistory();
+  } catch(e) {
+    document.getElementById('students-container').innerHTML =
+      '<p style="color:var(--red);padding:20px;">読み込みエラー: '+e.message+'</p>';
+  }
+}
+
+/* ========== 受講生一覧レンダリング ========== */
+function renderStudents() {
+  const el = document.getElementById('students-container');
+  if (!__students.length) {
+    el.innerHTML = '<p style="padding:30px;text-align:center;color:#888;">受け入れ受講生はまだ登録されていません。</p>';
+    return;
+  }
+  el.innerHTML = __students.map(s => studentCardHTML(s)).join('');
+}
+
+function studentCardHTML(s) {
+  const name = s.name || ((s.sei||'')+(s.mei?'　'+s.mei:'')) || '—';
+  const consented = !!s.facilityConsent?.agreed;
+  const reported  = !!s.facilityReported;
+  const badge = reported ? '実習終了報告済み' : consented ? '受け入れ同意済み' : '未同意';
+
+  return `<div class="student-card" id="scard-${s.id}">
+    <div class="student-card-hd">
+      <div>
+        <div class="student-card-name">${name}</div>
+        <div class="student-card-no">受講番号：${s.studentNo||'—'}</div>
+      </div>
+      <div class="student-card-badge">${badge}</div>
+    </div>
+    <div>
+      ${step1HTML(s)}
+      ${consented ? step2HTML(s) : ''}
+      ${consented ? step3HTML(s) : ''}
+    </div>
+  </div>`;
+}
+
+/* ===== STEP 1: 受け入れ同意 ===== */
+function step1HTML(s) {
+  const consented = !!s.facilityConsent?.agreed;
+  const agreedAt  = s.facilityConsent?.agreedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+  const fName  = s.facilityConsent?.facilityName  || __facility?.name          || '';
+  const fPerson= s.facilityConsent?.contactPerson || __facility?.contactPerson || '';
+
+  return `<div class="step-item">
+    <div class="step-hd" onclick="toggleStep('s1-${s.id}','a1-${s.id}')">
+      <div class="step-num ${consented?'done':'cur'}">${consented?'✓':'1'}</div>
+      <div class="step-title">受け入れ同意・署名</div>
+      <div class="step-status">${consented?'同意済み '+agreedAt:''}</div>
+      <div class="step-arrow" id="a1-${s.id}">▼</div>
+    </div>
+    <div class="step-body ${!consented?'open':''}" id="s1-${s.id}">
+      ${consented
+        ? `<div class="done-badge">✅ ${agreedAt} に同意済み（${fName} / ${fPerson}）</div>`
+        : `<div class="consent-note">受講生の実習を受け入れることに同意いただける場合は、施設名・担当者名を確認のうえ、チェックを入れて送信してください。</div>
+           <div class="form-group"><label>施設名</label><input type="text" id="cf-${s.id}" value="${fName}" placeholder="施設名"></div>
+           <div class="form-group"><label>担当者名</label><input type="text" id="cp-${s.id}" value="${fPerson}" placeholder="担当者名"></div>
+           <div class="consent-check-row">
+             <input type="checkbox" id="cc-${s.id}" onchange="toggleConsentBtn('${s.id}')">
+             <label for="cc-${s.id}" style="font-size:13px;line-height:1.6;cursor:pointer;">上記受講生の実習を受け入れることに同意します。受講生の個人情報は実習指導目的にのみ使用します。</label>
+           </div>
+           <button class="submit-btn" id="cbtn-${s.id}" onclick="saveConsent('${s.id}')" disabled>同意して送信する</button>`
+      }
+    </div>
+  </div>`;
+}
+
+/* ===== STEP 2: 受講生情報 ===== */
+function step2HTML(s) {
+  const name  = s.name || ((s.sei||'')+(s.mei?'　'+s.mei:'')) || '—';
+  const kana  = s.kana || ((s.seikana||'')+(s.meikana?'　'+s.meikana:'')) || '—';
+  const photo = s.documentStatus?.photoUrl;
+  const addr  = (s.zip?'〒'+s.zip+'　':'')+(s.address||'')+(s.address2||'');
+  const deadline = calcDeadline(s.activeAt);
+
+  return `<div class="step-item">
+    <div class="step-hd" onclick="toggleStep('s2-${s.id}','a2-${s.id}')">
+      <div class="step-num done">✓</div>
+      <div class="step-title">受講生情報</div>
+      <div class="step-status"></div>
+      <div class="step-arrow" id="a2-${s.id}">▼</div>
+    </div>
+    <div class="step-body" id="s2-${s.id}">
+      ${photo?`<img src="${photo}" class="student-photo" alt="顔写真">`:''}
+      <div class="info-grid">
+        <div><div class="info-label">講座名</div><div class="info-value">介護職員初任者研修</div></div>
+        <div><div class="info-label">受講番号</div><div class="info-value">${s.studentNo||'—'}</div></div>
+        <div><div class="info-label">氏名</div><div class="info-value">${name}</div></div>
+        <div><div class="info-label">ふりがな</div><div class="info-value">${kana}</div></div>
+        <div><div class="info-label">性別</div><div class="info-value">${s.gender||'—'}</div></div>
+        <div><div class="info-label">生年月日</div><div class="info-value">${s.birthdate||'—'}</div></div>
+        <div><div class="info-label">電話番号</div><div class="info-value">${s.phone||'—'}</div></div>
+        <div><div class="info-label">メールアドレス</div><div class="info-value">${s.email||'—'}</div></div>
+        <div style="grid-column:1/-1"><div class="info-label">住所</div><div class="info-value">${addr||'—'}</div></div>
+      </div>
+      <div class="deadline-badge">⏰ 修了期限：${deadline}</div>
+    </div>
+  </div>`;
+}
+
+/* ===== STEP 3: 実習終了報告 ===== */
+function step3HTML(s) {
+  const reported   = !!s.facilityReported;
+  const reportedAt = s.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+  const checks     = s.facilityOjtChecks || {};
+  const totalItems = OJT.reduce((n,ch)=>n+ch.items.length, 0);
+  const doneItems  = OJT.reduce((n,ch)=>n+ch.items.filter(it=>checks[it.id]).length, 0);
+  const allDone    = doneItems === totalItems;
+
+  if (reported) {
+    return `<div class="step-item">
+      <div class="step-hd" onclick="toggleStep('s3-${s.id}','a3-${s.id}')">
+        <div class="step-num done">✓</div>
+        <div class="step-title">実習終了報告</div>
+        <div class="step-status">報告済み ${reportedAt}</div>
+        <div class="step-arrow" id="a3-${s.id}">▼</div>
+      </div>
+      <div class="step-body" id="s3-${s.id}">
+        <div class="reported-box">
+          <div class="reported-icon">✅</div>
+          <div>
+            <div class="reported-text">実習終了報告を送信しました</div>
+            <div class="reported-sub">${reportedAt} 送信</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="step-item">
+    <div class="step-hd" onclick="toggleStep('s3-${s.id}','a3-${s.id}')">
+      <div class="step-num cur">3</div>
+      <div class="step-title">実習終了報告</div>
+      <div class="step-status">${doneItems}/${totalItems} 項目完了</div>
+      <div class="step-arrow" id="a3-${s.id}">▼</div>
+    </div>
+    <div class="step-body" id="s3-${s.id}">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">全科目の指導が完了したら、各項目を確認・チェックしてください。実習中の参照は「<button onclick="showTab('guide')" style="background:none;border:none;color:var(--teal);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;">📖 OJTガイド</button>」タブをご活用ください。</p>
+      ${OJT.map(ch=>`
+        <div class="checklist-chapter">
+          <div class="checklist-chapter-hd">① ${ch.title}<span style="font-size:11px;color:var(--text-mid);font-weight:400;margin-left:8px;">${ch.hours}　${ch.ref}</span></div>
+          ${ch.items.map(it=>`
+            <div class="check-row" onclick="toggleDetail('cd-${s.id}-${it.id}')">
+              <input type="checkbox" id="ck-${s.id}-${it.id}" ${checks[it.id]?'checked':''}
+                onclick="event.stopPropagation()" onchange="onCheckChange('${s.id}')">
+              <span class="check-row-title">${it.title}</span>
+              <button class="detail-toggle" onclick="event.stopPropagation();toggleDetail('cd-${s.id}-${it.id}')">詳細</button>
+            </div>
+            <div class="check-detail" id="cd-${s.id}-${it.id}">
+              <div style="font-size:11px;color:var(--text-light);margin-bottom:6px;">${it.ref}</div>
+              ${it.check?`<div><strong>チェックポイント</strong><br>${it.check}</div>`:''}
+              ${it.guide?`<div style="margin-top:8px;"><strong>指導のポイント</strong><br>${it.guide}</div>`:''}
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+      <div class="report-actions">
+        <span class="report-hint" id="rhint-${s.id}">${allDone?'':'すべての項目をチェックすると送信できます'}</span>
+        <button class="submit-btn" id="rbtn-${s.id}" onclick="submitReport('${s.id}')" ${allDone?'':'disabled'}>実習終了を報告する →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ========== 操作ハンドラ ========== */
+function toggleConsentBtn(sid) {
+  const cb  = document.getElementById('cc-'+sid);
+  const btn = document.getElementById('cbtn-'+sid);
+  if (btn) btn.disabled = !cb?.checked;
+}
+
+function toggleStep(bodyId, arrowId) {
+  document.getElementById(bodyId)?.classList.toggle('open');
+  document.getElementById(arrowId)?.classList.toggle('open');
+}
+
+function toggleDetail(id) {
+  document.getElementById(id)?.classList.toggle('open');
+}
+
+function onCheckChange(sid) {
+  const total = OJT.reduce((n,ch)=>n+ch.items.length,0);
+  const done  = OJT.reduce((n,ch)=>n+ch.items.filter(it=>{
+    const cb = document.getElementById(`ck-${sid}-${it.id}`);
+    return cb?.checked;
+  }).length, 0);
+  const all = done === total;
+  const btn  = document.getElementById('rbtn-'+sid);
+  const hint = document.getElementById('rhint-'+sid);
+  if (btn)  btn.disabled = !all;
+  if (hint) hint.textContent = all ? '' : `${done}/${total} 項目完了（あと${total-done}件）`;
+}
+
+async function saveConsent(sid) {
+  const fName  = document.getElementById('cf-'+sid)?.value.trim();
+  const fPerson= document.getElementById('cp-'+sid)?.value.trim();
+  if (!fName || !fPerson) { alert('施設名と担当者名を入力してください'); return; }
+  try {
+    await window.__updateDoc(window.__doc(window.__db,'applications',sid), {
+      facilityConsent:{ agreed:true, agreedAt:window.__serverTs(), facilityName:fName, contactPerson:fPerson, facilityId:__facility?.id||'' }
+    });
+    const s = __students.find(x=>x.id===sid);
+    if (s) s.facilityConsent = { agreed:true, agreedAt:{ toDate:()=>new Date() }, facilityName:fName, contactPerson:fPerson };
+    renderStudents();
+  } catch(e) { alert('エラー: '+e.message); }
+}
+
+async function submitReport(sid) {
+  if (!confirm('実習終了を報告します。送信後は取り消しできません。よろしいですか？')) return;
+  const checks = {};
+  OJT.forEach(ch=>ch.items.forEach(it=>{
+    const cb = document.getElementById(`ck-${sid}-${it.id}`);
+    if (cb) checks[it.id] = cb.checked;
+  }));
+  try {
+    await window.__updateDoc(window.__doc(window.__db,'applications',sid), {
+      facilityReported:true,
+      facilityReportedAt:window.__serverTs(),
+      facilityReportedBy:__facility?.name||'',
+      facilityOjtChecks:checks,
+    });
+    await window.__addDoc(window.__col(window.__db,'notices'), {
+      title:'【施設より】実習終了報告が届きました',
+      body:(__facility?.name||'実習先施設')+'より実習終了報告が届きました。',
+      target:'admin',
+      applicationId:sid,
+      createdAt:window.__serverTs(),
+      createdBy:__facility?.name||'',
+    });
+    const s = __students.find(x=>x.id===sid);
+    if (s) { s.facilityReported=true; s.facilityReportedAt={ toDate:()=>new Date() }; s.facilityOjtChecks=checks; }
+    renderStudents();
+  } catch(e) { alert('エラー: '+e.message); }
+}
+
+/* ========== OJTガイド ========== */
+function renderGuide() {
+  const el = document.getElementById('print-area');
+  if (!el) return;
+  el.innerHTML = OJT.map((ch,i)=>`
+    <div class="guide-chapter">
+      <div class="guide-chap-hd" onclick="toggleGuideChap('gc-${ch.id}','gca-${ch.id}')">
+        <div class="guide-chap-num">${i+1}</div>
+        <div class="guide-chap-info">
+          <div class="guide-chap-title">${ch.title}</div>
+          <div class="guide-chap-meta">${ch.hours}　${ch.ref}</div>
+        </div>
+        <div class="guide-chap-arrow" id="gca-${ch.id}">▼</div>
+      </div>
+      <div class="guide-chap-body" id="gc-${ch.id}">
+        ${ch.items.map(it=>`
+          <div class="guide-item">
+            <div class="guide-item-title">${it.title}</div>
+            <div class="guide-item-ref">${it.ref}</div>
+            ${it.check?`<div class="guide-item-block"><div class="guide-item-lbl">チェックポイント</div><div class="guide-item-txt">${it.check}</div></div>`:''}
+            ${it.guide?`<div class="guide-item-block"><div class="guide-item-lbl">指導のポイント</div><div class="guide-item-txt">${it.guide}</div></div>`:''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleGuideChap(bodyId, arrowId) {
+  document.getElementById(bodyId)?.classList.toggle('open');
+  document.getElementById(arrowId)?.classList.toggle('open');
+}
+
+function printGuide() {
+  OJT.forEach(ch=>{
+    document.getElementById('gc-'+ch.id)?.classList.add('open');
+    document.getElementById('gca-'+ch.id)?.classList.add('open');
+  });
+  window.print();
+}
+
+/* ========== 問い合わせ ========== */
+async function sendInquiry() {
+  const body = document.getElementById('inq-body')?.value.trim();
+  if (!body) { alert('内容を入力してください'); return; }
+  try {
+    await window.__addDoc(window.__col(window.__db,'facilityInquiries'), {
+      facilityId:__facility?.id||'',
+      facilityName:__facility?.name||'',
+      body, createdAt:window.__serverTs(), status:'pending',
+    });
+    document.getElementById('inq-body').value = '';
+    alert('送信しました');
+    loadInquiryHistory();
+  } catch(e) { alert('エラー: '+e.message); }
+}
+
+async function loadInquiryHistory() {
+  const el = document.getElementById('inq-history-list');
+  if (!el || !__facility) return;
+  try {
+    const snap = await window.__getDocs(window.__q(
+      window.__col(window.__db,'facilityInquiries'),
+      window.__where('facilityId','==',__facility.id),
+      window.__orderBy('createdAt','desc')
+    ));
+    if (snap.empty) { el.innerHTML='<p style="color:#aaa;font-size:13px;">まだやりとりはありません。</p>'; return; }
+    el.innerHTML = snap.docs.map(d=>{
+      const m = d.data();
+      const dt = m.createdAt?.toDate?.()?.toLocaleString('ja-JP')||'';
+      let html = `<div class="inq-msg"><div class="inq-msg-meta">送信 ${dt}</div><div class="inq-msg-body">${m.body}</div></div>`;
+      if (m.reply) html += `<div class="inq-msg reply"><div class="inq-msg-meta">管理者より返信</div><div class="inq-msg-body">${m.reply}</div></div>`;
+      return html;
+    }).join('');
+  } catch(e) { el.innerHTML='<p style="color:var(--red);font-size:13px;">読み込みエラー</p>'; }
+}
+
+/* ========== ユーティリティ ========== */
+function calcDeadline(activeAt) {
+  if (!activeAt) return '—';
+  const d = activeAt.toDate ? activeAt.toDate() : new Date(activeAt);
+  const dl = new Date(d);
+  dl.setMonth(dl.getMonth()+8);
+  return `${dl.getFullYear()}年${dl.getMonth()+1}月${dl.getDate()}日`;
+}
+
+function showTab(name) {
+  ['students','guide','inquiry'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
+    document.getElementById('tbtn-'+t)?.classList.toggle('active',t===name);
+  });
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const err   = document.getElementById('login-error');
+  err.textContent = '';
+  try { await window.__login(email, pass); }
+  catch(e) { err.textContent = 'ログインに失敗しました。メールアドレスとパスワードを確認してください。'; }
+}
+
+async function doLogout() { await window.__signOut(); }
+
+document.addEventListener('keydown', e=>{
+  if (e.key==='Enter' && document.getElementById('login-view').style.display!=='none') doLogin();
+});
+
+window.doLogin=doLogin; window.doLogout=doLogout; window.showTab=showTab;
+window.toggleStep=toggleStep; window.toggleDetail=toggleDetail;
+window.toggleConsentBtn=toggleConsentBtn; window.saveConsent=saveConsent;
+window.onCheckChange=onCheckChange; window.submitReport=submitReport;
+window.toggleGuideChap=toggleGuideChap; window.printGuide=printGuide;
+window.sendInquiry=sendInquiry;
+</script>
+</body>
+</html>
