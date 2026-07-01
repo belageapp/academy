@@ -1901,16 +1901,30 @@ async function doLogin() {
       } else if (target === 'selected') {
         mailRecipients = targetEmails.map((email, i) => ({ name: targetNames[i] || '', email }));
       }
-      if (mailRecipients.length > 0) {
-        fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendNoticeMail', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipients: mailRecipients, title, body }),
-        }).catch(e => console.warn('お知らせメール送信失敗:', e));
-      }
+      console.log('[sendNoticeMail] recipients:', mailRecipients);
 
       msg.style.background = '#D1FAE5'; msg.style.color = '#065F46';
-      msg.textContent = `投稿しました！${mailRecipients.length > 0 ? `（${mailRecipients.length}名にメール通知）` : ''}`;
+      msg.textContent = `投稿しました！${mailRecipients.length > 0 ? `（${mailRecipients.length}名にメール送信中...）` : ''}`;
+
+      if (mailRecipients.length > 0) {
+        try {
+          const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendNoticeMail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipients: mailRecipients, title, body }),
+          });
+          const json = await res.json();
+          console.log('[sendNoticeMail] result:', json);
+          if (json.ok) {
+            msg.textContent = `投稿しました！（${json.sent}名にメール送信完了）`;
+          } else {
+            msg.textContent = `投稿しました！（メール送信エラー: ${JSON.stringify(json)}）`;
+          }
+        } catch(e) {
+          console.error('[sendNoticeMail] fetch失敗:', e);
+          msg.textContent = `投稿しました！（メール送信失敗: ${e.message}）`;
+        }
+      }
       document.getElementById('n-title').value = '';
       document.getElementById('n-body').value  = '';
       document.getElementById('n-file').value  = '';
