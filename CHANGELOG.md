@@ -19,6 +19,14 @@
 - `externalVideoPending` / `externalVideoDone` の変数・フィルタ条件・pendingCountへの加算・HTMLブロックをすべて除去
 - 書類確認は「📷 顔写真」「🪪 本人確認書類」の2項目のみに整理
 
+#### 仮修了証明書 一括印刷機能（記録補完）
+- セクションヘッダーに「📄 通常版一括印刷」「🪪 携帯用一括印刷」ボタンを設置
+- 一覧テーブルの左端チェックボックスで対象者を複数選択（全選択チェックボックスあり）
+- **通常版（A4）一括印刷**：`openBulkA4Modal()` → `bulk-a4-modal` でプレビュー（前後ページ送り）→ `printBulkA4()` で全員分を連続印刷
+- **携帯用（カード）一括印刷**：`openBulkCardModal()` → `bulk-card-modal` でA4シートごとのプレビュー（10件/シート、A-one 31513対応）→ `printBulkCard()` で出力
+- `parseCertData(a)` で氏名・受講番号・生年月日・発行日を整形、`getSelectedCerts()` でチェック済みデータを収集
+- 印刷後に `captureAndUploadCertImage()` で全員分の証明書画像をFirebase Storageへ保存（v1.27.0 のスナップショット機能と連動）
+
 ---
 
 ## v1.27.0 - 2026/07/01（構築２７）
