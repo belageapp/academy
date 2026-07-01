@@ -2802,26 +2802,33 @@ async function doLogin() {
     });
   }
 
+  async function blobToDataUrl(blob) {
+    return new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+  }
+
   async function captureAndUploadCertImage(docId, data) {
     if (!docId || !data) return;
     showToast('📸 証明書画像を保存中...', 'info');
     try {
+      // 画像をdata URLに変換（CORS問題を回避）
+      const [logoUrl, sealUrl] = await Promise.all([
+        fetch('assets/logo.png').then(r => r.blob()).then(blobToDataUrl),
+        fetch('assets/seal.png').then(r => r.blob()).then(blobToDataUrl),
+      ]);
+
       const h2c = await loadHtml2Canvas();
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;pointer-events:none;';
       const certDiv = document.createElement('div');
       certDiv.className = 'cert-paper';
-      certDiv.innerHTML = a4CertInnerHTML(data);
+      certDiv.innerHTML = a4CertInnerHTML(data)
+        .replace(/src="assets\/logo\.png"/g, `src="${logoUrl}"`)
+        .replace(/src="assets\/seal\.png"/g, `src="${sealUrl}"`);
       wrap.appendChild(certDiv);
       document.body.appendChild(wrap);
-      const imgs = [...wrap.querySelectorAll('img')];
-      await Promise.all(imgs.map(img =>
-        img.complete ? Promise.resolve() :
-        new Promise(r => { img.onload = r; img.onerror = r; })
-      ));
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 400));
       const canvas = await h2c(certDiv, {
-        scale: 1.5, useCORS: true, allowTaint: false,
+        scale: 1.5, useCORS: false, allowTaint: false,
         backgroundColor: '#ffffff', logging: false
       });
       document.body.removeChild(wrap);
@@ -2836,7 +2843,7 @@ async function doLogin() {
       showToast('✅ 証明書画像を保存しました', 'success');
     } catch(e) {
       console.error('証明書画像の保存に失敗:', e);
-      showToast('⚠️ 証明書画像の保存に失敗しました', 'error');
+      showToast(`⚠️ 保存失敗: ${e.message || String(e)}`, 'error');
     }
   }
 
