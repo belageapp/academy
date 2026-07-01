@@ -11,5 +11,8 @@
       "CHANGELOG.md",
       "holiscare-functions/**"
     ]
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
