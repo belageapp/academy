@@ -648,6 +648,7 @@
     <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書<span id="change-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-video" onclick="if(window.showSection)window.showSection('video')"><span class="ico">🎬</span>動画視聴完了届出<span id="video-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-tempcert" onclick="if(window.showSection)window.showSection('tempcert')"><span class="ico">📄</span>仮修了証明書発行<span id="tempcert-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
@@ -904,6 +905,18 @@
           <div class="tbl-wrap"><div id="venue-list" style="min-height:60px;">読み込み中...</div></div>
         </div>
       </div><!-- /section-venue -->
+
+      <div id="section-video" style="display:none;">
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">🎬 動画教材（AEGISC-LMS）視聴完了届出</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadVideoList()">🔄 更新</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><div id="video-list" style="min-height:60px;">読み込み中...</div></div>
+        </div>
+      </div><!-- /section-video -->
 
       <div id="section-ojt" style="display:none;">
         <div class="tcard">
@@ -1799,6 +1812,7 @@ async function doLogin() {
     document.getElementById('section-textorder').style.display    = section === 'textorder'    ? 'block' : 'none';
     document.getElementById('section-documents').style.display    = section === 'documents'    ? 'block' : 'none';
     document.getElementById('section-venue').style.display        = section === 'venue'        ? 'block' : 'none';
+    document.getElementById('section-video').style.display        = section === 'video'        ? 'block' : 'none';
     document.getElementById('section-ojt').style.display          = section === 'ojt'          ? 'block' : 'none';
     document.getElementById('section-inquiry').style.display      = section === 'inquiry'      ? 'block' : 'none';
     document.getElementById('section-change').style.display       = section === 'change'       ? 'block' : 'none';
@@ -1809,6 +1823,7 @@ async function doLogin() {
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
     if (section === 'venue') loadVenueList();
+    if (section === 'video') loadVideoList();
     if (section === 'ojt') loadOjtList();
     if (section === 'inquiry') loadInquiryList();
     if (section === 'change') loadChangeList();
@@ -1822,6 +1837,7 @@ async function doLogin() {
       section === 'textorder'    ? '📦 テキスト発注' :
       section === 'documents'    ? '🪪 書類確認' :
       section === 'venue'        ? '🏥 実習先届出' :
+      section === 'video'        ? '🎬 動画教材（AEGISC-LMS）視聴完了届出' :
       section === 'ojt'          ? '📋 実習修了報告' :
       section === 'inquiry'      ? '📬 問い合わせ' :
       section === 'change'       ? '📝 届出書' :
@@ -2081,14 +2097,10 @@ async function doLogin() {
       if (photoPending || idPending) pendingCount++;
       if (photoApproved && idApproved) approvedCount++;
 
-      const edulioVideoPending = data.externalVideoPending === true && data.externalVideoDone !== true;
-      const edulioVideoDone = data.externalVideoDone === true;
-      if (edulioVideoPending) pendingCount++;
-
-      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl || edulioVideoPending || edulioVideoDone;
+      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl;
       if (!hasDocs) return;
-      if (filter === 'pending' && !photoPending && !idPending && !edulioVideoPending) return;
-      if (filter === 'approved' && !photoApproved && !idApproved && !edulioVideoDone) return;
+      if (filter === 'pending' && !photoPending && !idPending) return;
+      if (filter === 'approved' && !photoApproved && !idApproved) return;
 
       html += `
         <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
@@ -2132,21 +2144,6 @@ async function doLogin() {
                 </div>
               </div>` : '<div></div>'}
           </div>
-          ${(edulioVideoPending || edulioVideoDone) ? `
-          <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px;">
-            <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🎬 外部動画教材（edulio）視聴完了報告</div>
-            <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
-              ステータス：<span style="color:${edulioVideoDone ? 'var(--teal)' : 'var(--yellow-warn)'};">${edulioVideoDone ? '✅ 承認済み' : '⏳ 承認待ち'}</span>
-            </div>
-            <div style="display:flex;gap:6px;">
-              ${!edulioVideoDone ? `
-                <button onclick="approveEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
-                <button onclick="rejectEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
-              ` : `
-                <button onclick="cancelEdulioVideo('${d.id}')" style="flex:1;padding:6px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
-              `}
-            </div>
-          </div>` : ''}
         </div>`;
     });
 
@@ -2301,7 +2298,7 @@ async function doLogin() {
       } catch(e) { console.warn('全完了通知失敗:', e); }
     }
     alert('承認しました');
-    loadDocuments();
+    loadVideoList();
   }
   window.approveEdulioVideo = approveEdulioVideo;
 
@@ -2323,7 +2320,7 @@ async function doLogin() {
       });
     } catch(e) { console.warn('外部動画差し戻しメール送信失敗:', e); }
     alert('差し戻しました');
-    loadDocuments();
+    loadVideoList();
   }
   window.rejectEdulioVideo = rejectEdulioVideo;
 
@@ -2333,7 +2330,7 @@ async function doLogin() {
       externalVideoDone: false,
       externalVideoPending: true,
     });
-    loadDocuments();
+    loadVideoList();
   }
   window.cancelEdulioVideo = cancelEdulioVideo;
 
@@ -2449,6 +2446,61 @@ async function doLogin() {
     }
   }
   window.markVenueChecked = markVenueChecked;
+
+  async function loadVideoList() {
+    const el = document.getElementById('video-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(collection(window.__db, 'applications'));
+      const rows = snap.docs
+        .map(d => ({ __id: d.id, ...d.data() }))
+        .filter(r => !r.isTest && (r.externalVideoPending === true || r.externalVideoDone === true))
+        .sort((a, b) => (b.externalVideoPendingAt?.toMillis?.() || 0) - (a.externalVideoPendingAt?.toMillis?.() || 0));
+      if (!rows.length) { el.innerHTML = '<p style="padding:16px;color:#888;">該当する届出はありません。</p>'; return; }
+      el.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f5f5f5;border-bottom:2px solid #e0e0e0;">
+              <th style="padding:10px 12px;text-align:left;">氏名</th>
+              <th style="padding:10px 12px;text-align:left;">届出日時</th>
+              <th style="padding:10px 12px;text-align:left;">ステータス</th>
+              <th style="padding:10px 12px;text-align:left;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(d => {
+              const name = d.name || ((d.sei || '') + (d.mei || '')) || '—';
+              const pendingAt = d.externalVideoPendingAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
+              const doneAt    = d.externalVideoDoneAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
+              if (d.externalVideoDone) {
+                return `<tr style="border-bottom:1px solid #eee;">
+                  <td style="padding:10px 12px;">${name}</td>
+                  <td style="padding:10px 12px;">${pendingAt}</td>
+                  <td style="padding:10px 12px;"><span style="background:#e8f5e9;color:#2e7d32;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">✓ 承認済み</span><br><span style="font-size:11px;color:#888;">${doneAt}</span></td>
+                  <td style="padding:10px 12px;">
+                    <button onclick="cancelEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#888;border:1.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;">↩ 承認取り消し</button>
+                  </td>
+                </tr>`;
+              } else {
+                return `<tr style="border-bottom:1px solid #eee;background:#fffde7;">
+                  <td style="padding:10px 12px;">${name}</td>
+                  <td style="padding:10px 12px;">${pendingAt}</td>
+                  <td style="padding:10px 12px;"><span style="background:#fff3e0;color:#e65100;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">⏳ 承認待ち</span></td>
+                  <td style="padding:10px 12px;display:flex;gap:8px;">
+                    <button onclick="approveEdulioVideo('${d.__id}')" style="padding:5px 12px;background:var(--teal,#00897B);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">✓ 承認</button>
+                    <button onclick="rejectEdulioVideo('${d.__id}')" style="padding:5px 12px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:12px;cursor:pointer;">✗ 差し戻し</button>
+                  </td>
+                </tr>`;
+              }
+            }).join('')}
+          </tbody>
+        </table>`;
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;padding:16px;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadVideoList = loadVideoList;
 
   async function loadOjtList() {
     const el = document.getElementById('ojt-list');
@@ -3490,6 +3542,15 @@ async function doLogin() {
           return a.practiceVenue?.name !== '当校指定' && !a.venueChecked;
         }).length;
         const badge = document.getElementById('venue-badge');
+        if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+        else if (badge) badge.style.display = 'none';
+      } catch(e) {}
+
+      // 動画視聴完了届出：承認待ち
+      try {
+        const snap = await getDocs(query(collection(window.__db, 'applications'), where('externalVideoPending', '==', true)));
+        const count = snap.docs.filter(d => d.data().externalVideoDone !== true).length;
+        const badge = document.getElementById('video-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
         else if (badge) badge.style.display = 'none';
       } catch(e) {}
