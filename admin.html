@@ -408,14 +408,14 @@
     color: #000; position: relative;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
+  .cert-logo {
+    display: block; margin: 0 auto 6%;
+    height: clamp(22px, 3.8vw, 34px); width: auto;
+  }
   .cert-docno {
     text-align: right;
     font-size: clamp(9px, 1.4vw, 12px);
     margin-bottom: 5%;
-  }
-  .cert-logo {
-    display: block; margin: 0 auto 4%;
-    height: clamp(20px, 3.5vw, 32px); width: auto;
   }
   .cert-title {
     font-size: clamp(16px, 3vw, 26px); font-weight: 700;
@@ -436,20 +436,20 @@
   }
   .cert-body-text p { margin: 0 0 0.5em; text-indent: 1em; }
   .cert-date-line {
-    font-size: clamp(10px, 1.6vw, 14px);
+    font-size: clamp(9px, 1.4vw, 12px);
     margin-bottom: 4%;
   }
   .cert-sign-block {
     display: flex; align-items: flex-end;
-    font-size: clamp(10px, 1.6vw, 14px);
+    font-size: clamp(9px, 1.4vw, 12px);
   }
   .cert-sign-spacer { flex: 1; }
   .cert-sign-right { position: relative; display: inline-block; }
-  .cert-sign-org { line-height: 2.2; position: relative; z-index: 1; }
+  .cert-sign-org { line-height: 2.2; position: relative; z-index: 2; }
   .cert-seal-img {
     position: absolute; right: clamp(-30px, -4vw, -10px); bottom: 0;
     width: clamp(55px, 9vw, 75px); height: clamp(55px, 9vw, 75px);
-    object-fit: contain; z-index: 2;
+    object-fit: contain; z-index: 1;
   }
 
   @media print {
@@ -946,8 +946,8 @@
         <button class="cert-close-btn" onclick="closeCertModal()">✕ 閉じる</button>
       </div>
       <div class="cert-paper" id="cert-paper">
-        <div class="cert-docno">第4007005197-<span id="cert-studentno"></span>号</div>
         <img src="assets/logo.png" class="cert-logo" alt="ホリスケアアカデミー">
+        <div class="cert-docno">第4007005197-<span id="cert-studentno"></span>号</div>
         <div class="cert-title">修　了　証　明　書</div>
         <div class="cert-person-block">
           <div class="cert-person-value-only" id="cert-name"></div>
