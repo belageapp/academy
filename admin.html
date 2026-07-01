@@ -498,23 +498,24 @@
   }
   .cert-card-seal {
     position: absolute; right: 1.5mm; bottom: 1.5mm;
-    width: 15mm; height: 15mm;
+    width: 17mm; height: auto;
     object-fit: contain; z-index: 0;
   }
   .cert-card-content {
     position: relative; z-index: 1;
     display: flex; flex-direction: column; height: 100%;
   }
-  .cert-card-docno { text-align: right; font-size: 5pt; margin-bottom: 1.5mm; }
+  .cert-card-docno { text-align: right; font-size: 6pt; margin-bottom: 1mm; }
   .cert-card-title {
     font-size: 7pt; font-weight: 700;
     letter-spacing: 0.15em; text-align: center;
-    margin-bottom: 1.5mm;
+    margin-bottom: 1mm;
   }
-  .cert-card-person { text-align: right; font-size: 6pt; font-weight: 700; line-height: 1.9; margin-bottom: 1mm; }
-  .cert-card-body { font-size: 4.5pt; line-height: 1.75; text-indent: 0.5em; margin-bottom: auto; }
-  .cert-card-date { font-size: 5pt; margin-bottom: 1mm; }
-  .cert-card-sign { font-size: 5pt; line-height: 1.9; text-align: right; }
+  .cert-card-person { text-align: right; font-size: 6pt; font-weight: 700; line-height: 1.8; margin-bottom: 1mm; }
+  .cert-card-body { font-size: 6pt; line-height: 1.6; margin-bottom: auto; }
+  .cert-card-body p { margin: 0 0 0.5mm; text-indent: 0.5em; }
+  .cert-card-date { font-size: 6pt; margin-bottom: 0.5mm; }
+  .cert-card-sign { font-size: 6pt; line-height: 1.7; text-align: right; }
   .cert-card-actions {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 12px; z-index: 10001;
@@ -1003,7 +1004,10 @@
           <div id="card-name"></div>
           <div id="card-birthdate"></div>
         </div>
-        <div class="cert-card-body">介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</div>
+        <div class="cert-card-body">
+          <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
+          <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+        </div>
         <div class="cert-card-date" id="card-issued-date"></div>
         <div class="cert-card-sign">
           <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
