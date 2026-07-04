@@ -982,6 +982,13 @@
           </div>
           <button onclick="openVenueModal()" class="action-btn todoke-btn" style="background:linear-gradient(135deg,#F57C00,#E65100);">提出する</button>
         </div>
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">📄 実習先向けご案内文書</div>
+            <div style="font-size:12px;color:var(--text-light);">実習受け入れをお願いする施設にお渡しする依頼文書です。表示して印刷・PDF保存できます</div>
+          </div>
+          <a id="ojt-letter-link" href="#" target="_blank" class="action-btn todoke-btn" style="text-decoration:none;">表示・印刷</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1088,7 +1095,8 @@
 <div id="venue-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;">
   <div style="background:white;border-radius:16px;margin:20px auto;max-width:520px;padding:28px 24px;">
     <div style="font-size:16px;font-weight:700;margin-bottom:8px;">🏥 介護実習先の届出</div>
-    <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;line-height:1.7;">介護実習先の状況を届け出てください。施設が決まっている場合は施設情報を入力し、未定の場合は「現在、施設は未定」を選択してください。施設が決まり次第、届出書セクションの「実習先変更届」から提出をお願いします。</p>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;line-height:1.7;">介護実習先の状況を届け出てください。施設が決まっている場合は施設情報を入力し、未定の場合は「現在、施設は未定」を選択してください。施設が決まり次第、届出書セクションの「実習先変更届」から提出をお願いします。</p>
+    <p style="font-size:12px;background:#F2F8FA;border-radius:8px;padding:10px 14px;margin-bottom:20px;line-height:1.7;">💡 施設に実習受け入れをお願いする際は、<a id="ojt-letter-link2" href="#" target="_blank" style="color:var(--teal-dark);font-weight:700;">実習先向けご案内文書</a>（印刷・PDF保存可）をお渡しください。実習内容やご担当者メールアドレスが必要な理由が記載されています。</p>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
       <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-have-label">
@@ -1440,6 +1448,10 @@
   const docId = new URLSearchParams(location.search).get('id');
   if (!docId) window.location.href = 'mypage.html';
   window.__docId = docId;
+  const ojtLetterLink = document.getElementById('ojt-letter-link');
+  if (ojtLetterLink) ojtLetterLink.href = 'ojt_letter.html?id=' + docId;
+  const ojtLetterLink2 = document.getElementById('ojt-letter-link2');
+  if (ojtLetterLink2) ojtLetterLink2.href = 'ojt_letter.html?id=' + docId;
 
   const isAdminPreview = new URLSearchParams(location.search).get('adminPreview') === 'true';
   window.__isAdminPreview = isAdminPreview;

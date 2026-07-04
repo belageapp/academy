@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>実習受け入れのお願い | ホリスケアアカデミー</title>
+<link rel="icon" href="assets/logo.png">
+<style>
+  :root {
+    --teal: #2BBCD4;
+    --teal-dark: #1A9AB0;
+    --border: #D8E4E8;
+    --text-dark: #22343C;
+    --text-mid: #4A6572;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background: #EDF3F5;
+    color: var(--text-dark);
+    line-height: 1.9;
+  }
+
+  /* ツールバー（印刷時非表示） */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .toolbar .back { font-size: 13px; color: var(--teal-dark); text-decoration: none; margin-right: auto; }
+  .toolbar button {
+    padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+  }
+  .btn-print { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: #fff; }
+  .toolbar .hint { font-size: 11px; color: var(--text-mid); width: 100%; }
+
+  /* レター本体 */
+  .sheet {
+    background: #fff; max-width: 720px; margin: 24px auto; padding: 48px 52px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .letter-date { text-align: right; font-size: 13px; margin-bottom: 20px; }
+  .letter-to { font-size: 14px; font-weight: 700; margin-bottom: 24px; }
+  .letter-from { text-align: right; font-size: 12px; line-height: 1.8; margin-bottom: 28px; }
+  .letter-from .school { font-size: 14px; font-weight: 700; }
+  .letter-title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 28px; letter-spacing: 0.05em; }
+  .letter-body p { font-size: 13px; margin-bottom: 14px; text-align: justify; }
+  .letter-body .indent { text-indent: 1em; }
+  .kigou { text-align: right; font-size: 13px; margin-bottom: 8px; }
+  .ki { text-align: center; font-size: 14px; font-weight: 700; margin: 20px 0 16px; }
+  .sec { margin-bottom: 20px; }
+  .sec-title { font-size: 13.5px; font-weight: 700; color: var(--teal-dark); margin-bottom: 6px; }
+  .sec p, .sec li { font-size: 13px; }
+  .sec ul { padding-left: 22px; margin: 6px 0; }
+  .sec li { margin-bottom: 4px; }
+  .student-name { font-weight: 700; border-bottom: 1px solid var(--text-dark); padding: 0 6px; }
+  .note-box {
+    background: #F2F8FA; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; font-size: 12px; margin-top: 6px;
+  }
+  .contact-box {
+    border: 1.5px solid var(--teal); border-radius: 10px;
+    padding: 14px 18px; font-size: 12.5px; margin-top: 24px; line-height: 1.9;
+  }
+  .contact-box .hd { font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; font-size: 13px; }
+  .ijou { text-align: right; font-size: 13px; margin-top: 16px; }
+
+  .loading { text-align: center; padding: 80px 20px; color: var(--text-mid); font-size: 14px; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none; }
+    .sheet { box-shadow: none; margin: 0 auto; max-width: none; padding: 10mm 14mm; }
+    @page { size: A4; margin: 12mm; }
+  }
+  @media (max-width: 640px) {
+    .sheet { padding: 28px 20px; margin: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <a href="#" class="back" id="back-link">← マイページに戻る</a>
+  <button class="btn-print" onclick="window.print()">🖨 印刷する</button>
+  <div class="hint">※ PDFで保存する場合は「印刷する」を押し、印刷ダイアログの送信先（プリンター）で「PDFに保存」を選択してください。</div>
+</div>
+
+<div class="loading" id="loading">読み込み中...</div>
+
+<div class="sheet" id="sheet" style="display:none;">
+  <div class="letter-date" id="letter-date"></div>
+
+  <div class="letter-to">実習受け入れ施設<br>ご担当者様</div>
+
+  <div class="letter-from">
+    <div class="school">ホリスケアアカデミー</div>
+    <div>運営：特定非営利活動法人 Social Care Good</div>
+    <div>実習担当：荘川 真理</div>
+    <div>〒730-0051 広島県広島市中区大手町3-1-7<br>ユナイテッドMKビル 総合受付4F</div>
+    <div>TEL：082-545-2402（平日 9:00〜17:00）</div>
+    <div>Email：info@holiscare.or.jp</div>
+  </div>
+
+  <div class="letter-title">介護実習の受け入れに関するお願い</div>
+
+  <div class="letter-body">
+    <p class="indent">拝啓　時下ますますご清栄のこととお慶び申し上げます。</p>
+    <p class="indent">このたびは、当校受講生 <span class="student-name" id="student-name">　　　　　　</span> の介護実習の受け入れをご検討いただき、誠にありがとうございます。</p>
+    <p class="indent">当校は、介護人材の養成研修を運営しております。受講生はeラーニング等の課程を修了した後、介護施設等での実習（OJT）を修了することで、正式な修了認定となります。つきましては、下記のとおり実習の受け入れにご協力を賜りたく、お願い申し上げます。</p>
+  </div>
+
+  <div class="kigou">敬具</div>
+  <div class="ki">記</div>
+
+  <div class="sec">
+    <div class="sec-title">1. 実習（OJT）の内容</div>
+    <p>実習には以下の3つの内容が含まれます。貴施設の通常業務の中でご対応いただける内容です。</p>
+    <ul>
+      <li><strong>実技指導</strong> — 当校が定める実技指導ポイントに沿ったご指導</li>
+      <li><strong>事例検討</strong> — 当校の介護手順書に基づく事例検討</li>
+      <li><strong>修了評価（実技）テスト</strong> — 実習の仕上げとして実施する実技評価</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">2. 詳細資料のご送付について</div>
+    <p>実習内容の詳細資料（実技指導ポイント・チェックガイド、事例検討用介護手順書、修了評価（実技）テストの詳細）は、後日、ご担当者様宛に郵送にてお送りいたします。</p>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">3. ご担当者様のメールアドレスご提供のお願い</div>
+    <p>当校からのご連絡・資料送付のご案内のため、<strong>ご担当者様ご本人が直接ご確認いただけるメールアドレス</strong>のご提供をお願いしております。</p>
+    <div class="note-box">
+      実習に関するご連絡には受講生の個人情報が含まれます。そのため、法人・施設全体で共有される代表メールアドレスではなく、ご担当者様が閲覧できるメールアドレスをご指定いただくことが、個人情報保護・セキュリティの観点から必要となります。何卒ご理解とご協力のほどお願い申し上げます。
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <div class="hd">本件に関するお問い合わせ</div>
+    ホリスケアアカデミー（運営：特定非営利活動法人 Social Care Good）<br>
+    実習担当：荘川 真理<br>
+    TEL：082-545-2402（受付時間：平日 9:00〜17:00）<br>
+    Email：info@holiscare.or.jp
+  </div>
+
+  <div class="ijou">以上</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const cfg = {
+    apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
+    authDomain: "holiscare-academy.firebaseapp.com",
+    projectId: "holiscare-academy",
+    storageBucket: "holiscare-academy.firebasestorage.app",
+    messagingSenderId: "698886904450",
+    appId: "1:698886904450:web:04b9202840ffd321da329b",
+  };
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const docId = new URLSearchParams(location.search).get('id');
+  if (!docId) window.location.href = 'mypage.html';
+  document.getElementById('back-link').href = 'mypage_course_shonin.html?id=' + docId;
+
+  // 発行日
+  const now = new Date();
+  document.getElementById('letter-date').textContent =
+    now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = 'mypage_login.html'; return; }
+    try {
+      const snap = await getDoc(doc(db, 'applications', docId));
+      if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
+      const data = snap.data();
+      const name = ((data.sei||'') + (data.mei ? '　' + data.mei : '')) || data.name || '';
+      if (name) document.getElementById('student-name').textContent = '　' + name + '　';
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('sheet').style.display = 'block';
+    } catch(e) {
+      document.getElementById('loading').textContent = '読み込みエラー：' + e.message;
+    }
+  });
+</script>
+
+</body>
+</html>
