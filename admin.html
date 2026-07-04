@@ -654,6 +654,7 @@
     <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">👥</span>生徒管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
@@ -1022,6 +1023,17 @@
           <div class="tbl-wrap"><div id="certificate-list" style="min-height:60px;">読み込み中...</div></div>
         </div>
       </div><!-- /section-certificate -->
+
+      <!-- ===== 自動通知設定セクション ===== -->
+      <div id="section-autonotice" style="display:none;">
+        <div class="section-head">
+          <div class="thead-title">⏰ 自動通知設定</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:4px;">毎朝9時に自動実行されます。ON/OFFや間隔を変更したら「保存」を押してください。</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:16px;" id="autonotice-list">
+          <p style="color:#aaa;font-size:13px;">読み込み中...</p>
+        </div>
+      </div><!-- /section-autonotice -->
 
     </div>
   </div>
@@ -1909,6 +1921,7 @@ async function doLogin() {
     document.getElementById('section-report').style.display       = section === 'report'       ? 'block' : 'none';
     document.getElementById('section-tempcert').style.display     = section === 'tempcert'     ? 'block' : 'none';
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
+    document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
@@ -1920,6 +1933,7 @@ async function doLogin() {
     if (section === 'change') loadChangeList();
     if (section === 'report') loadReportList();
     if (section === 'certificate') loadCertificateList();
+    if (section === 'autonotice') loadAutoNoticeSettings();
     if (section === 'tempcert') loadTempCertList();
     if (section === 'textorder') loadTextOrderList();
     document.getElementById('topbar-title').textContent =
@@ -1935,7 +1949,8 @@ async function doLogin() {
       section === 'change'       ? '📝 届出書' :
       section === 'report'       ? '📝 修了レポート' :
       section === 'tempcert'     ? '📄 仮修了証明書発行管理' :
-      section === 'certificate'  ? '📜 正式修了証明書発行' : '';
+      section === 'certificate'  ? '📜 正式修了証明書発行' :
+      section === 'autonotice'   ? '⏰ 自動通知設定' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
@@ -3941,6 +3956,86 @@ async function doLogin() {
     } catch(e) {}
   }
   window.initAllBadges = initAllBadges;
+
+  // ===== 自動通知設定 =====
+  const AUTONOTICE_DEFAULTS = {
+    venue_pending: {
+      label: '実習先未定リマインド',
+      description: '実習先が未定のまま受講中の生徒に定期的に提出を促します',
+      enabled: true,
+      intervalDays: 14,
+      fields: [{ key: 'intervalDays', label: '送信間隔（日）', type: 'number', min: 1 }],
+    },
+    completion_deadline: {
+      label: '修了期限アラート',
+      description: '修了期限が近い受講中の生徒に警告を送ります（30日前・14日前）',
+      enabled: true,
+      alertDays: [30, 14],
+      fields: [],
+    },
+  };
+
+  async function loadAutoNoticeSettings() {
+    const el = document.getElementById('autonotice-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      let html = '';
+      for (const [id, def] of Object.entries(AUTONOTICE_DEFAULTS)) {
+        const snap = await getDoc(doc(db, 'scheduledNoticeSettings', id));
+        const data = snap.exists() ? snap.data() : def;
+        const lastRun = data.lastRunAt?.toDate?.()?.toLocaleString('ja-JP') || '未実行';
+        const lastCount = data.lastCount ?? '—';
+        html += `<div style="border:1px solid var(--border);border-radius:12px;padding:20px;background:#fff;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;">${def.label}</div>
+              <div style="font-size:12px;color:var(--text-light);margin-top:3px;">${def.description}</div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:var(--text-mid);">ON</span>
+              <input type="checkbox" id="an-enabled-${id}" ${data.enabled ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--teal);">
+            </label>
+          </div>
+          ${def.fields.map(f => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <label style="font-size:12px;color:var(--text-mid);white-space:nowrap;">${f.label}</label>
+              <input type="${f.type}" id="an-${f.key}-${id}" value="${data[f.key] ?? def[f.key]}" min="${f.min||1}"
+                style="width:80px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+            </div>`).join('')}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div style="font-size:11px;color:#aaa;">最終実行：${lastRun}　前回送信：${lastCount}件</div>
+            <button onclick="saveAutoNoticeSetting('${id}')"
+              style="padding:6px 18px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">保存</button>
+          </div>
+        </div>`;
+      }
+      el.innerHTML = html;
+    } catch(e) {
+      el.innerHTML = `<p style="color:red;">読み込みエラー：${e.message}</p>`;
+    }
+  }
+  window.loadAutoNoticeSettings = loadAutoNoticeSettings;
+
+  async function saveAutoNoticeSetting(id) {
+    try {
+      const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window.__db;
+      const def = AUTONOTICE_DEFAULTS[id];
+      const enabled = document.getElementById(`an-enabled-${id}`)?.checked ?? true;
+      const data = { ...def, enabled };
+      for (const f of def.fields) {
+        const val = document.getElementById(`an-${f.key}-${id}`)?.value;
+        if (val !== undefined) data[f.key] = f.type === 'number' ? Number(val) : val;
+      }
+      await setDoc(doc(db, 'scheduledNoticeSettings', id), data, { merge: true });
+      alert(`「${def.label}」の設定を保存しました。`);
+    } catch(e) {
+      alert('保存に失敗しました：' + e.message);
+    }
+  }
+  window.saveAutoNoticeSetting = saveAutoNoticeSetting;
 </script>
 
 <!-- 施設登録モーダル -->
