@@ -2683,8 +2683,9 @@ async function doLogin() {
       const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
       const isDone    = !!r.venueChecked;
       const fullName  = r.name || ((r.sei||'')+(r.mei||'')) || '—';
-      const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;">再提出</span>' : '';
-      const name      = `<strong>${fullName}</strong>${resubmitBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
+      const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">再提出</span>' : '';
+      const pendingBadge  = r.practiceVenue?.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
+      const name      = `<strong>${fullName}</strong>${resubmitBadge}${pendingBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
       const statusCell = isDone
         ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
         : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
@@ -2715,7 +2716,7 @@ async function doLogin() {
       ));
       __venueCache = snap.docs
         .map(d => ({ __id: d.id, ...d.data() }))
-        .filter(r => r.practiceVenue?.name !== '当校指定')
+        .filter(r => r.practiceVenue?.name !== '当校指定') // 旧「当校指定」データのみ非表示
         .sort((a, b) => (b.practiceVenueReportedAt?.toMillis?.() || 0) - (a.practiceVenueReportedAt?.toMillis?.() || 0));
       renderVenueTable();
     } catch(e) {
@@ -3873,7 +3874,7 @@ async function doLogin() {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
         const count = snap.docs.filter(d => {
           const a = d.data();
-          return a.practiceVenue?.name !== '当校指定' && !a.venueChecked;
+          return a.practiceVenue?.name !== '当校指定' && !a.venueChecked; // 旧「当校指定」のみ除外
         }).length;
         const badge = document.getElementById('venue-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }

@@ -1094,14 +1094,14 @@
       <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-none-label">
         <input type="radio" name="venue-choice" value="none" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
         <div>
-          <div style="font-weight:700;font-size:14px;">届け出る施設はない（当校指定）</div>
-          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">当校が指定する実習先で実習を行います</div>
+          <div style="font-weight:700;font-size:14px;">まだ決まっていない（後日提出）</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設が決まり次第、届出書セクションの「実習先変更届」から提出してください</div>
         </div>
       </label>
       <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-have-label">
         <input type="radio" name="venue-choice" value="have" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
         <div>
-          <div style="font-weight:700;font-size:14px;">届け出る施設がある</div>
+          <div style="font-weight:700;font-size:14px;">施設が決まっている</div>
           <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設情報を入力してください</div>
         </div>
       </label>
@@ -2355,10 +2355,11 @@
     const step1Done = photoOk && idOk && pledgeOk && venueOk;
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
 
-    // 実習先変更届：管理者が許可したときのみ表示
+    // 実習先変更届：未定 or 管理者が許可したとき表示
     const venueResubmitRow = document.getElementById('venue-resubmit-row');
     if (venueResubmitRow) {
-      venueResubmitRow.style.display = data.venueResubmitAllowed === true ? 'flex' : 'none';
+      const showResubmit = data.venueResubmitAllowed === true || data.practiceVenue?.name === '未定';
+      venueResubmitRow.style.display = showResubmit ? 'flex' : 'none';
     }
 
     // 銀行振込情報
@@ -2877,7 +2878,8 @@
           reason: reason + (detail ? '：' + detail : ''),
         };
       } else {
-        venueData.practiceVenue = { name: '当校指定' };
+        venueData.practiceVenue = { name: '未定' };
+        venueData.venueResubmitAllowed = true;
       }
 
       await updateDoc(doc(db, 'applications', docId), venueData);
