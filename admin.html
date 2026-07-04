@@ -3967,11 +3967,18 @@ async function doLogin() {
       fields: [{ key: 'intervalDays', label: '送信間隔（日）', type: 'number', min: 1 }],
     },
     completion_deadline: {
-      label: '修了期限アラート',
-      description: '修了期限が近い受講中の生徒に警告を送ります（30日前・14日前）',
+      label: '正式修了期限アラート',
+      description: '正式修了期限（受講開始から8か月）が近い受講中の生徒に警告を送ります',
       enabled: true,
       alertDays: [30, 14],
-      fields: [],
+      fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],
+    },
+    temp_completion_deadline: {
+      label: '仮修了期限アラート',
+      description: '仮修了期限（受講開始から3か月）が近い受講中の生徒に警告を送ります',
+      enabled: true,
+      alertDays: [30, 14, 7, 3, 1],
+      fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],
     },
   };
 
@@ -3998,12 +4005,17 @@ async function doLogin() {
               <input type="checkbox" id="an-enabled-${id}" ${data.enabled ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--teal);">
             </label>
           </div>
-          ${def.fields.map(f => `
+          ${def.fields.map(f => {
+            const val = data[f.key] ?? def[f.key];
+            const displayVal = Array.isArray(val) ? val.join(', ') : val;
+            const width = f.type === 'text' ? '200px' : '80px';
+            return `
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;color:var(--text-mid);white-space:nowrap;">${f.label}</label>
-              <input type="${f.type}" id="an-${f.key}-${id}" value="${data[f.key] ?? def[f.key]}" min="${f.min||1}"
-                style="width:80px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
-            </div>`).join('')}
+              <input type="${f.type}" id="an-${f.key}-${id}" value="${displayVal}" min="${f.min||1}"
+                style="width:${width};padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+            </div>`;
+          }).join('')}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
             <div style="font-size:11px;color:#aaa;">最終実行：${lastRun}　前回送信：${lastCount}件</div>
             <button onclick="saveAutoNoticeSetting('${id}')"
@@ -4027,7 +4039,12 @@ async function doLogin() {
       const data = { ...def, enabled };
       for (const f of def.fields) {
         const val = document.getElementById(`an-${f.key}-${id}`)?.value;
-        if (val !== undefined) data[f.key] = f.type === 'number' ? Number(val) : val;
+        if (val === undefined) continue;
+        if (f.key === 'alertDays') {
+          data[f.key] = val.split(',').map(v => Number(v.trim())).filter(v => !isNaN(v) && v > 0).sort((a,b) => b-a);
+        } else {
+          data[f.key] = f.type === 'number' ? Number(val) : val;
+        }
       }
       await setDoc(doc(db, 'scheduledNoticeSettings', id), data, { merge: true });
       alert(`「${def.label}」の設定を保存しました。`);
