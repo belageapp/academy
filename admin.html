@@ -1310,8 +1310,8 @@
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
   };
   const OJT_LABELS = {
-    _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'電話番号',
-    _ojtVenueContact:'担当者', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
+    _ojtVenueCorp:'法人名', _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'電話番号',
+    _ojtVenueContact:'担当者', _ojtVenueEmail:'担当者メール', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
     _ojtReportFacility:'実習修了報告の施設名',
   };
 
@@ -1344,10 +1344,12 @@ async function doLogin() {
         return {
           id: d.id,
           ...data,
+          _ojtVenueCorp:      data.practiceVenue?.corp || '',
           _ojtVenueName:      data.practiceVenue?.name || '',
           _ojtVenueAddress:   data.practiceVenue ? ((data.practiceVenue.zip ? '〒'+data.practiceVenue.zip+' ' : '') + (data.practiceVenue.address || '')) : '',
           _ojtVenuePhone:     data.practiceVenue?.phone || '',
           _ojtVenueContact:   data.practiceVenue ? ((data.practiceVenue.dept ? data.practiceVenue.dept+' ' : '') + (data.practiceVenue.contact || '')) : '',
+          _ojtVenueEmail:     data.practiceVenue?.email || '',
           _ojtVenueReason:    data.practiceVenue?.reason || '',
           _ojtVenueDate:      data.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '',
           _ojtReportFacility: data.ojtReport?.facility || '',
@@ -2709,10 +2711,10 @@ async function doLogin() {
         : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
       return `<tr>
         <td>${name}</td>
-        <td>${v.name || '—'}</td>
+        <td>${(v.corp ? '<span style="font-size:11px;color:#888;">'+v.corp+'</span><br>' : '') + (v.name || '—')}</td>
         <td>${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
         <td>${v.phone || '—'}</td>
-        <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—')}</td>
+        <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—') + (v.email ? '<br><span style="font-size:11px;color:#888;">'+v.email+'</span>' : '')}</td>
         <td>${v.reason || '—'}</td>
         <td>${date}</td>
         <td style="white-space:nowrap;">${statusCell}</td>
