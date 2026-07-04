@@ -1520,7 +1520,23 @@ async function doLogin() {
     confirmedHtml += pi('本人確認書類の提出',   idState === 'none' ? 'none' : 'done', null, null);
     confirmedHtml += pi('本人確認書類の承認',   idState, null, null);
     confirmedHtml += pi('受講誓約書への同意',   pledgeState, 'pledgeSigned', a.pledgeSigned===true);
-    confirmedHtml += pi('実習先届出の提出',     venueState, 'practiceVenueReported', a.practiceVenueReported===true);
+    const venueIcons  = { done:'✓', none:'–' };
+    const venueLabels = { done:'完了', none:'未着手' };
+    const venueExtraBtn = a.practiceVenueReported === true && !a.venueResubmitAllowed
+      ? `<button onclick="resetVenueSubmission('${id}')" style="padding:3px 10px;font-size:11px;background:#fff;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#666;">再届出を許可</button>`
+      : a.venueResubmitAllowed
+        ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">⏳ 再届出待ち</span>'
+        : '';
+    confirmedHtml += `<div class="prog-item">
+      <div class="prog-item-left">
+        <div class="prog-dot ${venueState}">${venueIcons[venueState]}</div>
+        <span class="prog-label">実習先届出の提出</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${venueExtraBtn}
+        <span class="prog-badge ${venueState}">${venueLabels[venueState]}</span>
+      </div>
+    </div>`;
     document.getElementById('prog-confirmed-items').innerHTML = confirmedHtml;
 
     // ---- 受講中ブロック ----
@@ -1566,6 +1582,18 @@ async function doLogin() {
     } catch(e) { alert('更新に失敗しました：' + e.message); }
   }
   window.toggleProgressField = toggleProgressField;
+
+  async function resetVenueSubmission(docId) {
+    if (!confirm('実習先変更届の提出を生徒に許可しますか？\n生徒のマイページに「実習先変更届」ボタンが表示されます。')) return;
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true });
+      const idx = all.findIndex(a => a.id === docId);
+      if (idx > -1) all[idx].venueResubmitAllowed = true;
+      const a = all.find(x => x.id === docId);
+      if (a) renderProgress(docId, a);
+    } catch(e) { alert('更新に失敗しました：' + e.message); }
+  }
+  window.resetVenueSubmission = resetVenueSubmission;
 
   // テキスト発注トグル
   async function toggleTextField(docId, current) {

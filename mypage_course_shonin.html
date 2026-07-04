@@ -975,6 +975,13 @@
           <div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">退講届</div><div style="font-size:12px;color:var(--text-light);">病気・その他やむを得ない理由により退講を希望するとき</div></div>
           <button onclick="openWithdrawModal()" class="action-btn todoke-btn" style="background:linear-gradient(135deg,#e53935,#c62828);">提出する</button>
         </div>
+        <div id="venue-resubmit-row" style="display:none;border:1.5px solid #FFB300;border-radius:10px;padding:14px 16px;display:none;justify-content:space-between;align-items:center;background:#FFFDE7;">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">🏥 実習先変更届</div>
+            <div style="font-size:12px;color:var(--text-light);">スクールからの依頼により実習先情報を再提出します</div>
+          </div>
+          <button onclick="openVenueModal()" class="action-btn todoke-btn" style="background:linear-gradient(135deg,#F57C00,#E65100);">提出する</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2348,6 +2355,12 @@
     const step1Done = photoOk && idOk && pledgeOk && venueOk;
     const step2Done = data.taskAllDone && data.videoAllDone && data.externalVideoDone;
 
+    // 実習先変更届：管理者が許可したときのみ表示
+    const venueResubmitRow = document.getElementById('venue-resubmit-row');
+    if (venueResubmitRow) {
+      venueResubmitRow.style.display = data.venueResubmitAllowed === true ? 'flex' : 'none';
+    }
+
     // 銀行振込情報
     const isBankPending = status === 'pending' && (window.__appData?.payment === '銀行振込' || window.__appData?.payment === '銀行振り込み');
     if (isBankPending) {
@@ -2838,7 +2851,7 @@
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = window.__db;
       const docId = window.__docId;
-      let venueData = { practiceVenueReported: true, practiceVenueReportedAt: serverTimestamp() };
+      let venueData = { practiceVenueReported: true, practiceVenueReportedAt: serverTimestamp(), venueResubmitAllowed: false };
 
       if (choice === 'have') {
         const reason = document.querySelector('input[name="venue-reason"]:checked')?.value;
