@@ -897,8 +897,9 @@
             <div class="thead-title">🏥 実習先届出一覧</div>
             <div class="thead-acts">
               <select id="venue-filter-sel" onchange="window.setVenueFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
-                <option value="pending">対応待ち</option>
+                <option value="pending">未対応・未定</option>
                 <option value="all">すべて</option>
+                <option value="mitei">未定のみ</option>
                 <option value="done">対応済み</option>
               </select>
               <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
@@ -1534,11 +1535,14 @@ async function doLogin() {
     confirmedHtml += pi('受講誓約書への同意',   pledgeState, 'pledgeSigned', a.pledgeSigned===true);
     const venueIcons  = { done:'✓', none:'–' };
     const venueLabels = { done:'完了', none:'未着手' };
-    const venueExtraBtn = a.practiceVenueReported === true && !a.venueResubmitAllowed
-      ? `<button onclick="resetVenueSubmission('${id}')" style="padding:3px 10px;font-size:11px;background:#fff;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#666;">再届出を許可</button>`
-      : a.venueResubmitAllowed
-        ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">⏳ 再届出待ち</span>'
-        : '';
+    const venueIsMitei = a.practiceVenue?.name === '未定';
+    const venueExtraBtn = venueIsMitei
+      ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">🏥 施設未定</span>'
+      : a.practiceVenueReported === true && !a.venueResubmitAllowed
+        ? `<button onclick="resetVenueSubmission('${id}')" style="padding:3px 10px;font-size:11px;background:#fff;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#666;">再届出を許可</button>`
+        : a.venueResubmitAllowed
+          ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">⏳ 再届出待ち</span>'
+          : '';
     confirmedHtml += `<div class="prog-item">
       <div class="prog-item-left">
         <div class="prog-dot ${venueState}">${venueIcons[venueState]}</div>
@@ -2678,33 +2682,32 @@ async function doLogin() {
   function renderVenueTable() {
     const el = document.getElementById('venue-list');
     if (!__venueCache) return;
-    const rows = __venueCache.filter(r => {
-      if (__venueFilter === 'pending') return !r.venueChecked;
-      if (__venueFilter === 'done')    return !!r.venueChecked;
-      return true;
+
+    // 3グループに分類：未対応 / 未定 / 対応済み
+    const mitei   = [], pending = [], done = [];
+    __venueCache.forEach(r => {
+      if (r.practiceVenue?.name === '未定') mitei.push(r);
+      else if (r.venueChecked) done.push(r);
+      else pending.push(r);
     });
-    if (!rows.length) {
-      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">' +
-        (__venueFilter === 'pending' ? '対応待ちの届出はありません。' :
-         __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
-      return;
-    }
-    let html = '<table><thead><tr>' +
-      '<th>受講生</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>ステータス</th>' +
-      '</tr></thead><tbody>';
-    rows.forEach(r => {
+
+    const showPending = __venueFilter === 'pending' || __venueFilter === 'all';
+    const showMitei   = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'mitei';
+    const showDone    = __venueFilter === 'done'    || __venueFilter === 'all';
+
+    function rowHtml(r) {
       const v = r.practiceVenue || {};
       const date      = r.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
       const isDone    = !!r.venueChecked;
       const fullName  = r.name || ((r.sei||'')+(r.mei||'')) || '—';
       const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">再提出</span>' : '';
-      const pendingBadge  = r.practiceVenue?.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
+      const pendingBadge  = v.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
       const name      = `<strong>${fullName}</strong>${resubmitBadge}${pendingBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
       const statusCell = isDone
         ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
         : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
-      html += `<tr>
+      return `<tr>
         <td>${name}</td>
         <td>${v.name || '—'}</td>
         <td>${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
@@ -2714,9 +2717,22 @@ async function doLogin() {
         <td>${date}</td>
         <td style="white-space:nowrap;">${statusCell}</td>
       </tr>`;
-    });
-    html += '</tbody></table>';
-    el.innerHTML = html;
+    }
+
+    let body = '';
+    if (showPending && pending.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
+    if (showMitei   && mitei.length)   body += `<tr><td colspan="8" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
+    if (showDone    && done.length)    body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
+    if (!body) {
+      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">' +
+        (__venueFilter === 'pending' ? '未対応・未定の届出はありません。' :
+         __venueFilter === 'mitei'   ? '未定の届出はありません。' :
+         __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
+      return;
+    }
+    el.innerHTML = '<table><thead><tr>' +
+      '<th>受講生</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>ステータス</th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
   }
 
   async function loadVenueList() {
