@@ -1584,13 +1584,39 @@ async function doLogin() {
   window.toggleProgressField = toggleProgressField;
 
   async function resetVenueSubmission(docId) {
-    if (!confirm('実習先変更届の提出を生徒に許可しますか？\n生徒のマイページに「実習先変更届」ボタンが表示されます。')) return;
+    if (!confirm('実習先変更届の提出を生徒に許可しますか？\n生徒のマイページに「実習先変更届」ボタンが表示され、お知らせメールが送信されます。')) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true, venueIsResubmit: true });
       const idx = all.findIndex(a => a.id === docId);
       if (idx > -1) { all[idx].venueResubmitAllowed = true; all[idx].venueIsResubmit = true; }
       const a = all.find(x => x.id === docId);
       if (a) renderProgress(docId, a);
+
+      // マイページお知らせ + メール送信
+      const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
+      if (appSnap.exists()) {
+        const d = appSnap.data();
+        const title = '実習先の再届出をお願いします';
+        const body  = 'スクールより実習先情報の再提出依頼が届いています。マイページの「届出書」セクションにある「実習先変更届」からご提出ください。';
+        try {
+          await window.__addDoc(window.__col(window.__db, 'notices'), {
+            applicationId: docId,
+            title,
+            body,
+            target: 'specific',
+            emails: [d.email],
+            createdAt: window.__serverTs(),
+            createdBy: 'info@holiscare.or.jp',
+          });
+        } catch(e) { console.warn('お知らせ登録失敗:', e); }
+        try {
+          await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendNoticeMail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipients: [{ email: d.email, name: d.name || ((d.sei||'')+(d.mei||'')) }], title, body }),
+          });
+        } catch(e) { console.warn('メール送信失敗:', e); }
+      }
     } catch(e) { alert('更新に失敗しました：' + e.message); }
   }
   window.resetVenueSubmission = resetVenueSubmission;
