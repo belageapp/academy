@@ -1091,18 +1091,18 @@
     <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;line-height:1.7;">実習は、現在勤務中、もしくは勤務予定か、実習受け入れの同意を得ている場合に限り、ご希望に添えます。該当する施設がある場合は届け出てください。</p>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-      <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-none-label">
-        <input type="radio" name="venue-choice" value="none" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
-        <div>
-          <div style="font-weight:700;font-size:14px;">まだ決まっていない（後日提出）</div>
-          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設が決まり次第、届出書セクションの「実習先変更届」から提出してください</div>
-        </div>
-      </label>
       <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-have-label">
         <input type="radio" name="venue-choice" value="have" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
         <div>
           <div style="font-weight:700;font-size:14px;">施設が決まっている</div>
           <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設情報を入力してください</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;" id="venue-choice-none-label">
+        <input type="radio" name="venue-choice" value="none" onchange="onVenueChoiceChange()" style="accent-color:var(--teal);width:18px;height:18px;">
+        <div>
+          <div style="font-weight:700;font-size:14px;">まだ決まっていない（後日提出）</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:2px;">施設が決まり次第、届出書セクションの「実習先変更届」から提出してください</div>
         </div>
       </label>
     </div>
