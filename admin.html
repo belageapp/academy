@@ -1584,7 +1584,7 @@ async function doLogin() {
   window.toggleProgressField = toggleProgressField;
 
   async function resetVenueSubmission(docId) {
-    if (!confirm('実習先変更届の提出を生徒に許可しますか？\n生徒のマイページに「実習先変更届」ボタンが表示され、お知らせメールが送信されます。')) return;
+    if (!confirm('生徒のマイページの届出書セクションに「実習先変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true, venueIsResubmit: true });
       const idx = all.findIndex(a => a.id === docId);
