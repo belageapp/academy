@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>実習受け入れのお願い（本人依頼文） | ホリスケアアカデミー</title>
+<link rel="icon" href="assets/logo.png">
+<style>
+  :root {
+    --teal: #2BBCD4;
+    --teal-dark: #1A9AB0;
+    --border: #D8E4E8;
+    --text-dark: #22343C;
+    --text-mid: #4A6572;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background: #EDF3F5;
+    color: var(--text-dark);
+    line-height: 1.9;
+  }
+
+  /* ツールバー（印刷時非表示） */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .toolbar .back { font-size: 13px; color: var(--teal-dark); text-decoration: none; margin-right: auto; }
+  .toolbar button {
+    padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+  }
+  .btn-print { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: #fff; }
+  .toolbar .hint { font-size: 11px; color: var(--text-mid); width: 100%; }
+
+  /* レター本体 */
+  .sheet {
+    background: #fff; max-width: 720px; margin: 24px auto; padding: 48px 52px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .letter-date { text-align: right; font-size: 13px; margin-bottom: 20px; }
+  .letter-to { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .letter-to .blank { display: inline-block; min-width: 240px; border-bottom: 1px solid var(--text-dark); }
+  .letter-to-note { font-size: 11px; color: var(--text-mid); margin-bottom: 24px; }
+  .letter-from { text-align: right; font-size: 13px; line-height: 1.9; margin-bottom: 28px; }
+  .letter-from .name { font-size: 15px; font-weight: 700; }
+  .letter-from .sub { font-size: 12px; color: var(--text-mid); }
+  .letter-title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 28px; letter-spacing: 0.05em; }
+  .letter-body p { font-size: 13px; margin-bottom: 14px; text-align: justify; }
+  .letter-body .indent { text-indent: 1em; }
+  .kigou { text-align: right; font-size: 13px; margin-bottom: 8px; }
+  .note-box {
+    background: #F2F8FA; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; font-size: 12px; margin: 16px 0; line-height: 1.9;
+  }
+  .note-box .hd { font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; font-size: 12.5px; }
+
+  .loading { text-align: center; padding: 80px 20px; color: var(--text-mid); font-size: 14px; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none; }
+    .sheet { box-shadow: none; margin: 0 auto; max-width: none; padding: 10mm 14mm; }
+    @page { size: A4; margin: 12mm; }
+  }
+  @media (max-width: 640px) {
+    .sheet { padding: 28px 20px; margin: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <a href="#" class="back" id="back-link">← マイページに戻る</a>
+  <button class="btn-print" onclick="window.print()">🖨 印刷する</button>
+  <div class="hint">※ PDFで保存する場合は「印刷する」を押し、印刷ダイアログの送信先（プリンター）で「PDFに保存」を選択してください。スクール発行の「ご案内文書」と併せてお渡しください。</div>
+</div>
+
+<div class="loading" id="loading">読み込み中...</div>
+
+<div class="sheet" id="sheet" style="display:none;">
+  <div class="letter-date" id="letter-date"></div>
+
+  <div class="letter-to"><span class="blank">　</span>　御中</div>
+  <div class="letter-to-note">※ 施設名（宛名）はご記入ください</div>
+
+  <div class="letter-from">
+    <div class="sub">ホリスケアアカデミー 受講生</div>
+    <div class="name" id="student-name">　　　　　　</div>
+    <div class="sub" id="student-contact"></div>
+  </div>
+
+  <div class="letter-title">介護実習の受け入れのお願い</div>
+
+  <div class="letter-body">
+    <p class="indent">拝啓　時下ますますご清栄のこととお慶び申し上げます。</p>
+    <p class="indent">私は現在、ホリスケアアカデミー（運営：特定非営利活動法人 Social Care Good）にて介護人材の養成研修を受講しております。本研修の修了には、介護施設等での実習（OJT）を修了することが必要とされております。</p>
+    <p class="indent">つきましては、誠に恐縮ではございますが、貴施設にて私の実習の受け入れをご検討いただきたく、お願い申し上げる次第です。</p>
+    <p class="indent">実習の内容（実技指導・事例検討・修了評価（実技）テスト）およびスクールからのご案内の詳細につきましては、同封の「介護実習の受け入れに関するお願い」（スクール発行文書）をご参照ください。詳細な資料は、後日スクールよりご担当者様宛に郵送されます。</p>
+  </div>
+
+  <div class="note-box">
+    <div class="hd">受け入れをご了承いただける場合のお願い</div>
+    ご担当者様の <strong>お名前</strong> と <strong>ご担当者様ご本人が直接ご確認いただけるメールアドレス</strong> を私までお知らせください。スクールへの実習先届出に必要となります。<br>
+    ※ 実習に関する連絡には私の個人情報が含まれるため、法人・施設全体で共有される代表アドレスではなく、ご担当者様が閲覧できるメールアドレスのご提供をお願いしております。
+  </div>
+
+  <div class="letter-body">
+    <p class="indent">ご多忙のところ恐れ入りますが、何卒よろしくお願い申し上げます。</p>
+  </div>
+
+  <div class="kigou">敬具</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const cfg = {
+    apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
+    authDomain: "holiscare-academy.firebaseapp.com",
+    projectId: "holiscare-academy",
+    storageBucket: "holiscare-academy.firebasestorage.app",
+    messagingSenderId: "698886904450",
+    appId: "1:698886904450:web:04b9202840ffd321da329b",
+  };
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const docId = new URLSearchParams(location.search).get('id');
+  if (!docId) window.location.href = 'mypage.html';
+  document.getElementById('back-link').href = 'mypage_course_shonin.html?id=' + docId;
+
+  // 発行日
+  const now = new Date();
+  document.getElementById('letter-date').textContent =
+    now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = 'mypage_login.html'; return; }
+    try {
+      const snap = await getDoc(doc(db, 'applications', docId));
+      if (!snap.exists()) { window.location.href = 'mypage.html'; return; }
+      const data = snap.data();
+      const name = ((data.sei||'') + (data.mei ? '　' + data.mei : '')) || data.name || '';
+      if (name) document.getElementById('student-name').textContent = name;
+      const contact = [data.phone ? 'TEL：' + data.phone : '', data.email || ''].filter(Boolean).join('　');
+      if (contact) document.getElementById('student-contact').textContent = contact;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('sheet').style.display = 'block';
+    } catch(e) {
+      document.getElementById('loading').textContent = '読み込みエラー：' + e.message;
+    }
+  });
+</script>
+
+</body>
+</html>
