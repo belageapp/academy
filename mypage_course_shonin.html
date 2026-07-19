@@ -2945,12 +2945,21 @@
             let edulioId, edulioPassword;
             await runTransaction(db, async (tx) => {
               const counterSnap = await tx.get(counterRef);
-              const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
-              const newNum = currentNum + 1;
-              edulioId = 'hca' + String(newNum).padStart(3, '0');
+              const cdata = counterSnap.exists() ? counterSnap.data() : {};
               const map = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
-              edulioPassword = edulioId + map[(newNum - 1) % map.length];
-              tx.update(counterRef, { count: newNum });
+              const freeIds = (cdata.freeIds || []).slice().sort();
+              if (freeIds.length) {
+                // 欠番プールがあれば若い番号から再利用（先に条件を満たした人が使う）
+                edulioId = freeIds.shift();
+                const num = parseInt(edulioId.replace('hca', ''), 10);
+                edulioPassword = edulioId + map[(num - 1) % map.length];
+                tx.update(counterRef, { freeIds });
+              } else {
+                const newNum = (cdata.count || 0) + 1;
+                edulioId = 'hca' + String(newNum).padStart(3, '0');
+                edulioPassword = edulioId + map[(newNum - 1) % map.length];
+                tx.update(counterRef, { count: newNum });
+              }
             });
             await updateDoc(doc(db, 'applications', docId), {
               status: 'active', activeAt: serverTimestamp(), edulioId, edulioPassword, edulioIssuedAt: serverTimestamp()
