@@ -2931,24 +2931,31 @@
         const photoOk = docStatus.photo === 'approved';
         const idOk = docStatus.idDocument === 'approved';
         const pledgeOk = appData.pledgeSigned === true;
-        // 再届出（実習先変更届）ではID再発行しない：既にID発行済み or 受講開始済みならスキップ
-        const alreadyIssued = !!appData.edulioId || appData.status === 'active';
-        if (photoOk && idOk && pledgeOk && !alreadyIssued) {
-          const { runTransaction, doc: docRef } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-          const counterRef = docRef(db, 'counters', 'edulio');
-          let edulioId, edulioPassword;
-          await runTransaction(db, async (tx) => {
-            const counterSnap = await tx.get(counterRef);
-            const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
-            const newNum = currentNum + 1;
-            edulioId = 'hca' + String(newNum).padStart(3, '0');
-            const map = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
-            edulioPassword = edulioId + map[(newNum - 1) % map.length];
-            tx.update(counterRef, { count: newNum });
-          });
-          await updateDoc(doc(db, 'applications', docId), {
-            status: 'active', activeAt: serverTimestamp(), edulioId, edulioPassword, edulioIssuedAt: serverTimestamp()
-          });
+        // 受講開始済みなら何もしない（再届出でIDや開始日を上書きしない）
+        if (photoOk && idOk && pledgeOk && appData.status !== 'active') {
+          if (appData.edulioId) {
+            // IDが事前割り当て済み（欠番再利用など）の場合は発番せずそのまま受講開始
+            await updateDoc(doc(db, 'applications', docId), {
+              status: 'active', activeAt: serverTimestamp(),
+              edulioIssuedAt: appData.edulioIssuedAt || serverTimestamp(),
+            });
+          } else {
+            const { runTransaction, doc: docRef } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+            const counterRef = docRef(db, 'counters', 'edulio');
+            let edulioId, edulioPassword;
+            await runTransaction(db, async (tx) => {
+              const counterSnap = await tx.get(counterRef);
+              const currentNum = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
+              const newNum = currentNum + 1;
+              edulioId = 'hca' + String(newNum).padStart(3, '0');
+              const map = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
+              edulioPassword = edulioId + map[(newNum - 1) % map.length];
+              tx.update(counterRef, { count: newNum });
+            });
+            await updateDoc(doc(db, 'applications', docId), {
+              status: 'active', activeAt: serverTimestamp(), edulioId, edulioPassword, edulioIssuedAt: serverTimestamp()
+            });
+          }
         }
       } catch(e) { console.warn('active判定失敗:', e); }
       closeVenueModal();
