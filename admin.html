@@ -103,7 +103,11 @@
       background: var(--sidebar);
       display: flex; flex-direction: column;
       position: fixed; top: 0; left: 0; bottom: 0;
+      overflow: hidden;
     }
+    .sb-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+    .sb-scroll::-webkit-scrollbar { width: 6px; }
+    .sb-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
     .sb-logo {
       padding: 12px 16px;
       border-bottom: 1px solid #e0e0e0;
@@ -137,7 +141,7 @@
     .sb-item:hover { background: var(--sidebar-hover); color: white; }
     .sb-item.active { background: var(--sidebar-hover); color: white; border-left-color: var(--yellow); }
     .sb-item .ico { font-size: 15px; width: 18px; text-align: center; }
-    .sb-foot { margin-top: auto; padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sb-foot { flex-shrink: 0; padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.1); }
     .logout-btn {
       width: 100%; background: none;
       border: 1px solid rgba(255,255,255,0.25);
@@ -640,6 +644,7 @@
       <img src="assets/logo.png" alt="ホリスケアアカデミー">
       <span class="sb-tag">ADMIN</span>
     </div>
+    <div class="sb-scroll">
     <div class="sb-section">メニュー</div>
     <div class="sb-item active" id="menu-applications" onclick="if(window.showSection)window.showSection('applications')"><span class="ico">📋</span>申し込み管理</div>
     <div class="sb-item" id="menu-notices" onclick="if(window.showSection)window.showSection('notices')"><span class="ico">📢</span>お知らせ管理</div>
@@ -659,6 +664,7 @@
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📅</span>日程・コース管理</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
     <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">📊</span>レポート</div>
+    </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
     </div>
