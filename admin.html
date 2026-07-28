@@ -3694,7 +3694,14 @@ async function doLogin() {
             </div>
           </div>
           <div style="margin-bottom:12px;">${rows}</div>
-          ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}','${t.type||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
+          ${t.type === '変更届' && t.applied ? `<div style="background:#F0FBF4;border:1px solid #C8E6C9;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#2E7D32;line-height:1.8;">
+              <div style="font-weight:700;margin-bottom:4px;">✅ 申込情報に反映済み（${t.appliedAt?.toDate?.()?.toLocaleString('ja-JP')||''}）</div>
+              ${(t.changeLog||[]).map(c => `<div>・${c.label}：<span style="color:#999;">${c.before||'（空）'}</span> → <strong>${c.after}</strong></div>`).join('') || '<div style="color:#888;">変更差分の記録なし</div>'}
+            </div>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${t.type === '変更届' && !t.applied ? `<button onclick="applyChange('${appId}','${d.id}')" style="padding:6px 16px;background:#1A9AB0;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📝 申込情報に反映</button>` : ''}
+            ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}','${t.type||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
+          </div>
         </div>`;
       }
       el.innerHTML = html;
@@ -3745,8 +3752,71 @@ async function doLogin() {
     }
   }
 
+  // 変更届の内容を申込情報に反映（変更前の値を履歴として保存）
+  async function applyChange(appId, todId) {
+    try {
+      const { doc, getDoc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const todSnap = await getDoc(doc(window.__db, 'applications', appId, 'todoke', todId));
+      const appSnap = await getDoc(doc(window.__db, 'applications', appId));
+      if (!todSnap.exists() || !appSnap.exists()) { alert('データが見つかりません'); return; }
+      const f = todSnap.data().fields || {};
+      const a = appSnap.data();
+
+      // 反映対象：入力があった項目のみ。申込のどのフィールドに入れるかの対応表
+      const map = [
+        { key:'sei',        label:'姓',           appField:'sei' },
+        { key:'mei',        label:'名',           appField:'mei' },
+        { key:'seiKana',    label:'せい（かな）',  appField:'seiKana' },
+        { key:'meiKana',    label:'めい（かな）',  appField:'meiKana' },
+        { key:'zip',        label:'郵便番号',      appField:'zip' },
+        { key:'address',    label:'住所',         appField:'address' },
+        { key:'address2',   label:'建物名等',      appField:'address2' },
+        { key:'altZip',     label:'郵送先郵便番号', appField:'altZip' },
+        { key:'altAddress', label:'郵送先住所',    appField:'altAddress' },
+        { key:'altAddress2',label:'郵送先建物名',  appField:'altAddress2' },
+        { key:'phone',      label:'電話番号',      appField:'phone' },
+        { key:'email',      label:'メールアドレス', appField:'email' },
+      ];
+
+      const updates = {};
+      const changeLog = [];
+      for (const m of map) {
+        const val = (f[m.key] || '').trim();
+        if (!val) continue;                     // 入力のあった項目のみ
+        const before = a[m.appField] || '';
+        if (before === val) continue;           // 変更なしはスキップ
+        updates[m.appField] = val;
+        changeLog.push({ label: m.label, appField: m.appField, before, after: val });
+      }
+
+      if (!changeLog.length) { alert('反映する変更がありません（既に同じ内容です）。'); return; }
+
+      const summary = changeLog.map(c => `・${c.label}：${c.before||'（空）'} → ${c.after}`).join('\n');
+      if (!confirm('以下を申込情報に反映します。よろしいですか？\n\n' + summary + '\n\n※変更前の値は履歴として保存されます。')) return;
+
+      // 申込情報を更新
+      await updateDoc(doc(window.__db, 'applications', appId), updates);
+      // 変更届に反映履歴を記録
+      await updateDoc(doc(window.__db, 'applications', appId, 'todoke', todId), {
+        applied: true,
+        appliedAt: serverTimestamp(),
+        appliedBy: window.__auth?.currentUser?.email || 'admin',
+        changeLog,
+      });
+      // ローカルのapplicationsキャッシュも更新（申込一覧に即反映）
+      const idx = all.findIndex(x => x.id === appId);
+      if (idx > -1) Object.assign(all[idx], updates);
+
+      alert('申込情報に反映しました。');
+      loadChangeList();
+    } catch(e) {
+      alert('反映に失敗しました：' + e.message);
+    }
+  }
+
   window.loadChangeList = loadChangeList;
   window.doneChange = doneChange;
+  window.applyChange = applyChange;
 
   async function loadInquiryList() {
     const el = document.getElementById('inquiry-list');
