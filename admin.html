@@ -1094,7 +1094,26 @@
           <div id="sales-summary" style="padding:20px;">読み込み中…</div>
         </div>
         <div class="tcard">
-          <div class="thead"><div class="thead-title">🧾 決済一覧</div></div>
+          <div class="thead">
+            <div class="thead-title">🧾 決済一覧</div>
+            <div class="thead-acts">
+              <input type="text" id="sales-q" oninput="renderSales()" placeholder="氏名・受講番号・メールで検索" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;min-width:200px;">
+              <select id="sales-status" onchange="renderSales()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+                <option value="all">入金状況：すべて</option>
+                <option value="paid">入金済み</option>
+                <option value="unpaid">入金前</option>
+                <option value="dead">キャンセル・退講</option>
+              </select>
+              <select id="sales-payment" onchange="renderSales()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+                <option value="all">支払方法：すべて</option>
+              </select>
+              <select id="sales-refund" onchange="renderSales()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+                <option value="all">返金：すべて</option>
+                <option value="refunded">返金あり</option>
+                <option value="none">返金なし</option>
+              </select>
+            </div>
+          </div>
           <div class="tbl-wrap"><div id="sales-list" style="min-height:60px;">読み込み中…</div></div>
         </div>
       </div><!-- /section-sales -->
@@ -4244,7 +4263,31 @@ async function doLogin() {
         </div>
       </div>`;
 
-    const listRows = rows.map(a => {
+    // 支払方法プルダウンを実データから生成（選択を保持）
+    const psel = document.getElementById('sales-payment');
+    if (psel) {
+      const methods = [...new Set(rows.map(a => a.payment).filter(Boolean))].sort();
+      const cur = psel.value || 'all';
+      psel.innerHTML = '<option value="all">支払方法：すべて</option>' + methods.map(m => `<option value="${m}">${m}</option>`).join('');
+      psel.value = (cur === 'all' || methods.includes(cur)) ? cur : 'all';
+    }
+    const q  = (document.getElementById('sales-q')?.value || '').toLowerCase().trim();
+    const sf = document.getElementById('sales-status')?.value || 'all';
+    const pf = document.getElementById('sales-payment')?.value || 'all';
+    const rf = document.getElementById('sales-refund')?.value || 'all';
+    const listData = rows.filter(a => {
+      const nm = (a.name || ((a.sei||'')+(a.mei||''))).toLowerCase();
+      if (q && !(nm.includes(q) || String(a.studentNo||'').toLowerCase().includes(q) || String(a.email||'').toLowerCase().includes(q))) return false;
+      if (sf === 'paid'   && !isPaidStatus(a)) return false;
+      if (sf === 'unpaid' && !['pending','awaiting_payment'].includes(a.status)) return false;
+      if (sf === 'dead'   && !['cancelled','withdrawn'].includes(a.status)) return false;
+      if (pf !== 'all' && a.payment !== pf) return false;
+      if (rf === 'refunded' && a.refunded !== true) return false;
+      if (rf === 'none'     && a.refunded === true) return false;
+      return true;
+    });
+
+    const listRows = listData.map(a => {
       const amt = parseAmount(a.fee);
       const paid = isPaidStatus(a);
       const cfd = a.confirmedAt?.toDate?.()?.toLocaleDateString('ja-JP') || (a.activeAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—');
@@ -4267,9 +4310,9 @@ async function doLogin() {
       </tr>`;
     }).join('');
 
-    document.getElementById('sales-list').innerHTML = rows.length
-      ? `<table><thead><tr><th>受講番号</th><th>氏名</th><th style="text-align:right;">受講料</th><th>支払方法</th><th>入金状況</th><th>確定日</th><th>返金</th><th>操作</th></tr></thead><tbody>${listRows}</tbody></table>`
-      : '<p style="color:var(--text-light);font-size:13px;padding:16px;">データがありません。</p>';
+    document.getElementById('sales-list').innerHTML = listData.length
+      ? `<div style="padding:8px 14px;font-size:12px;color:var(--text-light);">${listData.length}件表示（全${rows.length}件）</div><table><thead><tr><th>受講番号</th><th>氏名</th><th style="text-align:right;">受講料</th><th>支払方法</th><th>入金状況</th><th>確定日</th><th>返金</th><th>操作</th></tr></thead><tbody>${listRows}</tbody></table>`
+      : `<p style="color:var(--text-light);font-size:13px;padding:16px;">${rows.length ? '条件に一致する決済がありません。' : 'データがありません。'}</p>`;
   }
   window.renderSales = renderSales;
 
