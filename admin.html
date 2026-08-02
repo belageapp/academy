@@ -4185,6 +4185,7 @@ async function doLogin() {
 
   // ===== 決済・売上 =====
   let __salesCache = [];
+  let __salesFY = null; // 表示中の年度（4月始まり）
   const SALES_STATUS = {pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'};
   const yen = (n) => '¥' + (Number(n)||0).toLocaleString('ja-JP');
   const parseAmount = (v) => Number(String(v ?? '').replace(/[^0-9]/g,'')) || 0;
@@ -4210,7 +4211,9 @@ async function doLogin() {
   function renderSales() {
     const rows = __salesCache;
     let expected = 0, paidSum = 0, paidCount = 0, refundSum = 0, refundCount = 0;
-    const byMethod = {}, byMonth = {};
+    const byMethod = {}, fyData = {};
+    // 年度（4月〜翌3月）判定：1〜3月は前年の年度に含める
+    const fiscalOf = (dt) => { const m = dt.getMonth()+1; return m >= 4 ? dt.getFullYear() : dt.getFullYear()-1; };
     rows.forEach(a => {
       const amt = parseAmount(a.fee);
       expected += amt;
@@ -4219,8 +4222,12 @@ async function doLogin() {
         const m = a.payment || '不明';
         (byMethod[m] = byMethod[m] || {c:0,s:0}).c++; byMethod[m].s += amt;
         const dt = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
-        const key = dt ? dt.getFullYear() + '/' + String(dt.getMonth()+1).padStart(2,'0') : '不明';
-        (byMonth[key] = byMonth[key] || {c:0,s:0}).c++; byMonth[key].s += amt;
+        if (dt) {
+          const fy = fiscalOf(dt), mo = dt.getMonth()+1;
+          const f = (fyData[fy] = fyData[fy] || { total:0, count:0, months:{} });
+          f.total += amt; f.count++;
+          (f.months[mo] = f.months[mo] || {c:0,s:0}).c++; f.months[mo].s += amt;
+        }
       }
       if (a.refunded === true) { refundSum += (a.refundAmount != null ? Number(a.refundAmount) : amt); refundCount++; }
     });
@@ -4235,9 +4242,22 @@ async function doLogin() {
       `<tr><td style="padding:6px 10px;">${m}</td><td style="padding:6px 10px;text-align:right;">${byMethod[m].c}件</td><td style="padding:6px 10px;text-align:right;">${yen(byMethod[m].s)}</td></tr>`
     ).join('') || '<tr><td colspan="3" style="padding:8px;color:var(--text-light);">データなし</td></tr>';
 
-    const monthRows = Object.keys(byMonth).sort().reverse().map(k =>
-      `<tr><td style="padding:6px 10px;">${k}</td><td style="padding:6px 10px;text-align:right;">${byMonth[k].c}件</td><td style="padding:6px 10px;text-align:right;">${yen(byMonth[k].s)}</td></tr>`
-    ).join('') || '<tr><td colspan="3" style="padding:8px;color:var(--text-light);">データなし</td></tr>';
+    // 年度セレクタ＋選択年度の月次（4月→翌3月）＋年度合計
+    const fys = Object.keys(fyData).map(Number).sort((a,b)=>b-a);
+    const curFY = fiscalOf(new Date());
+    let selFY = (__salesFY != null) ? Number(__salesFY) : (fys[0] ?? curFY);
+    if (fys.length && !fys.includes(selFY)) selFY = fys[0];
+    const fyOptions = (fys.length ? fys : [curFY]).map(fy =>
+      `<option value="${fy}"${fy===selFY?' selected':''}>${fy}年度（${fy}/04〜${fy+1}/03）</option>`
+    ).join('');
+    const selData = fyData[selFY] || { total:0, count:0, months:{} };
+    const fiscalMonths = [4,5,6,7,8,9,10,11,12,1,2,3];
+    const monthRows = fiscalMonths.map(mo => {
+      const calY = mo >= 4 ? selFY : selFY+1;
+      const c = selData.months[mo];
+      return `<tr><td style="padding:6px 10px;">${calY}/${String(mo).padStart(2,'0')}</td><td style="padding:6px 10px;text-align:right;color:${c?'inherit':'var(--text-light)'};">${c ? c.c+'件' : '—'}</td><td style="padding:6px 10px;text-align:right;color:${c?'inherit':'var(--text-light)'};">${c ? yen(c.s) : '—'}</td></tr>`;
+    }).join('') +
+      `<tr style="border-top:2px solid var(--border);font-weight:800;background:var(--teal-pale);"><td style="padding:6px 10px;">年度合計</td><td style="padding:6px 10px;text-align:right;">${selData.count}件</td><td style="padding:6px 10px;text-align:right;">${yen(selData.total)}</td></tr>`;
 
     document.getElementById('sales-summary').innerHTML = `
       <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
@@ -4255,7 +4275,10 @@ async function doLogin() {
           </table>
         </div>
         <div style="flex:1;min-width:260px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:6px;">月次売上（入金確定月）</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-mid);">月次売上（入金確定月・年度別）</div>
+            <select onchange="window.setSalesFY(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">${fyOptions}</select>
+          </div>
           <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
             <thead><tr style="background:var(--teal-pale);"><th style="padding:6px 10px;text-align:left;">年月</th><th style="padding:6px 10px;text-align:right;">件数</th><th style="padding:6px 10px;text-align:right;">金額</th></tr></thead>
             <tbody>${monthRows}</tbody>
@@ -4315,6 +4338,7 @@ async function doLogin() {
       : `<p style="color:var(--text-light);font-size:13px;padding:16px;">${rows.length ? '条件に一致する決済がありません。' : 'データがありません。'}</p>`;
   }
   window.renderSales = renderSales;
+  window.setSalesFY = (v) => { __salesFY = v; renderSales(); };
 
   async function markRefund(docId) {
     const a = __salesCache.find(x => x.id === docId);
