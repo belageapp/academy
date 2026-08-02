@@ -667,7 +667,7 @@
     <div class="sb-item" id="menu-sales" onclick="if(window.showSection)window.showSection('sales')"><span class="ico">💴</span>決済・売上</div>
     <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
     <div class="sb-section">ガイド</div>
-    <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理者ガイド</div>
+    <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理機能ガイド</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -1128,16 +1128,25 @@
       <div id="section-guide" style="display:none;">
         <div class="tcard">
           <div class="thead">
-            <div class="thead-title">📖 管理者ガイド</div>
+            <div class="thead-title">📖 管理機能ガイド</div>
           </div>
           <div style="padding:16px 20px;">
 
             <!-- 検索 -->
-            <div style="margin-bottom:20px;">
+            <div style="margin-bottom:16px;">
               <input id="guide-search" type="text" placeholder="キーワードで検索（例：ステータス、OJT、CSV…）"
                 oninput="guideSearch(this.value)"
                 style="width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
             </div>
+
+            <!-- タブ -->
+            <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;" id="guide-tabs">
+              <button id="gtab-btn-manual" onclick="switchGuideTab('manual')" style="padding:11px 20px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid var(--teal);color:var(--teal);font-family:inherit;">📋 機能説明</button>
+              <button id="gtab-btn-qa"     onclick="switchGuideTab('qa')"     style="padding:11px 20px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-mid);font-family:inherit;">❓ よくある質問</button>
+            </div>
+
+            <!-- 機能説明タブ -->
+            <div id="gtab-manual">
 
             <!-- クイックジャンプ -->
             <div id="guide-quicknav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;">
@@ -1568,10 +1577,10 @@
 
             </div><!-- /guide-accordion -->
 
-            <!-- Q&A -->
-            <div style="margin-top:32px;">
-              <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--teal-light);">❓ よくある質問</div>
+            </div><!-- /gtab-manual -->
 
+            <!-- よくある質問タブ -->
+            <div id="gtab-qa" style="display:none;">
               <style>
                 .qa-item { border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden; }
                 .qa-q { display:flex;align-items:flex-start;gap:10px;padding:14px 18px;background:#F8FDFF;cursor:pointer;user-select:none; }
@@ -1744,9 +1753,9 @@
                 </div>
 
               </div><!-- /qa-list -->
-            </div><!-- /Q&A -->
+            </div><!-- /gtab-qa -->
 
-            </div>
+          </div>
         </div>
       </div><!-- /section-guide -->
 
@@ -2730,13 +2739,26 @@ async function doLogin() {
       section === 'certificate'  ? '📜 正式修了証明書発行' :
       section === 'autonotice'   ? '⏰ 自動通知設定' :
       section === 'sales'        ? '💴 決済・売上' :
-      section === 'guide'        ? '📖 管理者ガイド' : '';
+      section === 'guide'        ? '📖 管理機能ガイド' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
   window.showSection = showSection;
 
   // ===== 管理者ガイド =====
+  function switchGuideTab(tab) {
+    document.getElementById('gtab-manual').style.display = tab === 'manual' ? 'block' : 'none';
+    document.getElementById('gtab-qa').style.display     = tab === 'qa'     ? 'block' : 'none';
+    document.getElementById('gtab-btn-manual').style.borderBottomColor = tab === 'manual' ? 'var(--teal)' : 'transparent';
+    document.getElementById('gtab-btn-qa').style.borderBottomColor     = tab === 'qa'     ? 'var(--teal)' : 'transparent';
+    document.getElementById('gtab-btn-manual').style.color = tab === 'manual' ? 'var(--teal)' : 'var(--text-mid)';
+    document.getElementById('gtab-btn-qa').style.color     = tab === 'qa'     ? 'var(--teal)' : 'var(--text-mid)';
+    // 検索欄をクリア
+    const searchEl = document.getElementById('guide-search');
+    if (searchEl && searchEl.value) { searchEl.value = ''; guideSearch(''); }
+  }
+  window.switchGuideTab = switchGuideTab;
+
   function qaToggle(header) {
     const body = header.nextElementSibling;
     const arrow = header.querySelector('.qa-q-arrow');
@@ -2781,13 +2803,41 @@ async function doLogin() {
   function guideSearch(q) {
     const kw = q.trim();
     const kwLower = kw.toLowerCase();
+    const tabManual = document.getElementById('gtab-manual');
+    const tabQa     = document.getElementById('gtab-qa');
+    const tabBtnM   = document.getElementById('gtab-btn-manual');
+    const tabBtnQ   = document.getElementById('gtab-btn-qa');
+
+    if (!kw) {
+      // 検索クリア → タブ表示に戻す（機能説明タブをアクティブに）
+      if (tabManual) tabManual.style.display = 'block';
+      if (tabQa)     tabQa.style.display     = 'none';
+      if (tabBtnM)   { tabBtnM.style.borderBottomColor = 'var(--teal)'; tabBtnM.style.color = 'var(--teal)'; }
+      if (tabBtnQ)   { tabBtnQ.style.borderBottomColor = 'transparent'; tabBtnQ.style.color = 'var(--text-mid)'; }
+      document.querySelectorAll('.guide-section').forEach(sec => {
+        const body = sec.querySelector('.guide-body');
+        if (body && __guideOrigHTML.has(body)) body.innerHTML = __guideOrigHTML.get(body);
+        sec.style.display = 'block'; sec.style.outline = 'none';
+      });
+      document.querySelectorAll('.qa-item').forEach(item => {
+        const ans = item.querySelector('.qa-a');
+        if (ans && __guideOrigHTML.has(ans)) ans.innerHTML = __guideOrigHTML.get(ans);
+        item.style.display = 'block'; item.style.outline = 'none';
+      });
+      return;
+    }
+
+    // 検索中 → 両タブを同時表示
+    if (tabManual) tabManual.style.display = 'block';
+    if (tabQa)     tabQa.style.display     = 'block';
+    if (tabBtnM)   { tabBtnM.style.borderBottomColor = 'transparent'; tabBtnM.style.color = 'var(--text-mid)'; }
+    if (tabBtnQ)   { tabBtnQ.style.borderBottomColor = 'transparent'; tabBtnQ.style.color = 'var(--text-mid)'; }
 
     // アコーディオンセクション
     document.querySelectorAll('.guide-section').forEach(sec => {
       const body = sec.querySelector('.guide-body');
       const arrow = sec.querySelector('.guide-header span:last-child');
       if (body && __guideOrigHTML.has(body)) body.innerHTML = __guideOrigHTML.get(body);
-      if (!kw) { sec.style.display = 'block'; sec.style.outline = 'none'; return; }
       const match = sec.textContent.toLowerCase().includes(kwLower);
       sec.style.display = match ? 'block' : 'none';
       sec.style.outline = match ? '2px solid var(--teal)' : 'none';
@@ -2804,7 +2854,6 @@ async function doLogin() {
       const ans = item.querySelector('.qa-a');
       const arrow = item.querySelector('.qa-q-arrow');
       if (ans && __guideOrigHTML.has(ans)) ans.innerHTML = __guideOrigHTML.get(ans);
-      if (!kw) { item.style.display = 'block'; item.style.outline = 'none'; return; }
       const match = item.textContent.toLowerCase().includes(kwLower);
       item.style.display = match ? 'block' : 'none';
       item.style.outline = match ? '2px solid var(--teal)' : 'none';
@@ -2814,7 +2863,8 @@ async function doLogin() {
         if (arrow) arrow.textContent = '▲';
         ans.innerHTML = guideHighlightText(ans.innerHTML, kw);
         const qText = item.querySelector('.qa-q-text');
-        if (qText) qText.innerHTML = guideHighlightText(qText.innerHTML, kw);
+        if (qText && !__guideOrigHTML.has(qText)) __guideOrigHTML.set(qText, qText.innerHTML);
+        if (qText) qText.innerHTML = guideHighlightText(__guideOrigHTML.get(qText) || qText.innerHTML, kw);
       }
     });
   }
