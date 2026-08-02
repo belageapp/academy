@@ -1132,12 +1132,17 @@
     <div class="modal-hd">
       <span class="modal-hd-title">📋 申し込み詳細</span>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button class="preview-btn" onclick="openAdminEditModal()" style="background:#FFF8E1;color:#E65100;border:1px solid #FFE082;">✏️ 編集</button>
         <button class="preview-btn" onclick="openPreview()">👁 生徒画面</button>
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
     </div>
     <div class="modal-body">
       <dl id="modal-dl"></dl>
+      <div id="admin-memo-display" style="display:none;margin:0 0 16px;padding:12px 16px;background:#FFFDE7;border:1px solid #FDD835;border-radius:10px;">
+        <div style="font-size:11px;font-weight:700;color:#F57F17;margin-bottom:4px;">📝 管理者メモ</div>
+        <div id="admin-memo-text" style="font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
       <!-- 進捗チェックリスト -->
       <div id="progress-section" class="modal-sec" style="margin-bottom:20px;">
         <div class="modal-sec-hd">📊 進捗状況</div>
@@ -1550,6 +1555,11 @@ async function doLogin() {
       : '';
     document.getElementById('modal-dl').innerHTML =
       `<div class="modal-sec-hd">📋 基本情報</div>${baseRows}${ojtSection}`;
+  const memoEl = document.getElementById('admin-memo-display');
+  const memoText = document.getElementById('admin-memo-text');
+  if (a.adminMemo) { memoText.textContent = a.adminMemo; memoEl.style.display = 'block'; }
+  else { memoEl.style.display = 'none'; }
+
   document.getElementById('m-status').value = a.status || 'pending';
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
@@ -2615,6 +2625,87 @@ async function doLogin() {
     document.getElementById('image-modal').style.display = 'none';
   }
   window.closeImageModal = closeImageModal;
+  // ===== 受講生情報 管理者編集 =====
+  function openAdminEditModal() {
+    if (!curId) return;
+    const a = all.find(x => x.id === curId);
+    if (!a) return;
+    const set = (id, val) => { const el = document.getElementById('aedit-'+id); if (el) el.value = val || ''; };
+    set('sei', a.sei); set('mei', a.mei);
+    set('seiFuri', a.seiFuri); set('meiFuri', a.meiFuri);
+    set('phone', a.phone);
+    set('zip', a.zip); set('address', a.address);
+    set('altZip', a.altZip); set('altAddress', a.altAddress);
+    const isPurchase = a.textbook === 'purchase' || (a.textbook || '').includes('購入');
+    const sel = document.getElementById('aedit-textbook');
+    if (sel) sel.value = isPurchase ? 'purchase' : 'なし';
+    const v = a.practiceVenue || {};
+    set('venueCorp', v.corp); set('venueName', v.name);
+    set('venueZip', v.zip); set('venueAddress', v.address);
+    set('venuePhone', v.phone); set('venueDept', v.dept);
+    set('venueContact', v.contact); set('venueEmail', v.email);
+    set('adminMemo', a.adminMemo);
+    document.getElementById('aedit-error').textContent = '';
+    document.getElementById('admin-edit-modal').style.display = 'block';
+  }
+  window.openAdminEditModal = openAdminEditModal;
+
+  function closeAdminEditModal() {
+    document.getElementById('admin-edit-modal').style.display = 'none';
+  }
+  window.closeAdminEditModal = closeAdminEditModal;
+
+  async function saveAdminEdit() {
+    if (!curId) return;
+    const get = id => document.getElementById('aedit-'+id)?.value.trim() || '';
+    const errEl = document.getElementById('aedit-error');
+    errEl.textContent = '';
+    const sei = get('sei'), mei = get('mei');
+    const seiFuri = get('seiFuri'), meiFuri = get('meiFuri');
+    const textbookVal = document.getElementById('aedit-textbook')?.value || 'なし';
+    const updateData = {
+      sei, mei, seiFuri, meiFuri,
+      name: sei + mei,
+      kana: seiFuri + meiFuri,
+      phone: get('phone'),
+      zip: get('zip'), address: get('address'),
+      altZip: get('altZip'), altAddress: get('altAddress'),
+      textbook: textbookVal,
+      adminMemo: get('adminMemo'),
+      'practiceVenue.corp': get('venueCorp'),
+      'practiceVenue.name': get('venueName'),
+      'practiceVenue.zip': get('venueZip'),
+      'practiceVenue.address': get('venueAddress'),
+      'practiceVenue.phone': get('venuePhone'),
+      'practiceVenue.dept': get('venueDept'),
+      'practiceVenue.contact': get('venueContact'),
+      'practiceVenue.email': get('venueEmail'),
+    };
+    try {
+      errEl.textContent = '保存中...';
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', curId), { ...updateData, adminEditedAt: serverTimestamp() });
+      const a = all.find(x => x.id === curId);
+      if (a) {
+        Object.assign(a, { sei, mei, seiFuri, meiFuri, name: sei+mei, kana: seiFuri+meiFuri,
+          phone: get('phone'), zip: get('zip'), address: get('address'),
+          altZip: get('altZip'), altAddress: get('altAddress'),
+          textbook: textbookVal, adminMemo: get('adminMemo') });
+        if (!a.practiceVenue) a.practiceVenue = {};
+        Object.assign(a.practiceVenue, {
+          corp: get('venueCorp'), name: get('venueName'),
+          zip: get('venueZip'), address: get('venueAddress'),
+          phone: get('venuePhone'), dept: get('venueDept'),
+          contact: get('venueContact'), email: get('venueEmail'),
+        });
+      }
+      closeAdminEditModal();
+      showToast('受講生情報を更新しました', 'success');
+      openModal(curId);
+    } catch(e) { errEl.textContent = 'エラー：' + e.message; }
+  }
+  window.saveAdminEdit = saveAdminEdit;
+
   // ===== 実習先管理 =====
   let __facilityEditId = null;
   let __facilityFromAppId = null;
@@ -4771,6 +4862,70 @@ async function doLogin() {
     <div style="padding:16px;">
       <input id="flink-search" type="text" placeholder="氏名・ふりがな・受講番号・メールで検索..." oninput="renderFacilityStudentSearch()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;">
       <div id="flink-results" style="max-height:420px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 受講生情報 管理者編集モーダル -->
+<div id="admin-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9100;overflow:auto;">
+  <div style="max-width:580px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="padding:16px 20px;background:#E65100;color:#fff;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:700;">✏️ 受講生情報を編集（管理者）</div>
+      <button onclick="closeAdminEditModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;max-height:80vh;overflow-y:auto;">
+      <div style="display:grid;gap:14px;">
+
+        <!-- 基本情報 -->
+        <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);">基本情報</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">姓</label><input id="aedit-sei" type="text" placeholder="山田" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">名</label><input id="aedit-mei" type="text" placeholder="太郎" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">せい（ふりがな）</label><input id="aedit-seiFuri" type="text" placeholder="やまだ" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">めい（ふりがな）</label><input id="aedit-meiFuri" type="text" placeholder="たろう" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="aedit-phone" type="tel" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-zip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-address" type="text" placeholder="都道府県市区町村..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先〒</label><input id="aedit-altZip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先住所</label><input id="aedit-altAddress" type="text" placeholder="証明書の別途送付先（なければ空欄）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">テキスト</label>
+          <select id="aedit-textbook" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+            <option value="なし">不要（なし）</option>
+            <option value="purchase">購入あり</option>
+          </select>
+        </div>
+
+        <!-- 実習先情報 -->
+        <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">実習先情報（届出データ）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">法人名</label><input id="aedit-venueCorp" type="text" placeholder="社会福祉法人◯◯" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名</label><input id="aedit-venueName" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-venueZip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-venueAddress" type="text" placeholder="施設の住所" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設電話番号</label><input id="aedit-venuePhone" type="text" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者部署</label><input id="aedit-venueDept" type="text" placeholder="介護部" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者氏名</label><input id="aedit-venueContact" type="text" placeholder="担当者名" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者メール</label><input id="aedit-venueEmail" type="email" placeholder="contact@facility.example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+
+        <!-- 管理者メモ -->
+        <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">管理者メモ</div>
+        <div><textarea id="aedit-adminMemo" rows="4" placeholder="対応履歴・備考など（受講生には表示されません）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box;"></textarea></div>
+
+        <div id="aedit-error" style="color:var(--red);font-size:13px;"></div>
+        <button onclick="saveAdminEdit()" style="padding:11px;background:linear-gradient(135deg,#E65100,#BF360C);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">保存する</button>
+      </div>
     </div>
   </div>
 </div>
