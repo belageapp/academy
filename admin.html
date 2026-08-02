@@ -1414,14 +1414,16 @@ async function doLogin() {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="24">申し込みデータがありません</td></tr>';
     } else {
       const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
+      // 終了期限＝受講開始日（activeAt）＋Nか月（学則：正式修了は8か月以内）
+      const fmtLimit = (v,m) => { if(!v?.toDate?.()) return '—'; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
       tbody.innerHTML = items.map(a => {
         const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ') || '—';
         const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ') || '—';
         const dim = 'color:var(--text-light);'; // 未対応列（データ未保存）
         return `<tr>
           <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
-          <td style="font-size:12px;">${fmtD(a.confirmedAt)}</td>
-          <td style="font-size:12px;${dim}">—</td>
+          <td style="font-size:12px;">${fmtD(a.activeAt)}</td>
+          <td style="font-size:12px;">${fmtLimit(a.activeAt,8)}</td>
           <td style="font-size:12px;">${fmtD(a.completedAt)}</td>
           <td><strong>${a.name||'—'}</strong></td>
           <td style="color:var(--text-mid);">${a.kana||'—'}</td>
