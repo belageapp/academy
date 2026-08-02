@@ -1667,6 +1667,61 @@
                 <div class="qa-item">
                   <div class="qa-q" onclick="qaToggle(this)">
                     <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生がログインできないと言っている</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    受講生マイページのログイン画面に<strong>「パスワードをお忘れの方はこちら」</strong>リンクがあります。メールアドレスを入力して送信するとパスワードリセットメールが届きます。受講生に案内してください。
+                    <div class="note">📌 迷惑メールフォルダに入っている場合があります。合わせてご案内ください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生の氏名・連絡先を変更したい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み管理で対象受講生の詳細モーダルを開き、<strong>「✏️ 編集」</strong>ボタンをクリックしてください。氏名・ふりがな・電話番号・住所・OJT施設情報などを管理者側で直接変更できます。
+                    <div class="note">📌 メールアドレスの変更はFirebase Authenticationの操作が必要なため、システム管理者にご連絡ください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">OJT施設届出の「対応済み」とはどういう状態ですか</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    OJT施設届出は3段階で管理しています。
+                    <ul>
+                      <li><strong>未対応</strong>：受講生から届出が来たが、まだスクール側が確認していない状態</li>
+                      <li><strong>資料送付待ち</strong>：内容を確認し施設への資料（合意書・レターなど）を準備・送付中</li>
+                      <li><strong>対応済み</strong>：資料の送付が完了した状態</li>
+                    </ul>
+                    「対応済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">仮修了と正式修了の違いは何ですか</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    <ul>
+                      <li><strong>仮修了</strong>：動画視聴・修了レポートなど学習部分が完了したが、OJT（実技指導）がまだの段階。仮修了証明書を発行できます。</li>
+                      <li><strong>正式修了</strong>：OJT修了・修了レポート・OJT書類受領の3条件がすべて揃った段階。正式修了証明書（介護職員初任者研修修了証明書）を発行します。ステータスが「修了」に変わります。</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
                     <span class="qa-q-text">正式修了証明書の発行ボタンが表示されない</span>
                     <span class="qa-q-arrow">▼</span>
                   </div>
@@ -1695,6 +1750,25 @@
                 <div class="qa-item">
                   <div class="qa-q" onclick="qaToggle(this)">
                     <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生が見ている画面を確認したい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み管理の受講生詳細モーダル右上にある <strong>「👁 受講生画面」ボタン</strong> をクリックすると、その受講生のマイページをそのまま確認できます。ログインは不要です。<br>
+                    確認できる主な内容：
+                    <ul>
+                      <li>受講ステータス・進捗バー</li>
+                      <li>書類提出フォームの表示状態</li>
+                      <li>テキスト・動画教材へのアクセス可否</li>
+                      <li>OJT施設届出フォーム</li>
+                      <li>修了レポート・修了証明書の表示状態</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
                     <span class="qa-q-text">サイドバーのバッジ（数字）が消えない</span>
                     <span class="qa-q-arrow">▼</span>
                   </div>
@@ -1717,12 +1791,11 @@
                 <div class="qa-item">
                   <div class="qa-q" onclick="qaToggle(this)">
                     <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">受講生がログインできないと言っている</span>
+                    <span class="qa-q-text">テストデータが一覧に表示されてしまう</span>
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    受講生マイページのログイン画面に<strong>「パスワードをお忘れの方はこちら」</strong>リンクがあります。メールアドレスを入力して送信するとパスワードリセットメールが届きます。受講生に案内してください。
-                    <div class="note">📌 迷惑メールフォルダに入っている場合があります。合わせてご案内ください。</div>
+                    書類確認・OJT施設届出・動画視聴・OJT修了報告・修了レポート・仮修了証・修了証明書の各ページに<strong>「🧪 テストデータを表示」トグル</strong>があります。チェックを外すとテストデータ（isTest=true）が非表示になります。デフォルトはOFF（非表示）です。
                   </div>
                 </div>
 
@@ -1745,80 +1818,7 @@
                 <div class="qa-item">
                   <div class="qa-q" onclick="qaToggle(this)">
                     <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">仮修了と正式修了の違いは何ですか</span>
-                    <span class="qa-q-arrow">▼</span>
-                  </div>
-                  <div class="qa-a">
-                    <ul>
-                      <li><strong>仮修了</strong>：動画視聴・修了レポートなど学習部分が完了したが、OJT（実技指導）がまだの段階。仮修了証明書を発行できます。</li>
-                      <li><strong>正式修了</strong>：OJT修了・修了レポート・OJT書類受領の3条件がすべて揃った段階。正式修了証明書（介護職員初任者研修修了証明書）を発行します。ステータスが「修了」に変わります。</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="qa-item">
-                  <div class="qa-q" onclick="qaToggle(this)">
-                    <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">受講生の氏名・連絡先を変更したい</span>
-                    <span class="qa-q-arrow">▼</span>
-                  </div>
-                  <div class="qa-a">
-                    申し込み管理で対象受講生の詳細モーダルを開き、<strong>「✏️ 編集」</strong>ボタンをクリックしてください。氏名・ふりがな・電話番号・住所・OJT施設情報などを管理者側で直接変更できます。
-                    <div class="note">📌 メールアドレスの変更はFirebase Authenticationの操作が必要なため、システム管理者にご連絡ください。</div>
-                  </div>
-                </div>
-
-                <div class="qa-item">
-                  <div class="qa-q" onclick="qaToggle(this)">
-                    <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">テストデータが一覧に表示されてしまう</span>
-                    <span class="qa-q-arrow">▼</span>
-                  </div>
-                  <div class="qa-a">
-                    書類確認・OJT施設届出・動画視聴・OJT修了報告・修了レポート・仮修了証・修了証明書の各ページに<strong>「🧪 テストデータを表示」トグル</strong>があります。チェックを外すとテストデータ（isTest=true）が非表示になります。デフォルトはOFF（非表示）です。
-                  </div>
-                </div>
-
-                <div class="qa-item">
-                  <div class="qa-q" onclick="qaToggle(this)">
-                    <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">OJT施設届出の「対応済み」とはどういう状態ですか</span>
-                    <span class="qa-q-arrow">▼</span>
-                  </div>
-                  <div class="qa-a">
-                    OJT施設届出は3段階で管理しています。
-                    <ul>
-                      <li><strong>未対応</strong>：受講生から届出が来たが、まだスクール側が確認していない状態</li>
-                      <li><strong>資料送付待ち</strong>：内容を確認し施設への資料（合意書・レターなど）を準備・送付中</li>
-                      <li><strong>対応済み</strong>：資料の送付が完了した状態</li>
-                    </ul>
-                    「対応済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
-                  </div>
-                </div>
-
-                <div class="qa-item">
-                  <div class="qa-q" onclick="qaToggle(this)">
-                    <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">受講生が見ている画面を確認したい</span>
-                    <span class="qa-q-arrow">▼</span>
-                  </div>
-                  <div class="qa-a">
-                    申し込み管理の受講生詳細モーダル右上にある <strong>「👁 受講生画面」ボタン</strong> をクリックすると、その受講生のマイページをそのまま確認できます。ログインは不要です。<br>
-                    確認できる主な内容：
-                    <ul>
-                      <li>受講ステータス・進捗バー</li>
-                      <li>書類提出フォームの表示状態</li>
-                      <li>テキスト・動画教材へのアクセス可否</li>
-                      <li>OJT施設届出フォーム</li>
-                      <li>修了レポート・修了証明書の表示状態</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="qa-item">
-                  <div class="qa-q" onclick="qaToggle(this)">
-                    <span class="qa-q-label">Q</span>
-                    <span class="qa-q-text">返金処理ボタンを押すと何が起こりますか</span>
+                    <span class="qa-q-text">返金が発生する場合はどのように処理しますか</span>
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">

@@ -455,6 +455,24 @@
 
     .page-wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
 
+    /* 受講ステップ進捗バー */
+    .step-progress-card {
+      background: white; border-radius: 12px; border: 1px solid var(--border);
+      box-shadow: 0 2px 8px var(--shadow); padding: 14px 16px; margin-bottom: 10px;
+    }
+    .step-progress-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-mid); margin-bottom: 5px; }
+    .step-progress-meta strong { color: var(--teal-dark); }
+    .step-progress-bar { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+    .step-progress-fill { height: 100%; background: var(--teal); border-radius: 4px; transition: width 0.5s; }
+    .step-progress-steps { display: flex; gap: 6px; }
+    .step-progress-step {
+      flex: 1; text-align: center; font-size: 10px; padding: 6px 4px; border-radius: 8px;
+      border: 1px solid var(--border); color: var(--text-light); background: var(--bg);
+      line-height: 1.5;
+    }
+    .step-progress-step.sps-done  { background: var(--green-light); border-color: #86EFAC; color: #166534; }
+    .step-progress-step.sps-active { background: var(--orange-light); border-color: #FDE68A; color: #9A3412; font-weight: 700; }
+
     /* タイムライン */
     .timeline-wrap { position: relative; padding-left: 38px; }
     .timeline-wrap::before {
@@ -764,6 +782,23 @@
 
   <!-- ③〜⑥ 受講ステップ タイムライン -->
   <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:.05em;margin:24px 0 10px 2px;">受講ステップ</div>
+
+  <div id="step-progress-card" class="step-progress-card" style="display:none;">
+    <div class="step-progress-meta">
+      <span>学習進捗</span>
+      <strong id="step-progress-label"></strong>
+    </div>
+    <div class="step-progress-bar">
+      <div class="step-progress-fill" id="step-progress-fill" style="width:0%;"></div>
+    </div>
+    <div class="step-progress-steps">
+      <div class="step-progress-step" id="spp-1">STEP1<br>—</div>
+      <div class="step-progress-step" id="spp-2">STEP2<br>—</div>
+      <div class="step-progress-step" id="spp-3">STEP3<br>—</div>
+      <div class="step-progress-step" id="spp-4">STEP4<br>—</div>
+    </div>
+  </div>
+
   <div class="timeline-wrap">
 
     <!-- Step1 受講準備 -->
@@ -1693,7 +1728,7 @@
         }
       }
       renderCourseFlow(data);
-
+      renderProgressBar(data, window.__progressData || {});
 
       // confirmedになったら届出書ボタンをアクティブに
       if (isConfirmed) {
@@ -1715,7 +1750,9 @@
       if (!window.__taskListRendered) {
         const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
         const progressData = progressSnap.exists() ? progressSnap.data() : {};
+        window.__progressData = progressData;
         renderTaskList(isActive, progressData, user.uid, status);
+        renderProgressBar(window.__appData || {}, progressData);
         window.__taskListRendered = true;
       }
 
@@ -2379,6 +2416,77 @@
   };
   // 講座の流れ
   // 講座の流れ（スタイリッシュ版）
+  function renderProgressBar(data, progressData) {
+    console.log('[renderProgressBar] called, card=', document.getElementById('step-progress-card'), 'data.status=', data?.status);
+    const card = document.getElementById('step-progress-card');
+    if (!card) { console.warn('[renderProgressBar] card not found'); return; }
+    const docStatus = data.documentStatus || {};
+    const pd = progressData || {};
+
+    // STEP1 (max 4)
+    const s1 = [
+      docStatus.photo === 'approved',
+      docStatus.idDocument === 'approved',
+      data.pledgeSigned === true,
+      data.practiceVenueReported === true,
+    ].filter(Boolean).length;
+
+    // STEP2 (max 12: eラーニング10 + 動画1 + AEGISC1)
+    const elPassCount = LEARNING_THEMES.filter(t => pd['theme' + t.num] === true).length;
+    const s2 = elPassCount + (data.videoAllDone ? 1 : 0) + (data.externalVideoDone ? 1 : 0);
+
+    // STEP3 (max 3)
+    const s3 = [
+      data.test1Passed === true,
+      data.test2Passed === true,
+      data.tempCertIssued === true,
+    ].filter(Boolean).length;
+
+    // STEP4 (max 3)
+    const s4 = [
+      data.ojtPassed === true,
+      data.reportApproved === true,
+      data.certificateIssued === true,
+    ].filter(Boolean).length;
+
+    const total = s1 + s2 + s3 + s4;
+    const MAX = 22;
+    const pct = Math.round(total / MAX * 100);
+
+    const step1Done = s1 === 4;
+    const step2Done = s2 === 12;
+    const step3Done = s3 === 3;
+    const step4Done = s4 === 3;
+    const status = data.status || '';
+    const isActive = ['active', 'completed'].includes(status);
+    const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
+    const test2Ok = data.test2Passed === true;
+    const certIssued = data.certificateIssued === true;
+
+    let activeStep = certIssued ? 5 : step3Done ? 4 : step2Done ? 3 : step1Done ? 2 : 1;
+
+    const stepInfo = [
+      { done: step1Done, act: activeStep === 1, score: s1, max: 4 },
+      { done: step2Done, act: activeStep === 2, score: s2, max: 12, locked: !isActive },
+      { done: step3Done, act: activeStep === 3, score: s3, max: 3, locked: !step2Done },
+      { done: step4Done, act: activeStep === 4, score: s4, max: 3, locked: !test2Ok && !step3Done },
+    ];
+
+    card.style.display = 'block';
+    document.getElementById('step-progress-fill').style.width = pct + '%';
+    document.getElementById('step-progress-label').textContent =
+      certIssued ? '修了完了 🎓' : `${pct}%　（${total} / ${MAX}）`;
+
+    stepInfo.forEach((info, i) => {
+      const el = document.getElementById('spp-' + (i + 1));
+      if (!el) return;
+      const scoreText = info.locked ? '🔒' : info.done ? `✅ 完了` : `${info.score}/${info.max}`;
+      el.className = 'step-progress-step' +
+        (info.done ? ' sps-done' : info.act ? ' sps-active' : '');
+      el.innerHTML = `STEP${i + 1}<br>${scoreText}`;
+    });
+  }
+
   function renderCourseFlow(data) {
     const status = data.status || '';
     const docStatus = data.documentStatus || {};
