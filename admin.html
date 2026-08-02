@@ -903,6 +903,9 @@
           <div class="thead">
             <div class="thead-title">書類確認一覧</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-documents" onchange="loadDocuments()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <select id="doc-filter" onchange="loadDocuments()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
                 <option value="pending">確認待ち</option>
                 <option value="all">すべて</option>
@@ -921,6 +924,9 @@
           <div class="thead">
             <div class="thead-title">🏥 実習先届出一覧</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-venue" onchange="loadVenueList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <select id="venue-filter-sel" onchange="window.setVenueFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
                 <option value="pending">要対応（未対応・未定・資料送付待ち）</option>
                 <option value="all">すべて</option>
@@ -976,6 +982,9 @@
           <div class="thead">
             <div class="thead-title">📋 実習修了報告一覧</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-ojt" onchange="loadOjtList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <button class="refresh-btn" onclick="loadOjtList()">🔄 更新</button>
             </div>
           </div>
@@ -1012,6 +1021,9 @@
           <div class="thead">
             <div class="thead-title">📝 修了レポート一覧</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-report" onchange="loadReportList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <button class="refresh-btn" onclick="loadReportList()">🔄 更新</button>
             </div>
           </div>
@@ -1024,6 +1036,9 @@
           <div class="thead">
             <div class="thead-title">📄 仮修了証明書発行管理</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-tempcert" onchange="loadTempCertList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <select class="tempcert-filter-sel" id="tempcert-filter-sel" onchange="loadTempCertList()">
                 <option value="all">すべて</option>
                 <option value="pending" selected>未発送</option>
@@ -1044,6 +1059,9 @@
           <div class="thead">
             <div class="thead-title">📜 正式修了証明書発行</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-certificate" onchange="loadCertificateList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
               <button class="refresh-btn" onclick="loadCertificateList()">🔄 更新</button>
             </div>
           </div>
@@ -2241,6 +2259,7 @@ async function doLogin() {
 
     const q = window.__query(window.__col(window.__db, 'applications'), window.__orderBy('createdAt', 'desc'));
     const snap = await window.__getDocs(q);
+    const showTest = document.getElementById('show-test-documents')?.checked;
 
     const docs = snap.docs;
     let pendingCount = 0;
@@ -2249,6 +2268,7 @@ async function doLogin() {
 
     docs.forEach(d => {
       const data = d.data();
+      if (!showTest && data.isTest) return;
       const docStatus = data.documentStatus || {};
       const photoPending = docStatus.photo === 'pending';
       const photoApproved = docStatus.photo === 'approved';
@@ -2807,9 +2827,10 @@ async function doLogin() {
         collection(window.__db, 'applications'),
         where('practiceVenueReported', '==', true)
       ));
+      const showTest = document.getElementById('show-test-venue')?.checked;
       __venueCache = snap.docs
         .map(d => ({ __id: d.id, ...d.data() }))
-        .filter(r => r.practiceVenue?.name !== '当校指定') // 旧「当校指定」データのみ非表示
+        .filter(r => r.practiceVenue?.name !== '当校指定' && (showTest || !r.isTest)) // 「当校指定」・テストデータを非表示
         .sort((a, b) => (b.practiceVenueReportedAt?.toMillis?.() || 0) - (a.practiceVenueReportedAt?.toMillis?.() || 0));
       renderVenueTable();
     } catch(e) {
@@ -2951,11 +2972,13 @@ async function doLogin() {
         orderBy('ojtReportedAt', 'desc')
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">報告はまだありません。</p>'; return; }
+      const showTest = document.getElementById('show-test-ojt')?.checked;
       let html = '<table><thead><tr>' +
         '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>備考</th><th>報告日</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
+        if (!showTest && a.isTest) return;
         const r = a.ojtReport || {};
         const date = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
         const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
@@ -3063,10 +3086,12 @@ async function doLogin() {
         where('test2Passed', '==', true)
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
+      const showTest = document.getElementById('show-test-tempcert')?.checked;
       const pending = [], sent = [];
       window.__tempCertCache = {};
       snap.docs.forEach(d => {
         const item = { id: d.id, ...d.data() };
+        if (!showTest && item.isTest) return;
         window.__tempCertCache[d.id] = item;
         (item.tempCertIssued === true ? sent : pending).push(item);
       });
@@ -3500,11 +3525,13 @@ async function doLogin() {
         orderBy('ojtPassedAt', 'desc')
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
+      const showTest = document.getElementById('show-test-certificate')?.checked;
       let html = '<table><thead><tr>' +
         '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>送付先</th><th>承認日</th><th>施設報告</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
+        if (!showTest && a.isTest) return;
         const r = a.ojtReport || {};
         const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
         const approvedDate = a.ojtPassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
@@ -3585,9 +3612,11 @@ async function doLogin() {
         orderBy('reportSubmittedAt', 'desc')
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">レポートはまだありません。</p>'; return; }
+      const showTest = document.getElementById('show-test-report')?.checked;
       let html = '';
       snap.docs.forEach(d => {
         const a = d.data();
+        if (!showTest && a.isTest) return;
         const r = a.report || {};
         const date = a.reportSubmittedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
         const isApproved = a.reportApproved === true;
