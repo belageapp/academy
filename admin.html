@@ -735,6 +735,7 @@
           <table id="app-table">
             <thead>
               <tr>
+                <th>ステータス</th>
                 <th>受講者番号</th>
                 <th>入校日</th>
                 <th>仮修了期限</th>
@@ -758,7 +759,6 @@
                 <th>実習終了報告受理日</th>
                 <th>正式修了証明書発行</th>
                 <th>修了証発行先</th>
-                <th>ステータス</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -1421,7 +1421,9 @@ async function doLogin() {
         const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ') || '—';
         const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ') || '—';
         const dim = 'color:var(--text-light);'; // 未対応列（データ未保存）
+        const statusBadge = `<span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span>`;
         return `<tr>
+          <td>${statusBadge}</td>
           <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
           <td style="font-size:12px;">${fmtD(a.activeAt)}</td>
           <td style="font-size:12px;">${fmtLimit(a.activeAt,3)}</td>
@@ -1445,7 +1447,6 @@ async function doLogin() {
           <td style="font-size:12px;">${fmtD(a.reportApprovedAt)}</td>
           <td style="font-size:12px;">${fmtD(a.certificateIssuedAt)}</td>
           <td style="font-size:12px;${dim}">—</td>
-          <td><span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span></td>
           <td><button class="detail-btn" onclick="openModal('${a.id}')">詳細</button></td>
         </tr>`;
       }).join('');
