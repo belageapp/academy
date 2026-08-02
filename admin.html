@@ -4210,38 +4210,43 @@ async function doLogin() {
 
   function renderSales() {
     const rows = __salesCache;
-    let expected = 0, paidSum = 0, paidCount = 0, refundSum = 0, refundCount = 0;
-    const byMethod = {}, fyData = {};
     // 年度（4月〜翌3月）判定：1〜3月は前年の年度に含める
     const fiscalOf = (dt) => { const m = dt.getMonth()+1; return m >= 4 ? dt.getFullYear() : dt.getFullYear()-1; };
+    const fyData = {};
+    const methodSet = new Set();
+    const getM = (fy, mo) => {
+      const f = (fyData[fy] = fyData[fy] || { expected:0, paidSum:0, paidCount:0, refund:0, refundCount:0, months:{} });
+      return f.months[mo] = f.months[mo] || { expected:0, paidSum:0, paidCount:0, methods:{}, refund:0 };
+    };
     rows.forEach(a => {
       const amt = parseAmount(a.fee);
-      expected += amt;
+      // 見込み売上：申込日ベース（全申込）
+      const cdt = a.createdAt?.toDate?.();
+      if (cdt) { const fy=fiscalOf(cdt); getM(fy, cdt.getMonth()+1).expected += amt; fyData[fy].expected += amt; }
+      // 入金済み：入金確定日ベース（支払方法別件数）
       if (isPaidStatus(a)) {
-        paidSum += amt; paidCount++;
-        const m = a.payment || '不明';
-        (byMethod[m] = byMethod[m] || {c:0,s:0}).c++; byMethod[m].s += amt;
-        const dt = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
-        if (dt) {
-          const fy = fiscalOf(dt), mo = dt.getMonth()+1;
-          const f = (fyData[fy] = fyData[fy] || { total:0, count:0, months:{} });
-          f.total += amt; f.count++;
-          const mm = (f.months[mo] = f.months[mo] || {c:0,s:0,methods:{}});
-          mm.c++; mm.s += amt;
-          const pm = a.payment || '不明';
-          mm.methods[pm] = (mm.methods[pm] || 0) + 1;
+        const pdt = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
+        if (pdt) {
+          const fy=fiscalOf(pdt), m=getM(fy, pdt.getMonth()+1), pm=a.payment||'不明';
+          m.paidSum += amt; m.paidCount++; m.methods[pm] = (m.methods[pm]||0)+1;
+          fyData[fy].paidSum += amt; fyData[fy].paidCount++;
+          methodSet.add(pm);
         }
       }
-      if (a.refunded === true) { refundSum += (a.refundAmount != null ? Number(a.refundAmount) : amt); refundCount++; }
+      // 返金：返金日ベース
+      if (a.refunded === true) {
+        const ramt = a.refundAmount != null ? Number(a.refundAmount) : amt;
+        const rdt = a.refundedAt?.toDate?.() || a.confirmedAt?.toDate?.() || a.createdAt?.toDate?.();
+        if (rdt) { const fy=fiscalOf(rdt); getM(fy, rdt.getMonth()+1).refund += ramt; fyData[fy].refund += ramt; fyData[fy].refundCount++; }
+      }
     });
-    const net = paidSum - refundSum;
 
     const card = (label, value, sub, color) => `<div style="flex:1;min-width:150px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
       <div style="font-size:12px;color:var(--text-mid);font-weight:700;">${label}</div>
       <div style="font-size:22px;font-weight:800;color:${color||'var(--text-dark)'};margin-top:4px;">${value}</div>
       <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${sub||''}</div></div>`;
 
-    // 年度セレクタ＋選択年度の月次（4月→翌3月）＋支払方法別件数＋年度合計
+    // 年度セレクタ
     const fys = Object.keys(fyData).map(Number).sort((a,b)=>b-a);
     const curFY = fiscalOf(new Date());
     let selFY = (__salesFY != null) ? Number(__salesFY) : (fys[0] ?? curFY);
@@ -4249,35 +4254,43 @@ async function doLogin() {
     const fyOptions = (fys.length ? fys : [curFY]).map(fy =>
       `<option value="${fy}"${fy===selFY?' selected':''}>${fy}年度（${fy}/04〜${fy+1}/03）</option>`
     ).join('');
-    const selData = fyData[selFY] || { total:0, count:0, months:{} };
-    const methods = Object.keys(byMethod).sort(); // 支払方法の列（全期間で出現したもの）
+    const selData = fyData[selFY] || { expected:0, paidSum:0, paidCount:0, refund:0, refundCount:0, months:{} };
+    const net = selData.paidSum - selData.refund;
+
+    // 月次テーブル（選択年度・4月→翌3月／見込み・支払方法別件数・入金・返金）
+    const methods = [...methodSet].sort();
     const fiscalMonths = [4,5,6,7,8,9,10,11,12,1,2,3];
-    const th = (t, right) => `<th style="padding:6px 10px;text-align:${right?'right':'left'};">${t}</th>`;
-    const monthHeader = th('年月') + methods.map(m => th(m, true)).join('') + th('件数計', true) + th('金額', true);
+    const th = (t, right) => `<th style="padding:6px 10px;text-align:${right?'right':'left'};white-space:nowrap;">${t}</th>`;
+    const monthHeader = th('年月') + th('見込み売上', true) + methods.map(m => th(m, true)).join('') + th('入金件数', true) + th('入金額', true) + th('返金', true);
     const yearMethodTotals = {};
+    const rt = (v, on) => `<td style="padding:6px 10px;text-align:right;color:${on?'inherit':'var(--text-light)'};white-space:nowrap;">${v}</td>`;
     const monthRows = fiscalMonths.map(mo => {
       const calY = mo >= 4 ? selFY : selFY+1;
-      const c = selData.months[mo];
-      const dim = c ? 'inherit' : 'var(--text-light)';
+      const b = selData.months[mo];
       const methodCells = methods.map(m => {
-        const n = c && c.methods ? (c.methods[m] || 0) : 0;
-        if (c) yearMethodTotals[m] = (yearMethodTotals[m] || 0) + n;
-        return `<td style="padding:6px 10px;text-align:right;color:${n?'inherit':'var(--text-light)'};">${c ? n+'件' : '—'}</td>`;
+        const n = b && b.methods ? (b.methods[m] || 0) : 0;
+        if (b) yearMethodTotals[m] = (yearMethodTotals[m] || 0) + n;
+        return rt(b ? n+'件' : '—', n);
       }).join('');
-      return `<tr><td style="padding:6px 10px;">${calY}/${String(mo).padStart(2,'0')}</td>${methodCells}<td style="padding:6px 10px;text-align:right;color:${dim};">${c ? c.c+'件' : '—'}</td><td style="padding:6px 10px;text-align:right;color:${dim};">${c ? yen(c.s) : '—'}</td></tr>`;
+      return `<tr><td style="padding:6px 10px;white-space:nowrap;">${calY}/${String(mo).padStart(2,'0')}</td>`
+        + rt(b && b.expected ? yen(b.expected) : '—', b && b.expected)
+        + methodCells
+        + rt(b && b.paidCount ? b.paidCount+'件' : '—', b && b.paidCount)
+        + rt(b && b.paidSum ? yen(b.paidSum) : '—', b && b.paidSum)
+        + `<td style="padding:6px 10px;text-align:right;white-space:nowrap;color:${b && b.refund ? 'var(--red)' : 'var(--text-light)'};">${b && b.refund ? '−'+yen(b.refund) : '—'}</td></tr>`;
     }).join('') +
-      `<tr style="border-top:2px solid var(--border);font-weight:800;background:var(--teal-pale);"><td style="padding:6px 10px;">年度合計</td>${methods.map(m => `<td style="padding:6px 10px;text-align:right;">${yearMethodTotals[m]||0}件</td>`).join('')}<td style="padding:6px 10px;text-align:right;">${selData.count}件</td><td style="padding:6px 10px;text-align:right;">${yen(selData.total)}</td></tr>`;
+      `<tr style="border-top:2px solid var(--border);font-weight:800;background:var(--teal-pale);"><td style="padding:6px 10px;">年度合計</td><td style="padding:6px 10px;text-align:right;">${yen(selData.expected)}</td>${methods.map(m => `<td style="padding:6px 10px;text-align:right;">${yearMethodTotals[m]||0}件</td>`).join('')}<td style="padding:6px 10px;text-align:right;">${selData.paidCount}件</td><td style="padding:6px 10px;text-align:right;">${yen(selData.paidSum)}</td><td style="padding:6px 10px;text-align:right;color:var(--red);">−${yen(selData.refund)}</td></tr>`;
 
     document.getElementById('sales-summary').innerHTML = `
       <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
-        ${card('純売上', yen(net), '入金済み − 返金', 'var(--teal-dark)')}
-        ${card('入金済み', yen(paidSum), paidCount + '件', 'var(--text-dark)')}
-        ${card('見込み売上', yen(expected), '全申込 ' + rows.length + '件', 'var(--text-mid)')}
-        ${card('返金', '−' + yen(refundSum), refundCount + '件', 'var(--red)')}
+        ${card(selFY + '年度 純売上', yen(net), '入金済み − 返金', 'var(--teal-dark)')}
+        ${card(selFY + '年度 入金済み', yen(selData.paidSum), selData.paidCount + '件', 'var(--text-dark)')}
+        ${card(selFY + '年度 見込み売上', yen(selData.expected), '申込ベース', 'var(--text-mid)')}
+        ${card(selFY + '年度 返金', '−' + yen(selData.refund), selData.refundCount + '件', 'var(--red)')}
       </div>
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text-mid);">月次売上（入金確定月・年度別／支払方法別件数）</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-mid);">月次内訳（年度別・見込み／支払方法別件数／入金／返金）</div>
           <select onchange="window.setSalesFY(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;">${fyOptions}</select>
         </div>
         <div class="tbl-wrap">
