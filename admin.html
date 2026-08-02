@@ -2578,24 +2578,39 @@ async function doLogin() {
   }
   window.guideJump = guideJump;
 
+  const __guideOrigHTML = new Map();
+
+  function guideHighlightText(html, kw) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return html.split(/(<[^>]+>)/).map(part =>
+      part.startsWith('<') ? part : part.replace(regex, '<mark style="background:#FFF176;border-radius:3px;padding:0 2px;font-weight:700;">$1</mark>')
+    ).join('');
+  }
+
   function guideSearch(q) {
-    const kw = q.trim().toLowerCase();
+    const kw = q.trim();
+    const kwLower = kw.toLowerCase();
     const sections = document.querySelectorAll('.guide-section');
     sections.forEach(sec => {
+      const body = sec.querySelector('.guide-body');
+      const arrow = sec.querySelector('.guide-header span:last-child');
+      if (body && __guideOrigHTML.has(body)) {
+        body.innerHTML = __guideOrigHTML.get(body);
+      }
       if (!kw) {
         sec.style.display = 'block';
         sec.style.outline = 'none';
         return;
       }
-      const text = sec.textContent.toLowerCase();
-      const match = text.includes(kw);
+      const match = sec.textContent.toLowerCase().includes(kwLower);
       sec.style.display = match ? 'block' : 'none';
       sec.style.outline = match ? '2px solid var(--teal)' : 'none';
-      if (match) {
-        const body = sec.querySelector('.guide-body');
-        const arrow = sec.querySelector('.guide-header span:last-child');
-        if (body) body.style.display = 'block';
+      if (match && body) {
+        if (!__guideOrigHTML.has(body)) __guideOrigHTML.set(body, body.innerHTML);
+        body.style.display = 'block';
         if (arrow) arrow.textContent = '▲';
+        body.innerHTML = guideHighlightText(body.innerHTML, kw);
       }
     });
   }
