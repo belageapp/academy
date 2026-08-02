@@ -666,13 +666,13 @@
     <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
     <div class="sb-item" id="menu-sales" onclick="if(window.showSection)window.showSection('sales')"><span class="ico">💴</span>決済・売上</div>
     <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
-    <div class="sb-section">ガイド</div>
+    <div class="sb-section">管理ガイド</div>
     <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理機能ガイド</div>
     <div class="sb-item" id="menu-student-guide" onclick="if(window.showSection)window.showSection('student-guide')"><span class="ico">👤</span>受講生対応ガイド</div>
     <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
     <div class="sb-section">受講生マイページ掲載</div>
     <div class="sb-item" id="menu-mypage-guide" onclick="if(window.showSection)window.showSection('mypage-guide')"><span class="ico">📖</span>受講ガイド</div>
-    <div class="sb-item" id="menu-mypage-gakusoku" onclick="if(window.showSection)window.showSection('mypage-gakusoku')"><span class="ico">📜</span>学則／誓約書</div>
+    <div class="sb-item" id="menu-mypage-gakusoku" onclick="if(window.showSection)window.showSection('mypage-gakusoku')"><span class="ico">📜</span>学則／要件／誓約書</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -3191,7 +3191,7 @@ async function doLogin() {
       section === 'guide'           ? '📖 管理機能ガイド' :
       section === 'student-guide'   ? '👤 受講生対応ガイド' :
       section === 'mypage-guide'    ? '📖 受講ガイド（マイページ掲載）' :
-      section === 'mypage-gakusoku' ? '📜 学則／誓約書（マイページ掲載）' : '';
+      section === 'mypage-gakusoku' ? '📜 学則／要件／誓約書（マイページ掲載）' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
