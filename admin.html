@@ -4108,7 +4108,7 @@ async function doLogin() {
         const count = snap.docs.filter(d => {
           const a = d.data();
           const tb = a.textbook || '';
-          return (tb === 'purchase' || tb === '購入（6,600円）') && !a.textOrdered;
+          return (tb === 'purchase' || tb === '購入（6,600円）') && !a.textOrdered && !a.isTest;
         }).length;
         const badge = document.getElementById('textorder-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
@@ -4134,7 +4134,7 @@ async function doLogin() {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
         const count = snap.docs.filter(d => {
           const a = d.data();
-          return a.practiceVenue?.name !== '当校指定' && !a.venueChecked; // 旧「当校指定」のみ除外
+          return a.practiceVenue?.name !== '当校指定' && !a.venueChecked && !a.isTest; // 「当校指定」・テストデータを除外
         }).length;
         const badge = document.getElementById('venue-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
@@ -4144,7 +4144,7 @@ async function doLogin() {
       // 動画視聴完了届出：承認待ち
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('externalVideoPending', '==', true)));
-        const count = snap.docs.filter(d => d.data().externalVideoDone !== true).length;
+        const count = snap.docs.filter(d => d.data().externalVideoDone !== true && d.data().isTest !== true).length;
         const badge = document.getElementById('video-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
         else if (badge) badge.style.display = 'none';
@@ -4153,7 +4153,7 @@ async function doLogin() {
       // 実習修了報告：未承認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('ojtReported', '==', true)));
-        const count = snap.docs.filter(d => d.data().ojtPassed !== true).length;
+        const count = snap.docs.filter(d => d.data().ojtPassed !== true && d.data().isTest !== true).length;
         const badge = document.getElementById('ojt-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
@@ -4161,7 +4161,7 @@ async function doLogin() {
       // 修了レポート：提出済み未承認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('reportSubmitted', '==', true)));
-        const count = snap.docs.filter(d => d.data().reportApproved !== true).length;
+        const count = snap.docs.filter(d => d.data().reportApproved !== true && d.data().isTest !== true).length;
         const badge = document.getElementById('report-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
@@ -4169,7 +4169,7 @@ async function doLogin() {
       // 仮修了証明書：未発送
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('test2Passed', '==', true)));
-        const count = snap.docs.filter(d => d.data().tempCertIssued !== true).length;
+        const count = snap.docs.filter(d => d.data().tempCertIssued !== true && d.data().isTest !== true).length;
         const badge = document.getElementById('tempcert-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
@@ -4181,7 +4181,7 @@ async function doLogin() {
           where('ojtPassed', '==', true),
           where('reportApproved', '==', true)
         ));
-        const count = snap.docs.filter(d => d.data().facilityReported === true && d.data().certificateIssued !== true).length;
+        const count = snap.docs.filter(d => d.data().facilityReported === true && d.data().certificateIssued !== true && d.data().isTest !== true).length;
         const badge = document.getElementById('certificate-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
