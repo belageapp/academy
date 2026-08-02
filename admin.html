@@ -1567,7 +1567,186 @@
               </div>
 
             </div><!-- /guide-accordion -->
-          </div>
+
+            <!-- Q&A -->
+            <div style="margin-top:32px;">
+              <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--teal-light);">❓ よくある質問</div>
+
+              <style>
+                .qa-item { border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden; }
+                .qa-q { display:flex;align-items:flex-start;gap:10px;padding:14px 18px;background:#F8FDFF;cursor:pointer;user-select:none; }
+                .qa-q:hover { background:var(--teal-light); }
+                .qa-q-label { flex-shrink:0;width:22px;height:22px;background:var(--teal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px; }
+                .qa-q-text { font-size:13px;font-weight:600;flex:1; }
+                .qa-q-arrow { font-size:16px;color:#aaa;flex-shrink:0; }
+                .qa-a { display:none;padding:14px 18px 14px 50px;background:#fff;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:var(--text); }
+                .qa-a ul { margin:6px 0 0 16px; }
+                .qa-a li { margin-bottom:4px; }
+                .qa-a .note { background:#FFFDE7;border-left:3px solid #F9A825;border-radius:6px;padding:8px 12px;font-size:12px;margin-top:10px; }
+                .qa-a .warn { background:#FFEBEE;border-left:3px solid #E53935;border-radius:6px;padding:8px 12px;font-size:12px;margin-top:10px; }
+              </style>
+
+              <div id="qa-list">
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">振込入金の確認をしたのに受講確定にならない</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    振込入金は自動検知されません。申し込み管理で該当受講生を開き、<strong>「振込入金確認」ボタン</strong>を手動でクリックしてください。ボタンをクリックすると受講確定に変わり、受講生に入金確認メールが送信されます。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">AEGISC-LMSのアカウントが受講生に届いていない</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    AEGISC-LMSアカウントは<strong>ステータスを「受講中」に変更した瞬間に自動発行</strong>されます。まだ「受講確定」のままであれば発行されていません。書類承認・誓約書同意が完了したら受講中に変更してください。
+                    <div class="note">📌 アカウントID・パスワードは申し込み管理の詳細モーダルで確認できます。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">正式修了証明書の発行ボタンが表示されない</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    発行には以下の<strong>3条件がすべて必要</strong>です。正式修了証明書発行ページで各受講生の状況を確認してください。
+                    <ul>
+                      <li>① OJT修了報告 承認済み（OJT修了報告ページで承認）</li>
+                      <li>② 修了レポート 承認済み（修了レポートページで承認）</li>
+                      <li>③ OJT書類受領済み（正式修了証明書発行ページの「📥 書類受領」ボタン）</li>
+                    </ul>
+                    <div class="note">📌 3条件が揃うと自動で両承認完了メールが受講生に送信されます。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">修了証明書を別の住所に送りたい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み管理で対象受講生の<strong>「✏️ 編集」</strong>を開き、<strong>「別途郵送先」</strong>に送付先の郵便番号と住所を入力して保存してください。別途郵送先が設定されている場合、修了証明書の送付先はその住所が優先されます。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">サイドバーのバッジ（数字）が消えない</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    バッジは「未対応・未承認・未返信」の件数を示しています。各ページで対応を完了（承認・返信・対応済みに変更）するとカウントから外れ、次回の更新時に数字が減ります。ページを開いて「🔄 更新」ボタンを押すと最新の件数に反映されます。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">CSVに受講生が出てこない（件数が少ない）</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    CSVは<strong>現在の絞り込み状態</strong>で出力されます。特定のステータスやキーワードで絞り込んでいる場合はその対象のみ出力されます。全件を出力したい場合はフィルターを「すべて」に設定してから出力してください。またテストデータ（isTest=true）は常にCSVから除外されます。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生がログインできないと言っている</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    受講生マイページのログイン画面に<strong>「パスワードをお忘れの方はこちら」</strong>リンクがあります。メールアドレスを入力して送信するとパスワードリセットメールが届きます。受講生に案内してください。
+                    <div class="note">📌 迷惑メールフォルダに入っている場合があります。合わせてご案内ください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">自動リマインドが受講生に届いていないようだ</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    自動通知設定ページで以下を確認してください。
+                    <ul>
+                      <li>該当する通知がONになっているか</li>
+                      <li>「最終実行」の日時が正常か（長期間「未実行」の場合は設定を一度保存し直してください）</li>
+                      <li>受講生のメールアドレスが正しく登録されているか（申し込み管理で確認）</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">仮修了と正式修了の違いは何ですか</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    <ul>
+                      <li><strong>仮修了</strong>：動画視聴・修了レポートなど学習部分が完了したが、OJT（実技指導）がまだの段階。仮修了証明書を発行できます。</li>
+                      <li><strong>正式修了</strong>：OJT修了・修了レポート・OJT書類受領の3条件がすべて揃った段階。正式修了証明書（介護職員初任者研修修了証明書）を発行します。ステータスが「修了」に変わります。</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生の氏名・連絡先を変更したい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み管理で対象受講生の詳細モーダルを開き、<strong>「✏️ 編集」</strong>ボタンをクリックしてください。氏名・ふりがな・電話番号・住所・OJT施設情報などを管理者側で直接変更できます。
+                    <div class="note">📌 メールアドレスの変更はFirebase Authenticationの操作が必要なため、システム管理者にご連絡ください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">テストデータが一覧に表示されてしまう</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    書類確認・OJT施設届出・動画視聴・OJT修了報告・修了レポート・仮修了証・修了証明書の各ページに<strong>「🧪 テストデータを表示」トグル</strong>があります。チェックを外すとテストデータ（isTest=true）が非表示になります。デフォルトはOFF（非表示）です。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">OJT施設届出の「対応済み」とはどういう状態ですか</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    OJT施設届出は3段階で管理しています。
+                    <ul>
+                      <li><strong>未対応</strong>：受講生から届出が来たが、まだスクール側が確認していない状態</li>
+                      <li><strong>資料送付待ち</strong>：内容を確認し施設への資料（合意書・レターなど）を準備・送付中</li>
+                      <li><strong>対応済み</strong>：資料の送付が完了した状態</li>
+                    </ul>
+                    「対応済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
+                  </div>
+                </div>
+
+              </div><!-- /qa-list -->
+            </div><!-- /Q&A -->
+
+            </div>
         </div>
       </div><!-- /section-guide -->
 
@@ -2558,6 +2737,15 @@ async function doLogin() {
   window.showSection = showSection;
 
   // ===== 管理者ガイド =====
+  function qaToggle(header) {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('.qa-q-arrow');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+  }
+  window.qaToggle = qaToggle;
+
   function guideToggle(header) {
     const body = header.nextElementSibling;
     const arrow = header.querySelector('span:last-child');
@@ -2593,18 +2781,13 @@ async function doLogin() {
   function guideSearch(q) {
     const kw = q.trim();
     const kwLower = kw.toLowerCase();
-    const sections = document.querySelectorAll('.guide-section');
-    sections.forEach(sec => {
+
+    // アコーディオンセクション
+    document.querySelectorAll('.guide-section').forEach(sec => {
       const body = sec.querySelector('.guide-body');
       const arrow = sec.querySelector('.guide-header span:last-child');
-      if (body && __guideOrigHTML.has(body)) {
-        body.innerHTML = __guideOrigHTML.get(body);
-      }
-      if (!kw) {
-        sec.style.display = 'block';
-        sec.style.outline = 'none';
-        return;
-      }
+      if (body && __guideOrigHTML.has(body)) body.innerHTML = __guideOrigHTML.get(body);
+      if (!kw) { sec.style.display = 'block'; sec.style.outline = 'none'; return; }
       const match = sec.textContent.toLowerCase().includes(kwLower);
       sec.style.display = match ? 'block' : 'none';
       sec.style.outline = match ? '2px solid var(--teal)' : 'none';
@@ -2613,6 +2796,25 @@ async function doLogin() {
         body.style.display = 'block';
         if (arrow) arrow.textContent = '▲';
         body.innerHTML = guideHighlightText(body.innerHTML, kw);
+      }
+    });
+
+    // Q&Aセクション
+    document.querySelectorAll('.qa-item').forEach(item => {
+      const ans = item.querySelector('.qa-a');
+      const arrow = item.querySelector('.qa-q-arrow');
+      if (ans && __guideOrigHTML.has(ans)) ans.innerHTML = __guideOrigHTML.get(ans);
+      if (!kw) { item.style.display = 'block'; item.style.outline = 'none'; return; }
+      const match = item.textContent.toLowerCase().includes(kwLower);
+      item.style.display = match ? 'block' : 'none';
+      item.style.outline = match ? '2px solid var(--teal)' : 'none';
+      if (match && ans) {
+        if (!__guideOrigHTML.has(ans)) __guideOrigHTML.set(ans, ans.innerHTML);
+        ans.style.display = 'block';
+        if (arrow) arrow.textContent = '▲';
+        ans.innerHTML = guideHighlightText(ans.innerHTML, kw);
+        const qText = item.querySelector('.qa-q-text');
+        if (qText) qText.innerHTML = guideHighlightText(qText.innerHTML, kw);
       }
     });
   }
