@@ -956,7 +956,7 @@
           <!-- タブ -->
           <div style="display:flex;border-bottom:1px solid var(--border);padding:0 16px;background:#fff;">
             <button id="ftab-btn-list"    onclick="switchFacilityTab('list')"    style="padding:12px 16px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid var(--teal);color:var(--teal);font-family:inherit;">施設一覧</button>
-            <button id="ftab-btn-inquiry" onclick="switchFacilityTab('inquiry')" style="padding:12px 16px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-mid);font-family:inherit;">施設からの問い合わせ<span id="facility-inq-badge" style="display:none;margin-left:6px;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></button>
+            <button id="ftab-btn-inquiry" onclick="switchFacilityTab('inquiry')" style="padding:12px 16px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-mid);font-family:inherit;">やりとり一覧<span id="facility-inq-badge" style="display:none;margin-left:6px;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></button>
           </div>
           <div id="ftab-list"    style="padding:16px;"><div id="facility-list">読み込み中...</div></div>
           <div id="ftab-inquiry" style="display:none;padding:16px;"><div id="facility-inquiry-list">読み込み中...</div></div>
@@ -2759,6 +2759,7 @@ async function doLogin() {
             <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
               <button onclick="openFacilityEditModal('${d.id}')" style="padding:6px 14px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">✏️ 編集</button>
               <button onclick="openFacilityLinkModal('${d.id}','${safeName}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 生徒を追加</button>
+              <button onclick="openFacilityDetailModal('${d.id}')" style="padding:6px 14px;background:#fff;color:#5C6BC0;border:1.5px solid #9FA8DA;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 やりとり</button>
             </div>
           </div>
           <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">紐付け受講生（${linked.length}名）</div>
@@ -2957,29 +2958,95 @@ async function doLogin() {
     try {
       const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(query(collection(window.__db, 'facilityInquiries'), orderBy('createdAt', 'desc')));
-      if (snap.empty) { el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">問い合わせはありません。</p>'; return; }
-      el.innerHTML = snap.docs.map(d => {
-        const m = d.data();
-        const dt = m.createdAt?.toDate?.()?.toLocaleString('ja-JP') || '—';
-        const replied = !!m.reply;
-        return `<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:13px;font-weight:700;">${m.facilityName||'—'}</div>
-            <span style="font-size:11px;background:${replied?'var(--green-light)':'#FFF3E0'};color:${replied?'var(--green)':'#E65100'};padding:3px 10px;border-radius:10px;font-weight:700;">${replied?'返信済み':'未返信'}</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">${dt}</div>
-          <div style="font-size:13px;margin-bottom:12px;line-height:1.7;">${m.body||''}</div>
-          ${replied
-            ? `<div style="background:var(--green-light);border-radius:8px;padding:10px 14px;font-size:13px;border-left:3px solid var(--green);">
-                <div style="font-size:11px;color:var(--text-mid);margin-bottom:4px;">管理者の返信</div>${m.reply}
-               </div>`
-            : `<div style="display:flex;gap:8px;align-items:flex-end;">
-                <textarea id="fiq-reply-${d.id}" rows="3" placeholder="返信内容を入力..." style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;"></textarea>
-                <button onclick="replyToFacilityInquiry('${d.id}')" style="padding:9px 16px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">返信する</button>
-               </div>`
-          }
-        </div>`;
-      }).join('');
+      const allDocs = snap.docs;
+      if (!allDocs.length) { el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">やりとりの記録はありません。</p>'; return; }
+
+      const filterVal = () => (document.getElementById('fiq-filter')?.value || '').toLowerCase();
+      const render = () => {
+        const q = filterVal();
+        const filtered = q ? allDocs.filter(d => (d.data().facilityName||'').toLowerCase().includes(q)) : allDocs;
+        if (!filtered.length) { el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">該当する記録がありません。</p>'; return; }
+
+        const methodColor = m => ({'電話':'#E3F2FD','メール':'#E8F5E9','訪問':'#FFF3E0','FAX':'#F3E5F5','お問い合わせ':'#FCE4EC','その他':'#F5F5F5'}[m] || '#F5F5F5');
+        const methodTextColor = m => ({'電話':'#1565C0','メール':'#2E7D32','訪問':'#E65100','FAX':'#6A1B9A','お問い合わせ':'#880E4F','その他':'#555'}[m] || '#555');
+
+        el.innerHTML = filtered.map(d => {
+          const m = d.data();
+          const isManual = !!m.isManual;
+          const method = m.method || (isManual ? 'その他' : 'お問い合わせ');
+          const dateStr = m.date || m.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+          const content = m.content || m.body || '';
+          const replied = !!m.reply;
+
+          return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fff;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;font-weight:700;background:${methodColor(method)};color:${methodTextColor(method)};padding:2px 9px;border-radius:6px;">${method}</span>
+                <span style="font-size:13px;font-weight:700;">${m.facilityName||'—'}</span>
+                <span style="font-size:12px;color:var(--text-mid);">${dateStr}</span>
+              </div>
+              ${isManual
+                ? '<span style="font-size:10px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:6px;">手動記録</span>'
+                : `<span style="font-size:11px;background:${replied?'var(--green-light)':'#FFF3E0'};color:${replied?'var(--green)':'#E65100'};padding:2px 10px;border-radius:10px;font-weight:700;">${replied?'返信済み':'未返信'}</span>`
+              }
+            </div>
+            <div style="font-size:13px;line-height:1.7;white-space:pre-wrap;margin-bottom:${!isManual && !replied ? '10px' : '0'};">${content}</div>
+            ${!isManual && replied
+              ? `<div style="margin-top:8px;padding:8px 12px;background:var(--green-light);border-radius:7px;font-size:12px;border-left:3px solid var(--green);"><span style="font-size:11px;color:var(--green);font-weight:700;">返信：</span> ${m.reply}</div>`
+              : ''
+            }
+            ${!isManual && !replied
+              ? `<div style="display:flex;gap:8px;align-items:flex-end;">
+                  <textarea id="fiq-reply-${d.id}" rows="2" placeholder="返信内容を入力..." style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;"></textarea>
+                  <button onclick="replyToFacilityInquiry('${d.id}')" style="padding:8px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">返信する</button>
+                </div>`
+              : ''
+            }
+          </div>`;
+        }).join('');
+      };
+
+      el.innerHTML = `<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;">
+        <input id="fiq-filter" type="text" placeholder="施設名で絞り込み..." oninput="(()=>{${render.toString().replace(/\n/g,' ')}; render();})()" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
+        <span style="font-size:12px;color:var(--text-mid);white-space:nowrap;">全${allDocs.length}件</span>
+      </div><div id="fiq-list-inner"></div>`;
+
+      const renderToInner = () => {
+        const q = filterVal();
+        const filtered = q ? allDocs.filter(d => (d.data().facilityName||'').toLowerCase().includes(q)) : allDocs;
+        const inner = document.getElementById('fiq-list-inner');
+        if (!inner) return;
+        if (!filtered.length) { inner.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">該当する記録がありません。</p>'; return; }
+        const methodColor = m => ({'電話':'#E3F2FD','メール':'#E8F5E9','訪問':'#FFF3E0','FAX':'#F3E5F5','お問い合わせ':'#FBE9E7','その他':'#F5F5F5'}[m] || '#F5F5F5');
+        const methodTextColor = m => ({'電話':'#1565C0','メール':'#2E7D32','訪問':'#E65100','FAX':'#6A1B9A','お問い合わせ':'#BF360C','その他':'#555'}[m] || '#555');
+        inner.innerHTML = filtered.map(d => {
+          const m = d.data();
+          const isManual = !!m.isManual;
+          const method = m.method || (isManual ? 'その他' : 'お問い合わせ');
+          const dateStr = m.date || m.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+          const content = m.content || m.body || '';
+          const replied = !!m.reply;
+          return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fff;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;font-weight:700;background:${methodColor(method)};color:${methodTextColor(method)};padding:2px 9px;border-radius:6px;">${method}</span>
+                <span style="font-size:13px;font-weight:700;">${m.facilityName||'—'}</span>
+                <span style="font-size:12px;color:var(--text-mid);">${dateStr}</span>
+              </div>
+              ${isManual
+                ? '<span style="font-size:10px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:6px;">手動記録</span>'
+                : `<span style="font-size:11px;background:${replied?'var(--green-light)':'#FFF3E0'};color:${replied?'var(--green)':'#E65100'};padding:2px 10px;border-radius:10px;font-weight:700;">${replied?'返信済み':'未返信'}</span>`
+              }
+            </div>
+            <div style="font-size:13px;line-height:1.7;white-space:pre-wrap;margin-bottom:${!isManual && !replied ? '10px' : '0'};">${content}</div>
+            ${!isManual && replied ? `<div style="margin-top:8px;padding:8px 12px;background:var(--green-light);border-radius:7px;font-size:12px;border-left:3px solid var(--green);"><span style="font-size:11px;color:var(--green);font-weight:700;">返信：</span> ${m.reply}</div>` : ''}
+            ${!isManual && !replied ? `<div style="display:flex;gap:8px;align-items:flex-end;"><textarea id="fiq-reply-${d.id}" rows="2" placeholder="返信内容を入力..." style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;"></textarea><button onclick="replyToFacilityInquiry('${d.id}')" style="padding:8px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">返信する</button></div>` : ''}
+          </div>`;
+        }).join('');
+      };
+
+      document.getElementById('fiq-filter').addEventListener('input', renderToInner);
+      renderToInner();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
@@ -2998,6 +3065,131 @@ async function doLogin() {
     } catch(e) { alert('エラー：' + e.message); }
   }
   window.replyToFacilityInquiry = replyToFacilityInquiry;
+
+  // ===== 施設詳細モーダル =====
+  let __facilityDetailId = null;
+
+  async function openFacilityDetailModal(facilityId) {
+    __facilityDetailId = facilityId;
+    window.__facilityDetailId = facilityId;
+    switchFacilityDetailTab('info');
+    document.getElementById('facility-detail-modal').style.display = 'block';
+    const infoEl = document.getElementById('fdetail-info-content');
+    infoEl.innerHTML = '読み込み中...';
+    try {
+      const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDoc(doc(window.__db, 'facilities', facilityId));
+      if (!snap.exists()) { infoEl.innerHTML = '<p style="color:#888;">施設が見つかりません。</p>'; return; }
+      const f = snap.data();
+      document.getElementById('fdetail-corp-label').textContent = f.corpName || '';
+      document.getElementById('fdetail-name-label').textContent = f.name || '施設詳細';
+      const row = (label, val) => val
+        ? `<div style="display:grid;grid-template-columns:130px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid #f5f5f5;"><span style="font-size:12px;color:var(--text-mid);font-weight:500;">${label}</span><span style="font-size:13px;">${val}</span></div>`
+        : '';
+      infoEl.innerHTML = [
+        row('法人名', f.corpName),
+        row('施設名', f.name),
+        row('事業所番号', f.businessNo
+          ? `${f.businessNo} <a href="https://www.wam.go.jp/sfkohyoout/COP000100E0000.do#" target="_blank" rel="noopener" style="font-size:11px;color:var(--teal-dark);text-decoration:none;padding:2px 8px;border:1px solid var(--teal);border-radius:5px;">🔍 WAM</a>`
+          : ''),
+        row('住所', (f.zip ? '〒'+f.zip+' ' : '') + (f.address||'')),
+        row('電話', f.tel),
+        row('FAX', f.fax),
+        row('施設メール', f.email),
+        row('担当者部署', f.deptName),
+        row('担当者氏名', f.contactName),
+        row('担当者直通', f.contactTel),
+        row('担当者メール', f.contactEmail),
+        row('備考', f.memo ? `<span style="white-space:pre-wrap;">${f.memo}</span>` : ''),
+      ].join('') || '<p style="color:#888;">情報なし</p>';
+    } catch(e) {
+      infoEl.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.openFacilityDetailModal = openFacilityDetailModal;
+
+  function closeFacilityDetailModal() {
+    document.getElementById('facility-detail-modal').style.display = 'none';
+    __facilityDetailId = null;
+    window.__facilityDetailId = null;
+  }
+  window.closeFacilityDetailModal = closeFacilityDetailModal;
+
+  function switchFacilityDetailTab(tab) {
+    document.getElementById('fdetail-tab-info').style.display = tab === 'info' ? 'block' : 'none';
+    document.getElementById('fdetail-tab-log').style.display  = tab === 'log'  ? 'block' : 'none';
+    document.getElementById('fdetail-tab-btn-info').style.borderBottomColor = tab === 'info' ? 'var(--teal)' : 'transparent';
+    document.getElementById('fdetail-tab-btn-log').style.borderBottomColor  = tab === 'log'  ? 'var(--teal)' : 'transparent';
+    document.getElementById('fdetail-tab-btn-info').style.color = tab === 'info' ? 'var(--teal)' : 'var(--text-mid)';
+    document.getElementById('fdetail-tab-btn-log').style.color  = tab === 'log'  ? 'var(--teal)' : 'var(--text-mid)';
+    if (tab === 'log') {
+      const dateEl = document.getElementById('flog-date');
+      if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
+      loadFacilityLogList(__facilityDetailId);
+    }
+  }
+  window.switchFacilityDetailTab = switchFacilityDetailTab;
+
+  async function loadFacilityLogList(facilityId) {
+    const el = document.getElementById('fdetail-log-list');
+    if (!el || !facilityId) return;
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'facilityInquiries'), where('facilityId', '==', facilityId)));
+      const docs = snap.docs.slice().sort((a, b) => (b.data().createdAt?.seconds||0) - (a.data().createdAt?.seconds||0));
+      if (!docs.length) {
+        el.innerHTML = '<p style="color:#888;font-size:13px;text-align:center;padding:20px;">この施設のやりとり記録はまだありません。</p>';
+        return;
+      }
+      const mc = m => ({'電話':'#E3F2FD','メール':'#E8F5E9','訪問':'#FFF3E0','FAX':'#F3E5F5','お問い合わせ':'#FBE9E7','その他':'#F5F5F5'}[m]||'#F5F5F5');
+      const mt = m => ({'電話':'#1565C0','メール':'#2E7D32','訪問':'#E65100','FAX':'#6A1B9A','お問い合わせ':'#BF360C','その他':'#555'}[m]||'#555');
+      el.innerHTML = docs.map(d => {
+        const m = d.data();
+        const method = m.method || (m.isManual ? 'その他' : 'お問い合わせ');
+        const dateStr = m.date || m.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const content = m.content || m.body || '';
+        const replied = !!m.reply;
+        return `<div style="border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;font-weight:700;background:${mc(method)};color:${mt(method)};padding:2px 8px;border-radius:6px;">${method}</span>
+              <span style="font-size:12px;color:var(--text-mid);">${dateStr}</span>
+            </div>
+            ${!m.isManual ? `<span style="font-size:10px;background:${replied?'var(--green-light)':'#FFF3E0'};color:${replied?'var(--green)':'#E65100'};padding:2px 8px;border-radius:6px;font-weight:700;">${replied?'返信済み':'未返信'}</span>` : '<span style="font-size:10px;color:#aaa;background:#f5f5f5;padding:2px 7px;border-radius:6px;">手動記録</span>'}
+          </div>
+          <div style="font-size:13px;line-height:1.7;white-space:pre-wrap;">${content}</div>
+          ${!m.isManual && replied ? `<div style="margin-top:8px;padding:8px 12px;background:var(--green-light);border-radius:7px;font-size:12px;border-left:3px solid var(--green);"><span style="font-size:11px;font-weight:700;color:var(--green);">返信：</span>${m.reply}</div>` : ''}
+          ${!m.isManual && !replied ? `<div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;"><textarea id="fiq-reply-${d.id}" rows="2" placeholder="返信内容を入力..." style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;"></textarea><button onclick="replyToFacilityInquiry('${d.id}')" style="padding:8px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">返信する</button></div>` : ''}
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadFacilityLogList = loadFacilityLogList;
+
+  async function addFacilityLog() {
+    const facilityId = __facilityDetailId;
+    if (!facilityId) return;
+    const date    = document.getElementById('flog-date')?.value || new Date().toISOString().slice(0,10);
+    const method  = document.getElementById('flog-method')?.value || 'その他';
+    const content = document.getElementById('flog-content')?.value.trim();
+    if (!content) { alert('内容を入力してください'); return; }
+    const facilityName = document.getElementById('fdetail-name-label')?.textContent || '';
+    try {
+      const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await addDoc(collection(window.__db, 'facilityInquiries'), {
+        facilityId, facilityName, date, method, content,
+        isManual: true,
+        createdAt: serverTimestamp(),
+      });
+      document.getElementById('flog-content').value = '';
+      showToast('記録しました', 'success');
+      loadFacilityLogList(facilityId);
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.addFacilityLog = addFacilityLog;
 
   let __venueCache = null;
   let __venueFilter = 'pending';
@@ -4681,10 +4873,10 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 施設からの問い合わせ：未返信
+      // 施設やりとり：未返信（施設提出問い合わせのみ）
       try {
         const snap2 = await getDocs(collection(window.__db, 'facilityInquiries'));
-        const count = snap2.docs.filter(d => !d.data().reply).length;
+        const count = snap2.docs.filter(d => !d.data().isManual && !d.data().reply).length;
         const badge  = document.getElementById('facility-badge');
         const badge2 = document.getElementById('facility-inq-badge');
         if (badge  && count > 0) { badge.style.display  = 'inline'; badge.textContent  = count; }
@@ -4857,6 +5049,55 @@ async function doLogin() {
     <div style="padding:16px;">
       <input id="flink-search" type="text" placeholder="氏名・ふりがな・受講番号・メールで検索..." oninput="renderFacilityStudentSearch()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;">
       <div id="flink-results" style="max-height:420px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 施設詳細モーダル（基本情報 + やりとり履歴） -->
+<div id="facility-detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9050;overflow:auto;">
+  <div style="max-width:640px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="padding:16px 20px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div id="fdetail-corp-label" style="font-size:11px;opacity:0.8;"></div>
+        <div id="fdetail-name-label" style="font-size:15px;font-weight:700;">施設詳細</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="openFacilityEditModal(window.__facilityDetailId); closeFacilityDetailModal();" style="padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 編集</button>
+        <button onclick="closeFacilityDetailModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--border);">
+      <button id="fdetail-tab-btn-info" onclick="switchFacilityDetailTab('info')" style="padding:12px 20px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid var(--teal);color:var(--teal);font-family:inherit;">基本情報</button>
+      <button id="fdetail-tab-btn-log"  onclick="switchFacilityDetailTab('log')"  style="padding:12px 20px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-mid);font-family:inherit;">やりとり履歴</button>
+    </div>
+    <!-- 基本情報タブ -->
+    <div id="fdetail-tab-info" style="padding:20px;max-height:70vh;overflow-y:auto;">
+      <div id="fdetail-info-content">読み込み中...</div>
+    </div>
+    <!-- やりとり履歴タブ -->
+    <div id="fdetail-tab-log" style="display:none;padding:16px;max-height:70vh;overflow-y:auto;">
+      <div style="background:#F8FDFF;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;">＋ やりとりを記録</div>
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:10px;margin-bottom:10px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-mid);display:block;margin-bottom:3px;">日付</label>
+            <input type="date" id="flog-date" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-mid);display:block;margin-bottom:3px;">手段</label>
+            <select id="flog-method" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;background:#fff;">
+              <option>電話</option>
+              <option>メール</option>
+              <option>訪問</option>
+              <option>FAX</option>
+              <option>その他</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="flog-content" rows="3" placeholder="やりとりの内容を入力..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box;margin-bottom:8px;"></textarea>
+        <button onclick="addFacilityLog()" style="padding:8px 20px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">記録する</button>
+      </div>
+      <div id="fdetail-log-list">読み込み中...</div>
     </div>
   </div>
 </div>
