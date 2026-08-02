@@ -1600,6 +1600,15 @@
                     <li>金額は <code>fee</code> フィールドを参照しています</li>
                   </ul>
 
+                  <h4>返金処理</h4>
+                  <ul>
+                    <li>決済一覧の各行にある<strong>「返金処理」ボタン</strong>をクリックします</li>
+                    <li>返金額を入力（デフォルトは申込金額）し、返金理由を入力（任意）して確認します</li>
+                    <li>処理後はFirestoreに返金記録（返金額・返金日・理由）が保存され、月次売上の返金額に反映されます</li>
+                    <li>誤って処理した場合は「返金取り消し」ボタンで元に戻せます</li>
+                  </ul>
+                  <div class="warn">⚠️ このボタンはシステム上の記録のみです。<strong>実際の返金（お金の振込）はStripe管理画面で別途対応が必要です。</strong>必ず両方の処理を行ってください。</div>
+
                   <h4>月次売上タブ</h4>
                   <ul>
                     <li>年度（4月始まり）を切り替えて確認できます</li>
@@ -1803,6 +1812,19 @@
                       <li>OJT施設届出フォーム</li>
                       <li>修了レポート・修了証明書の表示状態</li>
                     </ul>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">返金処理ボタンを押すと何が起こりますか</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    決済・売上の決済一覧にある「返金処理」ボタンを押すと、返金額と理由の入力を経てFirestoreに返金記録が保存されます。月次売上の返金額に反映されます。<br>
+                    <div class="warn" style="margin-top:8px;">⚠️ <strong>実際のお金の返金（振込）はこのボタンでは行われません。</strong>Stripe管理画面での対応を別途行ってください。</div>
+                    誤って処理した場合は「返金取り消し」ボタンで記録を元に戻せます。
                   </div>
                 </div>
 
