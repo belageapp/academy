@@ -737,7 +737,8 @@
               <tr>
                 <th>受講者番号</th>
                 <th>入校日</th>
-                <th>終了期限</th>
+                <th>仮修了期限</th>
+                <th>修了期限</th>
                 <th>修了日</th>
                 <th>氏名</th>
                 <th>ふりがな</th>
@@ -761,7 +762,7 @@
                 <th>操作</th>
               </tr>
             </thead>
-            <tbody id="tbody"><tr class="empty-row"><td colspan="24">読み込み中…</td></tr></tbody>
+            <tbody id="tbody"><tr class="empty-row"><td colspan="25">読み込み中…</td></tr></tbody>
           </table>
         </div>
         <div class="pager">
@@ -1382,7 +1383,7 @@ async function doLogin() {
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
     } catch(e) {
-      document.getElementById('tbody').innerHTML = `<tr class="empty-row"><td colspan="24">読み込みエラー：${e.message}</td></tr>`;
+      document.getElementById('tbody').innerHTML = `<tr class="empty-row"><td colspan="25">読み込みエラー：${e.message}</td></tr>`;
     }
   }
   window.loadData = loadData;
@@ -1411,7 +1412,7 @@ async function doLogin() {
     const items = filtered.slice(start, start+PER);
     const tbody = document.getElementById('tbody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="24">申し込みデータがありません</td></tr>';
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="25">申し込みデータがありません</td></tr>';
     } else {
       const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
       // 終了期限＝受講開始日（activeAt）＋Nか月（学則：正式修了は8か月以内）
@@ -1423,6 +1424,7 @@ async function doLogin() {
         return `<tr>
           <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
           <td style="font-size:12px;">${fmtD(a.activeAt)}</td>
+          <td style="font-size:12px;">${fmtLimit(a.activeAt,3)}</td>
           <td style="font-size:12px;">${fmtLimit(a.activeAt,8)}</td>
           <td style="font-size:12px;">${fmtD(a.completedAt)}</td>
           <td><strong>${a.name||'—'}</strong></td>
