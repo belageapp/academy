@@ -737,6 +737,7 @@
               <tr>
                 <th>ステータス</th>
                 <th>受講者番号</th>
+                <th>申込日</th>
                 <th>入校日</th>
                 <th>仮修了期限</th>
                 <th>修了期限</th>
@@ -748,7 +749,8 @@
                 <th>メールアドレス</th>
                 <th>〒</th>
                 <th>住所</th>
-                <th>AEDISアカウント</th>
+                <th>テキスト</th>
+                <th>AEGISCアカウント</th>
                 <th>パスワード</th>
                 <th>仮修了証発行日</th>
                 <th>実習先情報</th>
@@ -762,7 +764,7 @@
                 <th>操作</th>
               </tr>
             </thead>
-            <tbody id="tbody"><tr class="empty-row"><td colspan="25">読み込み中…</td></tr></tbody>
+            <tbody id="tbody"><tr class="empty-row"><td colspan="27">読み込み中…</td></tr></tbody>
           </table>
         </div>
         <div class="pager">
@@ -1402,7 +1404,7 @@ async function doLogin() {
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
     } catch(e) {
-      document.getElementById('tbody').innerHTML = `<tr class="empty-row"><td colspan="25">読み込みエラー：${e.message}</td></tr>`;
+      document.getElementById('tbody').innerHTML = `<tr class="empty-row"><td colspan="27">読み込みエラー：${e.message}</td></tr>`;
     }
   }
   window.loadData = loadData;
@@ -1431,7 +1433,7 @@ async function doLogin() {
     const items = filtered.slice(start, start+PER);
     const tbody = document.getElementById('tbody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="25">申し込みデータがありません</td></tr>';
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="27">申し込みデータがありません</td></tr>';
     } else {
       const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
       // 終了期限＝受講開始日（activeAt）＋Nか月（学則：正式修了は8か月以内）
@@ -1450,6 +1452,7 @@ async function doLogin() {
         return `<tr>
           <td>${statusBadge}</td>
           <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
+          <td style="font-size:12px;">${fmtD(a.createdAt)}</td>
           <td style="font-size:12px;">${fmtD(a.activeAt)}</td>
           <td style="font-size:12px;">${fmtLimit(a.activeAt,3)}</td>
           <td style="font-size:12px;">${fmtLimit(a.activeAt,8)}</td>
@@ -1461,6 +1464,7 @@ async function doLogin() {
           <td style="font-size:12px;">${a.email||'—'}</td>
           <td style="font-size:12px;">${a.zip||'—'}</td>
           <td class="addr-cell" style="font-size:12px;" title="${a.address||''}">${a.address||'—'}</td>
+          <td style="font-size:12px;">${a.textbook||'—'}</td>
           <td style="font-family:monospace;font-size:12px;">${a.edulioId||'—'}</td>
           <td style="font-family:monospace;font-size:12px;">${a.edulioPassword||'—'}</td>
           <td style="font-size:12px;">${fmtD(a.tempCertSentAt)}</td>
@@ -1648,7 +1652,7 @@ async function doLogin() {
       </div>` : '';
 
     document.getElementById('prog-active-items').innerHTML = edulioBox +
-      pi('動画教材（AEGIS）の完了',   videoAegisState, 'externalVideoDone', a.externalVideoDone===true) +
+      pi('動画教材（AEGISC）の完了',   videoAegisState, 'externalVideoDone', a.externalVideoDone===true) +
       pi('動画教材（事例検討）の完了', videoCaseState,  'videoAllDone',      a.videoAllDone===true) +
       pi('eラーニングの完了',        eLearningState,  'taskAllDone',       a.taskAllDone===true) +
       pi('テスト１の完了',           test1State,      'test1Passed',       a.test1Passed===true) +
@@ -1973,7 +1977,7 @@ async function doLogin() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
     const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
     const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
-    const headers = ['ステータス','受講者番号','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','AEDISアカウント','パスワード','仮修了証発行日','実習先情報','連絡先・担当者','実習先対応日','資料送付日','実習終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
+    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','実習先情報','連絡先・担当者','実習先対応日','資料送付日','実習終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
       const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
@@ -1982,9 +1986,9 @@ async function doLogin() {
         ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}`
         : (a.address ? `${a.zip ? '〒'+a.zip+' ' : ''}${a.address}（登録住所）` : '');
       return [
-        statusLabel(a.status), a.studentNo, fmtD(a.activeAt), fmtLimit(a.activeAt,3), fmtLimit(a.activeAt,8),
+        statusLabel(a.status), a.studentNo, fmtD(a.createdAt), fmtD(a.activeAt), fmtLimit(a.activeAt,3), fmtLimit(a.activeAt,8),
         a.name, a.kana, a.gender, a.birthdate, a.phone, a.email, a.zip, a.address,
-        a.edulioId, a.edulioPassword, fmtD(a.tempCertSentAt), venueInfo, contactInfo,
+        a.textbook, a.edulioId, a.edulioPassword, fmtD(a.tempCertSentAt), venueInfo, contactInfo,
         fmtD(a.venueCheckedAt), fmtD(a.materialsSentAt), fmtD(a.reportApprovedAt),
         fmtD(a.completedAt), fmtD(a.certificateIssuedAt), certDest
       ].map(v=>`"${String(v ?? '').replace(/"/g,'""')}"`).join(',');
