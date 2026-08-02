@@ -1439,7 +1439,7 @@ async function doLogin() {
           <td class="addr-cell" style="font-size:12px;" title="${a.address||''}">${a.address||'—'}</td>
           <td style="font-family:monospace;font-size:12px;">${a.edulioId||'—'}</td>
           <td style="font-family:monospace;font-size:12px;">${a.edulioPassword||'—'}</td>
-          <td style="font-size:12px;${dim}">—</td>
+          <td style="font-size:12px;">${fmtD(a.tempCertSentAt)}</td>
           <td class="venue-cell" style="font-size:12px;" title="${venueInfo}">${venueInfo}</td>
           <td style="font-size:12px;">${contactInfo}</td>
           <td style="font-size:12px;">${fmtD(a.venueCheckedAt)}</td>
