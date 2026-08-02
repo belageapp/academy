@@ -950,7 +950,7 @@
             <div class="thead-title">🏢 実習先管理</div>
             <div class="thead-acts">
               <button class="refresh-btn" onclick="loadFacilityList()">🔄 更新</button>
-              <button onclick="openFacilityRegModal()" style="padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋ 施設を登録</button>
+              <button onclick="openFacilityEditModal()" style="padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋ 施設を登録</button>
             </div>
           </div>
           <!-- タブ -->
@@ -2616,7 +2616,10 @@ async function doLogin() {
   }
   window.closeImageModal = closeImageModal;
   // ===== 実習先管理 =====
-  let __facilityLinkTarget = null;
+  let __facilityEditId = null;
+  let __facilityFromAppId = null;
+  let __facilityLinkId = null;
+  let __facilityLinkName = '';
 
   function switchFacilityTab(tab) {
     document.getElementById('ftab-list').style.display    = tab === 'list'    ? 'block' : 'none';
@@ -2636,7 +2639,7 @@ async function doLogin() {
       const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(query(collection(window.__db, 'facilities'), orderBy('createdAt', 'desc')));
       if (snap.empty) {
-        el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">施設はまだ登録されていません。</p>';
+        el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">施設はまだ登録されていません。<br><small>実習先届出一覧の「🏢 施設登録」ボタンから登録できます。</small></p>';
         return;
       }
       el.innerHTML = snap.docs.map(d => {
@@ -2644,20 +2647,33 @@ async function doLogin() {
         const linked = (f.linkedApplicationIds || []);
         const studentTags = linked.map(aid => {
           const s = all.find(a => a.id === aid);
-          const name = s ? (s.name || ((s.sei||'')+(s.mei||''))) : aid;
+          const nm = s ? (s.name || ((s.sei||'')+(s.mei||''))) : aid;
+          const no = s?.studentNo || '';
           return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--teal-light);color:var(--teal-dark);border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px;">
-            ${name}
+            ${nm}${no ? '<span style="font-size:10px;opacity:0.7;"> '+no+'</span>' : ''}
             <button onclick="unlinkStudent('${d.id}','${aid}')" title="紐付け解除" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;padding:0 0 0 4px;line-height:1;">✕</button>
           </span>`;
         }).join('');
+        const infoRows = [
+          f.businessNo ? `<span style="background:#EEF2FF;color:#3949AB;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">事業所番号：${f.businessNo}</span>` : '',
+          (f.zip || f.address) ? `📍 ${f.zip ? '〒'+f.zip+' ' : ''}${f.address||''}` : '',
+          (f.tel || f.fax) ? `${f.tel ? '☎ '+f.tel : ''}${f.fax ? '　FAX: '+f.fax : ''}` : '',
+          f.email ? `✉ ${f.email}` : '',
+          (f.deptName || f.contactName) ? `👤 ${f.deptName ? f.deptName+' ' : ''}${f.contactName||''}${f.contactTel ? '（'+f.contactTel+'）' : ''}${f.contactEmail ? ' / '+f.contactEmail : ''}` : '',
+        ].filter(Boolean).map(r => `<div style="font-size:12px;color:var(--text-mid);margin-top:3px;">${r}</div>`).join('');
+        const safeName = (f.name||'').replace(/'/g,"\\'");
         return `<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
             <div>
-              <div style="font-size:15px;font-weight:700;">${f.name||'—'}</div>
-              <div style="font-size:12px;color:var(--text-mid);margin-top:3px;">${f.address||''} ${f.phone ? '　☎ '+f.phone : ''}</div>
-              <div style="font-size:12px;color:var(--text-mid);">担当者：${f.contactPerson||'—'}　メール：${f.email||'—'}</div>
+              ${f.corpName ? `<div style="font-size:11px;color:var(--text-light);margin-bottom:2px;">${f.corpName}</div>` : ''}
+              <div style="font-size:16px;font-weight:700;">${f.name||'—'}</div>
+              ${infoRows}
+              ${f.memo ? `<div style="font-size:12px;color:var(--text-mid);margin-top:6px;padding:6px 10px;background:#FAFAFA;border-radius:6px;">📝 ${f.memo}</div>` : ''}
             </div>
-            <button onclick="openFacilityLinkModal('${d.id}','${(f.name||'').replace(/'/g,'')}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 受講生紐付け</button>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button onclick="openFacilityEditModal('${d.id}')" style="padding:6px 14px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">✏️ 編集</button>
+              <button onclick="openFacilityLinkModal('${d.id}','${safeName}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 生徒を追加</button>
+            </div>
           </div>
           <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">紐付け受講生（${linked.length}名）</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;min-height:24px;">${studentTags || '<span style="font-size:12px;color:#ccc;">なし</span>'}</div>
@@ -2669,82 +2685,171 @@ async function doLogin() {
   }
   window.loadFacilityList = loadFacilityList;
 
-  function openFacilityRegModal() {
-    ['freg-name','freg-address','freg-phone','freg-person','freg-email','freg-password'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.value = '';
-    });
-    document.getElementById('freg-error').textContent = '';
-    document.getElementById('facility-reg-modal').style.display = 'block';
-  }
-  window.openFacilityRegModal = openFacilityRegModal;
-
-  function closeFacilityRegModal() {
-    document.getElementById('facility-reg-modal').style.display = 'none';
-  }
-  window.closeFacilityRegModal = closeFacilityRegModal;
-
-  async function registerFacility() {
-    const name     = document.getElementById('freg-name').value.trim();
-    const address  = document.getElementById('freg-address').value.trim();
-    const phone    = document.getElementById('freg-phone').value.trim();
-    const person   = document.getElementById('freg-person').value.trim();
-    const email    = document.getElementById('freg-email').value.trim();
-    const password = document.getElementById('freg-password').value;
-    const errEl    = document.getElementById('freg-error');
-    errEl.textContent = '';
-    if (!name || !email || !password) { errEl.textContent = '施設名・メールアドレス・パスワードは必須です'; return; }
-    if (password.length < 8) { errEl.textContent = 'パスワードは8文字以上で設定してください'; return; }
-    try {
-      errEl.textContent = '登録中...';
-      const uid = await window.__createFacilityUser(email, password);
-      const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await addDoc(collection(window.__db, 'facilities'), {
-        name, address, phone, contactPerson: person, email, uid,
-        linkedApplicationIds: [],
-        createdAt: serverTimestamp(),
+  function openFacilityEditModal(facilityId = null, prefill = {}) {
+    __facilityEditId = facilityId;
+    __facilityFromAppId = prefill.__appId || null;
+    const fields = ['corpName','name','businessNo','zip','address','tel','fax','email','deptName','contactName','contactTel','contactEmail','memo'];
+    fields.forEach(f => { const el = document.getElementById('fedit-'+f); if (el) el.value = prefill[f] || ''; });
+    if (facilityId) {
+      document.getElementById('fedit-modal-title').textContent = '🏢 施設を編集';
+      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(async ({ doc, getDoc }) => {
+        const snap = await getDoc(doc(window.__db, 'facilities', facilityId));
+        if (snap.exists()) {
+          const f = snap.data();
+          fields.forEach(field => { const el = document.getElementById('fedit-'+field); if (el) el.value = f[field] || ''; });
+        }
       });
-      closeFacilityRegModal();
-      showToast('施設を登録しました', 'success');
-      loadFacilityList();
-    } catch(e) {
-      errEl.textContent = 'エラー：' + (e.code === 'auth/email-already-in-use' ? 'このメールアドレスはすでに使用されています' : e.message);
+    } else {
+      document.getElementById('fedit-modal-title').textContent = '🏢 施設を登録';
     }
+    document.getElementById('fedit-error').textContent = '';
+    document.getElementById('facility-edit-modal').style.display = 'block';
   }
-  window.registerFacility = registerFacility;
+  window.openFacilityEditModal = openFacilityEditModal;
+
+  function openFacilityRegFromVenue(appId) {
+    const app = all.find(a => a.id === appId);
+    if (!app) return;
+    const v = app.practiceVenue || {};
+    openFacilityEditModal(null, {
+      __appId: appId,
+      corpName: v.corp || '',
+      name: v.name || '',
+      zip: v.zip || '',
+      address: v.address || '',
+      tel: v.phone || '',
+      email: v.email || '',
+      deptName: v.dept || '',
+      contactName: v.contact || '',
+      contactEmail: v.email || '',
+    });
+  }
+  window.openFacilityRegFromVenue = openFacilityRegFromVenue;
+
+  function closeFacilityEditModal() {
+    document.getElementById('facility-edit-modal').style.display = 'none';
+    __facilityEditId = null;
+    __facilityFromAppId = null;
+  }
+  window.closeFacilityEditModal = closeFacilityEditModal;
+
+  async function saveFacility() {
+    const get = id => document.getElementById('fedit-'+id)?.value.trim() || '';
+    const name = get('name');
+    const errEl = document.getElementById('fedit-error');
+    errEl.textContent = '';
+    if (!name) { errEl.textContent = '施設名は必須です'; return; }
+    const data = {
+      corpName: get('corpName'), name,
+      businessNo: get('businessNo'), zip: get('zip'), address: get('address'),
+      tel: get('tel'), fax: get('fax'), email: get('email'),
+      deptName: get('deptName'), contactName: get('contactName'),
+      contactTel: get('contactTel'), contactEmail: get('contactEmail'),
+      memo: get('memo'),
+    };
+    const isEdit = !!__facilityEditId;
+    const editId = __facilityEditId;
+    const fromAppId = __facilityFromAppId;
+    try {
+      errEl.textContent = '保存中...';
+      const { doc, collection, addDoc, updateDoc, serverTimestamp, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      let facilityId = editId;
+      if (facilityId) {
+        await updateDoc(doc(window.__db, 'facilities', facilityId), { ...data, updatedAt: serverTimestamp() });
+      } else {
+        const ref = await addDoc(collection(window.__db, 'facilities'), { ...data, linkedApplicationIds: [], createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        facilityId = ref.id;
+      }
+      if (fromAppId) {
+        await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayUnion(fromAppId) });
+        await updateDoc(doc(window.__db, 'applications', fromAppId), { linkedFacilityId: facilityId });
+        const a = all.find(x => x.id === fromAppId);
+        if (a) a.linkedFacilityId = facilityId;
+      }
+      closeFacilityEditModal();
+      showToast(isEdit ? '施設情報を更新しました' : '施設を登録しました', 'success');
+      loadFacilityList();
+      if (!isEdit && __venueCache) renderVenueTable();
+    } catch(e) { errEl.textContent = 'エラー：' + e.message; }
+  }
+  window.saveFacility = saveFacility;
 
   function openFacilityLinkModal(facilityId, facilityName) {
-    __facilityLinkTarget = facilityId;
-    document.getElementById('flink-facility-name').textContent = '施設：' + facilityName;
-    const sel = document.getElementById('flink-student-sel');
-    sel.innerHTML = all
-      .filter(a => !a.isTest && ['active','confirmed','completed'].includes(a.status))
-      .sort((a,b) => (a.name||'').localeCompare(b.name||''))
-      .map(a => `<option value="${a.id}">${a.name || ((a.sei||'')+(a.mei||''))} (${a.studentNo||a.id})</option>`)
-      .join('');
+    __facilityLinkId = facilityId;
+    __facilityLinkName = facilityName;
+    document.getElementById('flink-facility-label').textContent = facilityName;
+    document.getElementById('flink-search').value = '';
+    renderFacilityStudentSearch();
     document.getElementById('facility-link-modal').style.display = 'block';
   }
   window.openFacilityLinkModal = openFacilityLinkModal;
 
   function closeFacilityLinkModal() {
     document.getElementById('facility-link-modal').style.display = 'none';
-    __facilityLinkTarget = null;
+    __facilityLinkId = null;
   }
   window.closeFacilityLinkModal = closeFacilityLinkModal;
 
-  async function linkStudent() {
-    const facilityId = __facilityLinkTarget;
-    const studentId  = document.getElementById('flink-student-sel').value;
-    if (!facilityId || !studentId) return;
+  function renderFacilityStudentSearch() {
+    const q = (document.getElementById('flink-search')?.value || '').toLowerCase();
+    const el = document.getElementById('flink-results');
+    if (!el) return;
+    const stLabel = s => ({ pending:'入金待ち', awaiting_payment:'入金待ち', confirmed:'受講確定', active:'受講中', completed:'修了', suspended:'休講中', withdrawn:'退講' }[s] || s);
+    const stColor = s => ({ active:'#4CAF50', completed:'#2196F3', confirmed:'#FF9800', suspended:'#888', withdrawn:'#888' }[s] || '#888');
+    let students = all.filter(a => !a.isTest);
+    if (q) {
+      students = students.filter(a => {
+        const nm = (a.name || (a.sei||'')+(a.mei||'')).toLowerCase();
+        const kana = ((a.seikana||'')+(a.meikana||'')).toLowerCase();
+        return nm.includes(q) || kana.includes(q) || (a.studentNo||'').toLowerCase().includes(q) || (a.email||'').toLowerCase().includes(q);
+      });
+    }
+    if (!students.length) { el.innerHTML = '<p style="color:#888;font-size:13px;padding:8px;">該当する受講生が見つかりません。</p>'; return; }
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:#F5F5F5;">
+        <th style="padding:8px;font-size:12px;text-align:left;border-bottom:1px solid #eee;white-space:nowrap;">受講番号</th>
+        <th style="padding:8px;font-size:12px;text-align:left;border-bottom:1px solid #eee;">氏名</th>
+        <th style="padding:8px;font-size:12px;text-align:left;border-bottom:1px solid #eee;white-space:nowrap;">ステータス</th>
+        <th style="padding:8px;font-size:12px;text-align:left;border-bottom:1px solid #eee;">届出施設名</th>
+        <th style="padding:8px;font-size:12px;border-bottom:1px solid #eee;"></th>
+        <th style="padding:8px;font-size:12px;border-bottom:1px solid #eee;"></th>
+      </tr></thead>
+      <tbody>${students.map(a => {
+        const nm = a.name || ((a.sei||'')+(a.mei||''));
+        const venueName = a.practiceVenue?.name || '—';
+        const alreadyThis = a.linkedFacilityId === __facilityLinkId;
+        const linkedLabel = a.linkedFacilityId && !alreadyThis
+          ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:2px 6px;border-radius:6px;white-space:nowrap;">🔗 紐付済</span>` : '';
+        const btn = alreadyThis
+          ? `<span style="font-size:11px;color:#4CAF50;font-weight:700;white-space:nowrap;">✓ 登録済み</span>`
+          : `<button onclick="linkStudentToFacility('${a.id}')" style="padding:4px 12px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">紐付ける</button>`;
+        return `<tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px;font-size:12px;">${a.studentNo||'—'}</td>
+          <td style="padding:8px;font-size:13px;font-weight:600;">${nm}</td>
+          <td style="padding:8px;white-space:nowrap;"><span style="font-size:11px;color:${stColor(a.status)};font-weight:700;">${stLabel(a.status)}</span></td>
+          <td style="padding:8px;font-size:12px;color:#555;">${venueName}</td>
+          <td style="padding:8px;">${linkedLabel}</td>
+          <td style="padding:8px;">${btn}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+  window.renderFacilityStudentSearch = renderFacilityStudentSearch;
+
+  async function linkStudentToFacility(appId) {
+    const facilityId = __facilityLinkId;
+    if (!facilityId || !appId) return;
     try {
       const { doc, updateDoc, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayUnion(studentId) });
-      await updateDoc(doc(window.__db, 'applications', studentId), { linkedFacilityId: facilityId });
-      closeFacilityLinkModal();
+      await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayUnion(appId) });
+      await updateDoc(doc(window.__db, 'applications', appId), { linkedFacilityId: facilityId });
+      const a = all.find(x => x.id === appId);
+      if (a) a.linkedFacilityId = facilityId;
       showToast('受講生を紐付けました', 'success');
-      loadFacilityList();
+      renderFacilityStudentSearch();
     } catch(e) { alert('エラー：' + e.message); }
   }
-  window.linkStudent = linkStudent;
+  window.linkStudentToFacility = linkStudentToFacility;
 
   async function unlinkStudent(facilityId, studentId) {
     if (!confirm('紐付けを解除しますか？')) return;
@@ -2752,6 +2857,8 @@ async function doLogin() {
       const { doc, updateDoc, arrayRemove, deleteField } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayRemove(studentId) });
       await updateDoc(doc(window.__db, 'applications', studentId), { linkedFacilityId: deleteField() });
+      const a = all.find(x => x.id === studentId);
+      if (a) delete a.linkedFacilityId;
       showToast('紐付けを解除しました', 'info');
       loadFacilityList();
     } catch(e) { alert('エラー：' + e.message); }
@@ -2855,6 +2962,11 @@ async function doLogin() {
       } else {
         statusCell = `<button onclick="markVenueChecked('${r.__id}','${nm}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
       }
+      const facilityBtn = (v.name && v.name !== '未定')
+        ? (r.linkedFacilityId
+            ? `<br><span style="font-size:11px;color:var(--teal-dark);margin-top:4px;display:inline-block;">🏢 施設登録済み</span>`
+            : `<br><button onclick="openFacilityRegFromVenue('${r.__id}')" style="margin-top:4px;padding:4px 10px;background:#5D4037;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🏢 施設登録</button>`)
+        : '';
       return `<tr>
         <td>${name}</td>
         <td>${(v.corp ? '<span style="font-size:11px;color:#888;">'+v.corp+'</span><br>' : '') + (v.name || '—')}</td>
@@ -2863,7 +2975,7 @@ async function doLogin() {
         <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—') + (v.email ? '<br><span style="font-size:11px;color:#888;">'+v.email+'</span>' : '')}</td>
         <td>${v.reason || '—'}</td>
         <td>${date}</td>
-        <td style="white-space:nowrap;">${statusCell}</td>
+        <td style="white-space:nowrap;">${statusCell}${facilityBtn}</td>
       </tr>`;
     }
 
@@ -4598,42 +4710,67 @@ async function doLogin() {
 </script>
 
 <!-- 施設登録モーダル -->
-<div id="facility-reg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;overflow:auto;">
-  <div style="max-width:480px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+<!-- 施設登録・編集モーダル -->
+<div id="facility-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;overflow:auto;">
+  <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
     <div style="padding:16px 20px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:15px;font-weight:700;">🏢 施設を登録</div>
-      <button onclick="closeFacilityRegModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+      <div id="fedit-modal-title" style="font-size:15px;font-weight:700;">🏢 施設を登録</div>
+      <button onclick="closeFacilityEditModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
     </div>
-    <div style="padding:20px;">
+    <div style="padding:20px;max-height:80vh;overflow-y:auto;">
       <div style="display:grid;gap:12px;">
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名 *</label><input id="freg-name" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="freg-address" type="text" placeholder="東京都◯◯区..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="freg-phone" type="text" placeholder="03-XXXX-XXXX" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者名</label><input id="freg-person" type="text" placeholder="担当者名" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
-        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
-          <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;font-weight:700;">ログイン情報（施設マイページ用）</div>
-          <div style="margin-bottom:10px;"><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">メールアドレス *</label><input id="freg-email" type="email" placeholder="facility@example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">パスワード *（8文字以上）</label><input id="freg-password" type="password" placeholder="パスワード" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">法人名</label><input id="fedit-corpName" type="text" placeholder="社会福祉法人◯◯" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名 *</label><input id="fedit-name" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
-        <div id="freg-error" style="color:var(--red);font-size:13px;"></div>
-        <button onclick="registerFacility()" style="padding:11px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">登録する</button>
+        <div>
+          <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">事業所番号</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="fedit-businessNo" type="text" placeholder="例：1234567890" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+            <a href="https://www.wam.go.jp/sfkohyoout/COP000100E0000.do#" target="_blank" rel="noopener" style="white-space:nowrap;font-size:12px;color:var(--teal-dark);text-decoration:none;padding:8px 12px;border:1.5px solid var(--teal);border-radius:8px;font-weight:700;">🔍 WAM検索</a>
+          </div>
+          <div style="font-size:11px;color:var(--text-light);margin-top:3px;">WAMNETで事業所番号を確認できます</div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--text-mid);font-weight:700;">施設連絡先</div>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="fedit-zip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="fedit-address" type="text" placeholder="都道府県市区町村..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="fedit-tel" type="text" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">FAX</label><input id="fedit-fax" type="text" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設メールアドレス</label><input id="fedit-email" type="email" placeholder="info@facility.example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div style="border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--text-mid);font-weight:700;">担当者情報</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者部署</label><input id="fedit-deptName" type="text" placeholder="介護部" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者氏名</label><input id="fedit-contactName" type="text" placeholder="山田 太郎" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者直通電話</label><input id="fedit-contactTel" type="text" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者メール</label><input id="fedit-contactEmail" type="email" placeholder="contact@example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">備考</label><textarea id="fedit-memo" rows="3" placeholder="メモ・備考..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box;"></textarea></div>
+        <div id="fedit-error" style="color:var(--red);font-size:13px;"></div>
+        <button onclick="saveFacility()" style="padding:11px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">保存する</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 受講生紐付けモーダル -->
+<!-- 受講生紐付けモーダル（検索式） -->
 <div id="facility-link-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;overflow:auto;">
-  <div style="max-width:480px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+  <div style="max-width:700px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
     <div style="padding:16px 20px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:15px;font-weight:700;">👤 受講生を紐付け</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;">👤 受講生を紐付け</div>
+        <div id="flink-facility-label" style="font-size:12px;opacity:0.85;margin-top:2px;"></div>
+      </div>
       <button onclick="closeFacilityLinkModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
     </div>
-    <div style="padding:20px;">
-      <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;" id="flink-facility-name"></div>
-      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:6px;">紐付ける受講生を選択</label>
-      <select id="flink-student-sel" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;"></select>
-      <button onclick="linkStudent()" style="margin-top:14px;padding:10px 24px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">紐付ける</button>
+    <div style="padding:16px;">
+      <input id="flink-search" type="text" placeholder="氏名・ふりがな・受講番号・メールで検索..." oninput="renderFacilityStudentSearch()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;">
+      <div id="flink-results" style="max-height:420px;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
