@@ -1209,16 +1209,17 @@
 
                   <h4>ステータス一覧</h4>
                   <table>
-                    <tr><th>ステータス</th><th>意味・状態</th></tr>
-                    <tr><td><span class="tag tag-orange">入金待ち（振込）</span></td><td>振込入金の確認待ち。「振込入金確認」ボタンで受講確定に変更します。</td></tr>
-                    <tr><td><span class="tag tag-orange">入金待ち（カード）</span></td><td>Stripeカード決済の完了待ち。決済完了後に自動で受講確定へ遷移します。</td></tr>
-                    <tr><td><span class="tag tag-blue">受講確定</span></td><td>入金確認済み。受講生はマイページで書類提出・誓約書同意が可能になります。</td></tr>
-                    <tr><td><span class="tag tag-green">受講中</span></td><td>書類承認・誓約書同意が完了し受講開始の状態。AEGISC-LMSアカウントが自動発行されます。</td></tr>
-                    <tr><td><span class="tag tag-teal">修了</span></td><td>正式修了証明書の発行が完了した状態。</td></tr>
-                    <tr><td><span class="tag tag-gray">キャンセル</span></td><td>申し込みキャンセル。</td></tr>
-                    <tr><td><span class="tag tag-gray">休講中</span></td><td>一時的に受講を休止している状態。</td></tr>
-                    <tr><td><span class="tag tag-gray">退講</span></td><td>受講を辞退・退講した状態。</td></tr>
+                    <tr><th>ステータス</th><th>意味・状態</th><th style="white-space:nowrap;">変更方法</th></tr>
+                    <tr><td><span class="tag tag-orange">入金待ち（振込）</span></td><td>振込入金の確認待ち。</td><td>「振込入金確認」ボタン</td></tr>
+                    <tr><td><span class="tag tag-orange">入金待ち（カード）</span></td><td>Stripeカード決済の完了待ち。</td><td>自動</td></tr>
+                    <tr><td><span class="tag tag-blue">受講確定</span></td><td>入金確認済み。受講生がマイページで書類提出・誓約書同意できる状態。</td><td>自動</td></tr>
+                    <tr><td><span class="tag tag-green">受講中</span></td><td>書類承認・誓約書同意が完了し受講開始。AEGISC-LMSアカウントが自動発行されます。</td><td>自動</td></tr>
+                    <tr><td><span class="tag tag-teal">修了</span></td><td>正式修了証明書の発行が完了した状態。</td><td>自動</td></tr>
+                    <tr><td><span class="tag tag-gray">キャンセル</span></td><td>申し込みキャンセル。</td><td>✏️ 手動</td></tr>
+                    <tr><td><span class="tag tag-gray">休講中</span></td><td>一時的に受講を休止している状態。</td><td>✏️ 手動</td></tr>
+                    <tr><td><span class="tag tag-gray">退講</span></td><td>受講を辞退・退講した状態。</td><td>✏️ 手動</td></tr>
                   </table>
+                  <div class="note">📌 手動変更できるのはキャンセル・休講中・退講のみです。受講確定・受講中・修了はシステムが自動で遷移します。テストデータは全ステータスを手動変更できます。</div>
 
                   <h4>受講中への変更時に自動で行われること</h4>
                   <ul>
@@ -1309,7 +1310,7 @@
 
                   <h4>承認後に進む流れ</h4>
                   <ul>
-                    <li>顔写真・本人確認書類の両方が承認され、受講誓約書への同意も完了すると、受講中への変更が可能になります</li>
+                    <li>顔写真・本人確認書類の両方が承認され、受講誓約書への同意も完了すると、システムが自動で受講中に変更します</li>
                   </ul>
                 </div>
               </div>
