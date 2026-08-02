@@ -665,6 +665,7 @@
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
     <div class="sb-item" id="menu-sales" onclick="if(window.showSection)window.showSection('sales')"><span class="ico">💴</span>決済・売上</div>
+    <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理者ガイド</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -1121,6 +1122,452 @@
           <div class="tbl-wrap"><div id="sales-list" style="min-height:60px;">読み込み中…</div></div>
         </div>
       </div><!-- /section-sales -->
+
+      <div id="section-guide" style="display:none;">
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">📖 管理者ガイド</div>
+          </div>
+          <div style="padding:16px 20px;">
+
+            <!-- 検索 -->
+            <div style="margin-bottom:20px;">
+              <input id="guide-search" type="text" placeholder="キーワードで検索（例：ステータス、OJT、CSV…）"
+                oninput="guideSearch(this.value)"
+                style="width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+
+            <!-- クイックジャンプ -->
+            <div id="guide-quicknav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;">
+              <button onclick="guideJump('g-applications')"  class="gjump">📋 申し込み管理</button>
+              <button onclick="guideJump('g-notices')"       class="gjump">📢 お知らせ管理</button>
+              <button onclick="guideJump('g-textorder')"     class="gjump">📦 テキスト発注</button>
+              <button onclick="guideJump('g-documents')"     class="gjump">🪪 書類確認</button>
+              <button onclick="guideJump('g-inquiry')"       class="gjump">📬 問い合わせ</button>
+              <button onclick="guideJump('g-change')"        class="gjump">📝 届出書</button>
+              <button onclick="guideJump('g-venue')"         class="gjump">🏥 OJT施設届出</button>
+              <button onclick="guideJump('g-facility')"      class="gjump">🏢 OJT施設管理</button>
+              <button onclick="guideJump('g-video')"         class="gjump">🎬 動画視聴完了届出</button>
+              <button onclick="guideJump('g-tempcert')"      class="gjump">📄 仮修了証明書発行</button>
+              <button onclick="guideJump('g-ojt')"           class="gjump">📋 OJT修了報告</button>
+              <button onclick="guideJump('g-report')"        class="gjump">📝 修了レポート</button>
+              <button onclick="guideJump('g-certificate')"   class="gjump">📜 正式修了証明書発行</button>
+              <button onclick="guideJump('g-autonotice')"    class="gjump">⏰ 自動通知設定</button>
+              <button onclick="guideJump('g-sales')"         class="gjump">💴 決済・売上</button>
+            </div>
+
+            <style>
+              .gjump { padding:6px 12px;background:#F0FBFD;color:var(--teal-dark);border:1px solid var(--teal-light);border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit; }
+              .gjump:hover { background:var(--teal-light); }
+              .guide-section { border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden; }
+              .guide-header { display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#FAFAFA;cursor:pointer;user-select:none; }
+              .guide-header:hover { background:#F0FBFD; }
+              .guide-title { font-size:14px;font-weight:700;color:var(--text); }
+              .guide-body { padding:18px 20px;background:#fff;border-top:1px solid var(--border);line-height:1.8; }
+              .guide-body h4 { font-size:13px;font-weight:700;color:var(--teal-dark);margin:14px 0 6px;border-left:3px solid var(--teal);padding-left:8px; }
+              .guide-body h4:first-child { margin-top:0; }
+              .guide-body p { font-size:13px;color:var(--text);margin:0 0 8px; }
+              .guide-body ul { margin:4px 0 10px 18px;font-size:13px; }
+              .guide-body li { margin-bottom:4px; }
+              .guide-body .tag { display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;margin:0 2px; }
+              .guide-body .tag-blue { background:#E3F2FD;color:#1565C0; }
+              .guide-body .tag-green { background:#E8F5E9;color:#2E7D32; }
+              .guide-body .tag-orange { background:#FFF3E0;color:#E65100; }
+              .guide-body .tag-red { background:#FFEBEE;color:#C62828; }
+              .guide-body .tag-gray { background:#F5F5F5;color:#555; }
+              .guide-body .tag-teal { background:var(--teal-light);color:var(--teal-dark); }
+              .guide-body .note { background:#FFFDE7;border-left:3px solid #F9A825;border-radius:6px;padding:8px 12px;font-size:12px;margin-top:10px; }
+              .guide-body .warn { background:#FFEBEE;border-left:3px solid #E53935;border-radius:6px;padding:8px 12px;font-size:12px;margin-top:10px; }
+              .guide-body table { width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 12px; }
+              .guide-body th { background:#F5F5F5;padding:7px 10px;text-align:left;border:1px solid #e0e0e0;font-weight:700; }
+              .guide-body td { padding:7px 10px;border:1px solid #e0e0e0;vertical-align:top; }
+              .guide-body td:first-child { white-space:nowrap;font-weight:600; }
+              .guide-hidden { display:none; }
+            </style>
+
+            <div id="guide-accordion">
+
+              <!-- 1. 申し込み管理 -->
+              <div class="guide-section" id="g-applications">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📋 申し込み管理</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講申込の一覧管理と、個別受講生の情報・進捗確認を行うメイン画面です。</p>
+
+                  <h4>ステータス一覧</h4>
+                  <table>
+                    <tr><th>ステータス</th><th>意味・状態</th></tr>
+                    <tr><td><span class="tag tag-orange">入金待ち（振込）</span></td><td>振込入金の確認待ち。「振込入金確認」ボタンで受講確定に変更します。</td></tr>
+                    <tr><td><span class="tag tag-orange">入金待ち（カード）</span></td><td>Stripeカード決済の完了待ち。決済完了後に自動で受講確定へ遷移します。</td></tr>
+                    <tr><td><span class="tag tag-blue">受講確定</span></td><td>入金確認済み。受講生はマイページで書類提出・誓約書同意が可能になります。</td></tr>
+                    <tr><td><span class="tag tag-green">受講中</span></td><td>書類承認・誓約書同意が完了し受講開始の状態。AEGISC-LMSアカウントが自動発行されます。</td></tr>
+                    <tr><td><span class="tag tag-teal">修了</span></td><td>正式修了証明書の発行が完了した状態。</td></tr>
+                    <tr><td><span class="tag tag-gray">キャンセル</span></td><td>申し込みキャンセル。</td></tr>
+                    <tr><td><span class="tag tag-gray">休講中</span></td><td>一時的に受講を休止している状態。</td></tr>
+                    <tr><td><span class="tag tag-gray">退講</span></td><td>受講を辞退・退講した状態。</td></tr>
+                  </table>
+
+                  <h4>受講中への変更時に自動で行われること</h4>
+                  <ul>
+                    <li>AEGISC-LMSアカウント（ID・パスワード）を自動発行（未発行の場合のみ）</li>
+                    <li>受講生に受講開始メールを自動送信</li>
+                    <li>受講開始日（activeAt）が記録され、仮修了期限（＋3か月）・正式修了期限（＋8か月）が自動計算されます</li>
+                  </ul>
+
+                  <h4>主な操作</h4>
+                  <ul>
+                    <li><strong>フィルター</strong>：ステータス・キーワード・日付範囲・支払い方法で絞り込み。絞り込んだ状態でCSV出力されます。</li>
+                    <li><strong>詳細ボタン</strong>：受講生の全情報・進捗チェックリスト・やりとり履歴を確認できるモーダルを表示。</li>
+                    <li><strong>✏️ 編集（管理者）</strong>：氏名・ふりがな・電話・住所・別途郵送先・OJT施設情報・管理者メモを直接編集できます。管理者メモは受講生には表示されません。</li>
+                    <li><strong>振込入金確認ボタン</strong>：「入金待ち（振込）」の受講生に表示。クリックで受講確定に変更し入金確認メールを送信。</li>
+                    <li><strong>CSV出力</strong>：現在の絞り込み結果を26列のCSVで出力（Excel対応・BOM付きUTF-8）。</li>
+                  </ul>
+
+                  <h4>受講確定後の進捗チェックリスト（詳細モーダル内）</h4>
+                  <ul>
+                    <li>テキスト発注状況（テキスト購入あり選択者のみ）</li>
+                    <li>顔写真の提出・承認</li>
+                    <li>本人確認書類の提出・承認</li>
+                    <li>受講誓約書への同意</li>
+                  </ul>
+
+                  <div class="note">📌 別途郵送先（altAddress）を設定すると、修了証明書の送付先がその住所に変わります。登録住所と異なる送付先がある場合は必ず入力してください。</div>
+                </div>
+              </div>
+
+              <!-- 2. お知らせ管理 -->
+              <div class="guide-section" id="g-notices">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📢 お知らせ管理</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生のマイページに表示するお知らせを作成・送信します。</p>
+
+                  <h4>送信対象の指定</h4>
+                  <ul>
+                    <li><strong>全員</strong>：全受講生に送信</li>
+                    <li><strong>ステータス指定</strong>：受講中・受講確定など特定ステータスの受講生に送信</li>
+                    <li><strong>個別指定</strong>：メールアドレスで特定の受講生に送信</li>
+                  </ul>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>件名と本文を入力し、送信対象を選択して「送信」をクリック</li>
+                    <li>送信済みのお知らせは一覧で確認できます</li>
+                  </ul>
+                  <div class="note">📌 受講確定時・受講中変更時には自動でお知らせが送信されます。手動での重複送信にご注意ください。</div>
+                </div>
+              </div>
+
+              <!-- 3. テキスト発注 -->
+              <div class="guide-section" id="g-textorder">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📦 テキスト発注</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>申し込み時にテキスト購入を選択した受講生の発注状況を管理します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>「未発注」の受講生一覧を確認し、発注処理を行います</li>
+                    <li>発注後に「発注済み」ボタンをクリックしてステータスを更新します</li>
+                  </ul>
+                  <div class="note">📌 テキストの要・不要はStripe決済フローで確定されます。発注状況はここで管理してください。</div>
+                </div>
+              </div>
+
+              <!-- 4. 書類確認 -->
+              <div class="guide-section" id="g-documents">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">🪪 書類確認</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生が提出した顔写真・本人確認書類を確認・承認します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>提出された書類（画像）をプレビューで確認します</li>
+                    <li>問題なければ「承認」をクリック</li>
+                    <li>不備があれば「否認」をクリックし、理由を入力します（受講生に再提出を促す通知が送られます）</li>
+                  </ul>
+
+                  <h4>承認後に進む流れ</h4>
+                  <ul>
+                    <li>顔写真・本人確認書類の両方が承認され、受講誓約書への同意も完了すると、受講中への変更が可能になります</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 5. 問い合わせ -->
+              <div class="guide-section" id="g-inquiry">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📬 問い合わせ</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生からのお問い合わせ一覧です。バッジ（数字）は未返信件数を示します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>問い合わせ内容を確認し、返信テキストを入力して「返信する」をクリック</li>
+                    <li>返信済みになると受講生のマイページにも表示されます</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 6. 届出書 -->
+              <div class="guide-section" id="g-change">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📝 届出書</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生が提出した変更届（住所・氏名・OJT施設など）の一覧です。</p>
+
+                  <h4>対応手順</h4>
+                  <ul>
+                    <li>届出内容を確認します</li>
+                    <li>申し込み管理の「✏️ 編集」から該当受講生の情報を更新してください</li>
+                    <li>対応完了後は届出書の「対応済み」ボタンをクリックしてステータスを更新します</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 7. OJT施設届出 -->
+              <div class="guide-section" id="g-venue">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">🏥 OJT施設届出</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生がOJT実施施設として届け出た施設情報の管理です。施設への資料送付フローを管理します。</p>
+
+                  <h4>ステータスの流れ</h4>
+                  <table>
+                    <tr><th>ステータス</th><th>意味</th><th>次の操作</th></tr>
+                    <tr><td><span class="tag tag-orange">未対応</span></td><td>届出を受け付けたが未確認</td><td>「対応済みにする」→ 資料送付待ちへ</td></tr>
+                    <tr><td><span class="tag tag-blue">資料送付待ち</span></td><td>施設への資料送付を準備中</td><td>「資料送付済み」→ 対応済みへ</td></tr>
+                    <tr><td><span class="tag tag-green">対応済み</span></td><td>資料の送付が完了</td><td>—</td></tr>
+                  </table>
+
+                  <h4>主な操作</h4>
+                  <ul>
+                    <li><strong>🏢 施設登録ボタン</strong>：届出データをOJT施設管理マスターに自動プリフィルして登録できます</li>
+                    <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
+                    <li><strong>絞り込み</strong>：未対応・資料送付待ち・対応済み・すべてで絞り込み可能</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 8. OJT施設管理 -->
+              <div class="guide-section" id="g-facility">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">🏢 OJT施設管理</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>OJT実施施設のマスターデータを管理します。施設ごとに受講生を紐付け、やりとり履歴を記録できます。</p>
+
+                  <h4>施設一覧タブ</h4>
+                  <ul>
+                    <li><strong>＋ 施設を登録</strong>：法人名・施設名・事業所番号・住所・TEL/FAX・メール・担当者情報を登録（WAMNETで事業所番号を確認できます）</li>
+                    <li><strong>✏️ 編集</strong>：登録済み施設情報の編集</li>
+                    <li><strong>＋ 生徒を追加</strong>：受講生を施設に紐付け（氏名・ふりがな・受講番号・メールで検索）</li>
+                    <li><strong>📋 やりとり</strong>：施設詳細モーダルを開き、基本情報の確認ややりとり履歴の追記ができます</li>
+                  </ul>
+
+                  <h4>やりとり一覧タブ</h4>
+                  <ul>
+                    <li>全施設のやりとり記録を時系列で一覧表示</li>
+                    <li>施設名で絞り込み可能</li>
+                    <li>「手動記録」（管理者追記）と施設から送られてきた「お問い合わせ」を区別表示</li>
+                    <li>施設からの問い合わせには返信機能あり（未返信件数はバッジで表示）</li>
+                  </ul>
+
+                  <h4>施設詳細モーダル（📋 やりとりボタン）</h4>
+                  <ul>
+                    <li><strong>基本情報タブ</strong>：施設の全情報をまとめて確認。「✏️ 編集」ボタンで施設情報を編集</li>
+                    <li><strong>やりとり履歴タブ</strong>：日付・手段（電話/メール/訪問/FAX/その他）・内容でやりとりを記録・追加</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 9. 動画視聴完了届出 -->
+              <div class="guide-section" id="g-video">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">🎬 動画視聴完了届出</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生がAEGISC-LMSでの動画教材視聴完了を届け出た一覧です。バッジは未承認件数を示します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>届出内容（視聴した動画・コメントなど）を確認します</li>
+                    <li>「承認」をクリックして承認します</li>
+                  </ul>
+
+                  <h4>操作</h4>
+                  <ul>
+                    <li><strong>テストデータ表示トグル</strong>：テストデータの表示/非表示を切り替えます</li>
+                    <li><strong>絞り込み</strong>：対応待ち・すべて・承認済みで絞り込み可能</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 10. 仮修了証明書発行 -->
+              <div class="guide-section" id="g-tempcert">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📄 仮修了証明書発行</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>仮修了証明書の発行管理です。OJT完了前の段階で、動画・レポート等が完了した受講生に発行します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>対象受講生を確認し、「仮修了証明書を発行」をクリックします</li>
+                    <li>発行日（tempCertSentAt）が記録され、進捗チェックリストに反映されます</li>
+                  </ul>
+                  <div class="note">📌 仮修了証明書は正式修了証明書の前段階です。OJTが完了したら正式修了証明書発行フローへ進んでください。</div>
+                </div>
+              </div>
+
+              <!-- 11. OJT修了報告 -->
+              <div class="guide-section" id="g-ojt">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📋 OJT修了報告</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生が提出したOJT修了報告の承認を行います。バッジは未承認件数を示します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>報告内容を確認し「承認」をクリックします（<code>ojtPassed = true</code> が記録されます）</li>
+                    <li>修了レポートも承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信</strong>されます</li>
+                  </ul>
+
+                  <h4>正式修了証明書発行の3条件</h4>
+                  <ul>
+                    <li>✅ OJT修了報告承認（このページで承認）</li>
+                    <li>✅ 修了レポート承認（修了レポートページで承認）</li>
+                    <li>✅ OJT書類受領（正式修了証明書発行ページで受領確認）</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 12. 修了レポート -->
+              <div class="guide-section" id="g-report">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📝 修了レポート</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生が提出した修了レポートの承認を行います。バッジは未承認件数を示します。</p>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>レポート内容を確認し「承認」をクリックします（<code>reportApproved = true</code> が記録されます）</li>
+                    <li>OJT修了報告も承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信</strong>されます</li>
+                  </ul>
+                  <div class="note">📌 OJT修了報告・修了レポート・OJT書類受領の3つが揃ったタイミングで両承認完了メールが1回送信されます。</div>
+                </div>
+              </div>
+
+              <!-- 13. 正式修了証明書発行 -->
+              <div class="guide-section" id="g-certificate">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">📜 正式修了証明書発行</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>正式修了証明書の発行管理です。発行には以下の3条件がすべて必要です。</p>
+
+                  <h4>発行条件（3つすべて必要）</h4>
+                  <table>
+                    <tr><th>条件</th><th>確認・操作場所</th></tr>
+                    <tr><td>① OJT修了報告 承認済み</td><td>OJT修了報告ページで承認</td></tr>
+                    <tr><td>② 修了レポート 承認済み</td><td>修了レポートページで承認</td></tr>
+                    <tr><td>③ OJT書類受領済み</td><td>このページの「📥 書類受領」ボタン</td></tr>
+                  </table>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li><strong>📥 書類受領</strong>：施設から郵送されたOJT修了報告書類を受領したらクリック（<code>facilityReported = true</code>）。3条件が揃っていれば自動で両承認完了メールを送信</li>
+                    <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックで証明書発行日（certificateIssuedAt）を記録し、ステータスが「修了」に変わります</li>
+                  </ul>
+
+                  <h4>送付先について</h4>
+                  <ul>
+                    <li>申し込み管理の「✏️ 編集」で別途郵送先（altAddress）が設定されている場合はその住所へ</li>
+                    <li>設定なしの場合は登録住所（zip + address）へ</li>
+                  </ul>
+                  <div class="warn">⚠️ 証明書発行後はステータスが「修了」に変わります。誤発行に注意してください。</div>
+                </div>
+              </div>
+
+              <!-- 14. 自動通知設定 -->
+              <div class="guide-section" id="g-autonotice">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">⏰ 自動通知設定</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>定期的に自動送信されるリマインド通知の設定です。ON/OFFと送信タイミングを管理できます。</p>
+
+                  <h4>設定項目</h4>
+                  <table>
+                    <tr><th>通知名</th><th>対象</th><th>デフォルト設定</th></tr>
+                    <tr><td>OJT施設未定リマインド</td><td>OJT施設が未定のまま受講中の生徒</td><td>14日間隔で送信</td></tr>
+                    <tr><td>仮修了期限アラート</td><td>受講開始から3か月の仮修了期限が近い生徒</td><td>期限の30・14・7・3・1日前に送信</td></tr>
+                    <tr><td>正式修了期限アラート</td><td>受講開始から8か月の正式修了期限が近い生徒</td><td>期限の30・14日前に送信</td></tr>
+                  </table>
+
+                  <h4>操作手順</h4>
+                  <ul>
+                    <li>各通知のON/OFFをチェックボックスで切り替えます</li>
+                    <li>送信タイミング（日数）を変更する場合は入力欄を編集します（複数日はカンマ区切り）</li>
+                    <li>「保存」をクリックして設定を反映します</li>
+                  </ul>
+                  <div class="note">📌 最終実行日時と送信件数が表示されます。定期的に確認して正常に動作しているかご確認ください。</div>
+                </div>
+              </div>
+
+              <!-- 15. 決済・売上 -->
+              <div class="guide-section" id="g-sales">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">💴 決済・売上</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>決済情報の一覧と売上の月次集計を確認します。</p>
+
+                  <h4>決済一覧タブ</h4>
+                  <ul>
+                    <li>全申込の決済情報（金額・支払い方法・ステータス）をキーワード・支払い方法・日付範囲・ステータスでフィルタリング表示</li>
+                    <li>金額は <code>fee</code> フィールドを参照しています</li>
+                  </ul>
+
+                  <h4>月次売上タブ</h4>
+                  <ul>
+                    <li>年度（4月始まり）を切り替えて確認できます</li>
+                    <li>各月に支払い方法別件数・入金額・返金額を表示</li>
+                    <li><strong>KPIカード</strong>：年間売上・入金件数・返金総額・平均単価を表示</li>
+                  </ul>
+                  <div class="note">📌 売上集計はステータスが「入金待ち・キャンセル・退講」以外の有効申込を対象としています。</div>
+                </div>
+              </div>
+
+            </div><!-- /guide-accordion -->
+          </div>
+        </div>
+      </div><!-- /section-guide -->
 
     </div>
   </div>
@@ -2070,6 +2517,7 @@ async function doLogin() {
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
     document.getElementById('section-sales').style.display        = section === 'sales'        ? 'block' : 'none';
+    document.getElementById('section-guide').style.display        = section === 'guide'        ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
@@ -2100,11 +2548,63 @@ async function doLogin() {
       section === 'tempcert'     ? '📄 仮修了証明書発行管理' :
       section === 'certificate'  ? '📜 正式修了証明書発行' :
       section === 'autonotice'   ? '⏰ 自動通知設定' :
-      section === 'sales'        ? '💴 決済・売上' : '';
+      section === 'sales'        ? '💴 決済・売上' :
+      section === 'guide'        ? '📖 管理者ガイド' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
   window.showSection = showSection;
+
+  // ===== 管理者ガイド =====
+  function guideToggle(header) {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('span:last-child');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    arrow.textContent = isOpen ? '▼' : '▲';
+  }
+  window.guideToggle = guideToggle;
+
+  function guideJump(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const body = el.querySelector('.guide-body');
+    const arrow = el.querySelector('.guide-header span:last-child');
+    if (body && body.style.display === 'none') {
+      body.style.display = 'block';
+      if (arrow) arrow.textContent = '▲';
+    }
+  }
+  window.guideJump = guideJump;
+
+  function guideSearch(q) {
+    const kw = q.trim().toLowerCase();
+    const sections = document.querySelectorAll('.guide-section');
+    sections.forEach(sec => {
+      if (!kw) {
+        sec.style.display = 'block';
+        sec.style.outline = 'none';
+        return;
+      }
+      const text = sec.textContent.toLowerCase();
+      const match = text.includes(kw);
+      sec.style.display = match ? 'block' : 'none';
+      sec.style.outline = match ? '2px solid var(--teal)' : 'none';
+      if (match) {
+        const body = sec.querySelector('.guide-body');
+        const arrow = sec.querySelector('.guide-header span:last-child');
+        if (body) body.style.display = 'block';
+        if (arrow) arrow.textContent = '▲';
+      }
+    });
+  }
+  window.guideSearch = guideSearch;
+
+  // 初期状態：アコーディオンは閉じる
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.guide-body').forEach(b => b.style.display = 'none');
+  });
 
   // 特定受講生トグル
   document.querySelectorAll('[name="n-target"]').forEach(r => {
