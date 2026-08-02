@@ -663,7 +663,7 @@
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
-    <div class="sb-item" onclick="alert('近日公開予定です')"><span class="ico">💴</span>決済・売上</div>
+    <div class="sb-item" id="menu-sales" onclick="if(window.showSection)window.showSection('sales')"><span class="ico">💴</span>決済・売上</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -1078,6 +1078,26 @@
           <p style="color:#aaa;font-size:13px;">読み込み中...</p>
         </div>
       </div><!-- /section-autonotice -->
+
+      <!-- ===== 決済・売上セクション ===== -->
+      <div id="section-sales" style="display:none;">
+        <div class="tcard" style="margin-bottom:20px;">
+          <div class="thead">
+            <div class="thead-title">💴 売上サマリー</div>
+            <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-sales" onchange="loadSalesData()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
+              <button class="refresh-btn" onclick="loadSalesData()">🔄 更新</button>
+            </div>
+          </div>
+          <div id="sales-summary" style="padding:20px;">読み込み中…</div>
+        </div>
+        <div class="tcard">
+          <div class="thead"><div class="thead-title">🧾 決済一覧</div></div>
+          <div class="tbl-wrap"><div id="sales-list" style="min-height:60px;">読み込み中…</div></div>
+        </div>
+      </div><!-- /section-sales -->
 
     </div>
   </div>
@@ -2014,6 +2034,7 @@ async function doLogin() {
     document.getElementById('section-tempcert').style.display     = section === 'tempcert'     ? 'block' : 'none';
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
+    document.getElementById('section-sales').style.display        = section === 'sales'        ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
@@ -2028,6 +2049,7 @@ async function doLogin() {
     if (section === 'autonotice') loadAutoNoticeSettings();
     if (section === 'tempcert') loadTempCertList();
     if (section === 'textorder') loadTextOrderList();
+    if (section === 'sales') loadSalesData();
     document.getElementById('topbar-title').textContent =
       section === 'applications' ? '📋 申し込み管理' :
       section === 'notices'      ? '📢 お知らせ管理' :
@@ -2042,7 +2064,8 @@ async function doLogin() {
       section === 'report'       ? '📝 修了レポート' :
       section === 'tempcert'     ? '📄 仮修了証明書発行管理' :
       section === 'certificate'  ? '📜 正式修了証明書発行' :
-      section === 'autonotice'   ? '⏰ 自動通知設定' : '';
+      section === 'autonotice'   ? '⏰ 自動通知設定' :
+      section === 'sales'        ? '💴 決済・売上' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
@@ -4140,6 +4163,148 @@ async function doLogin() {
   window.loadInquiryList = loadInquiryList;
   window.replyInquiry = replyInquiry;
   window.loadModalInquiries = loadModalInquiries;
+
+  // ===== 決済・売上 =====
+  let __salesCache = [];
+  const SALES_STATUS = {pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'};
+  const yen = (n) => '¥' + (Number(n)||0).toLocaleString('ja-JP');
+  const parseAmount = (v) => Number(String(v ?? '').replace(/[^0-9]/g,'')) || 0;
+  const isPaidStatus = (a) => !['pending','awaiting_payment','cancelled','withdrawn'].includes(a.status);
+
+  async function loadSalesData() {
+    const sumEl = document.getElementById('sales-summary');
+    const listEl = document.getElementById('sales-list');
+    if (!sumEl || !listEl) return;
+    sumEl.innerHTML = '読み込み中…'; listEl.innerHTML = '';
+    try {
+      const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'applications'), orderBy('createdAt', 'desc')));
+      const showTest = document.getElementById('show-test-sales')?.checked;
+      __salesCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => showTest || !a.isTest);
+      renderSales();
+    } catch(e) {
+      sumEl.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
+    }
+  }
+  window.loadSalesData = loadSalesData;
+
+  function renderSales() {
+    const rows = __salesCache;
+    let expected = 0, paidSum = 0, paidCount = 0, refundSum = 0, refundCount = 0;
+    const byMethod = {}, byMonth = {};
+    rows.forEach(a => {
+      const amt = parseAmount(a.fee);
+      expected += amt;
+      if (isPaidStatus(a)) {
+        paidSum += amt; paidCount++;
+        const m = a.payment || '不明';
+        (byMethod[m] = byMethod[m] || {c:0,s:0}).c++; byMethod[m].s += amt;
+        const dt = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
+        const key = dt ? dt.getFullYear() + '/' + String(dt.getMonth()+1).padStart(2,'0') : '不明';
+        (byMonth[key] = byMonth[key] || {c:0,s:0}).c++; byMonth[key].s += amt;
+      }
+      if (a.refunded === true) { refundSum += (a.refundAmount != null ? Number(a.refundAmount) : amt); refundCount++; }
+    });
+    const net = paidSum - refundSum;
+
+    const card = (label, value, sub, color) => `<div style="flex:1;min-width:150px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+      <div style="font-size:12px;color:var(--text-mid);font-weight:700;">${label}</div>
+      <div style="font-size:22px;font-weight:800;color:${color||'var(--text-dark)'};margin-top:4px;">${value}</div>
+      <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${sub||''}</div></div>`;
+
+    const methodRows = Object.keys(byMethod).sort().map(m =>
+      `<tr><td style="padding:6px 10px;">${m}</td><td style="padding:6px 10px;text-align:right;">${byMethod[m].c}件</td><td style="padding:6px 10px;text-align:right;">${yen(byMethod[m].s)}</td></tr>`
+    ).join('') || '<tr><td colspan="3" style="padding:8px;color:var(--text-light);">データなし</td></tr>';
+
+    const monthRows = Object.keys(byMonth).sort().reverse().map(k =>
+      `<tr><td style="padding:6px 10px;">${k}</td><td style="padding:6px 10px;text-align:right;">${byMonth[k].c}件</td><td style="padding:6px 10px;text-align:right;">${yen(byMonth[k].s)}</td></tr>`
+    ).join('') || '<tr><td colspan="3" style="padding:8px;color:var(--text-light);">データなし</td></tr>';
+
+    document.getElementById('sales-summary').innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+        ${card('純売上', yen(net), '入金済み − 返金', 'var(--teal-dark)')}
+        ${card('入金済み', yen(paidSum), paidCount + '件', 'var(--text-dark)')}
+        ${card('見込み売上', yen(expected), '全申込 ' + rows.length + '件', 'var(--text-mid)')}
+        ${card('返金', '−' + yen(refundSum), refundCount + '件', 'var(--red)')}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;">
+        <div style="flex:1;min-width:260px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:6px;">支払方法別（入金済み）</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <thead><tr style="background:var(--teal-pale);"><th style="padding:6px 10px;text-align:left;">支払方法</th><th style="padding:6px 10px;text-align:right;">件数</th><th style="padding:6px 10px;text-align:right;">金額</th></tr></thead>
+            <tbody>${methodRows}</tbody>
+          </table>
+        </div>
+        <div style="flex:1;min-width:260px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:6px;">月次売上（入金確定月）</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <thead><tr style="background:var(--teal-pale);"><th style="padding:6px 10px;text-align:left;">年月</th><th style="padding:6px 10px;text-align:right;">件数</th><th style="padding:6px 10px;text-align:right;">金額</th></tr></thead>
+            <tbody>${monthRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+
+    const listRows = rows.map(a => {
+      const amt = parseAmount(a.fee);
+      const paid = isPaidStatus(a);
+      const cfd = a.confirmedAt?.toDate?.()?.toLocaleDateString('ja-JP') || (a.activeAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—');
+      const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
+      const refundCell = a.refunded === true
+        ? `<span style="color:var(--red);font-weight:700;">返金 −${yen(a.refundAmount != null ? a.refundAmount : amt)}</span>${a.refundedAt?.toDate?.() ? '<br><span style="font-size:11px;color:#888;">'+a.refundedAt.toDate().toLocaleDateString('ja-JP')+'</span>' : ''}${a.refundReason ? '<br><span style="font-size:11px;color:#888;">'+a.refundReason+'</span>' : ''}`
+        : '—';
+      const opCell = a.refunded === true
+        ? `<button onclick="cancelRefund('${a.id}')" style="padding:4px 10px;background:#fff;border:1px solid #ccc;border-radius:6px;font-size:11px;cursor:pointer;color:#666;">返金取消</button>`
+        : (paid ? `<button onclick="markRefund('${a.id}')" style="padding:4px 10px;background:#fff;border:1px solid var(--red);border-radius:6px;font-size:11px;cursor:pointer;color:var(--red);font-weight:700;">返金処理</button>` : '<span style="font-size:11px;color:#aaa;">入金前</span>');
+      return `<tr${a.refunded===true?' style="background:#FFF5F5;"':''}>
+        <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
+        <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+        <td style="text-align:right;white-space:nowrap;">${amt ? yen(amt) : '—'}</td>
+        <td>${a.payment||'—'}</td>
+        <td><span class="sbadge sbadge-${a.status}">${SALES_STATUS[a.status]||a.status||'—'}</span></td>
+        <td style="font-size:12px;white-space:nowrap;">${paid ? cfd : '—'}</td>
+        <td style="font-size:12px;white-space:nowrap;">${refundCell}</td>
+        <td style="white-space:nowrap;">${opCell}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('sales-list').innerHTML = rows.length
+      ? `<table><thead><tr><th>受講番号</th><th>氏名</th><th style="text-align:right;">受講料</th><th>支払方法</th><th>入金状況</th><th>確定日</th><th>返金</th><th>操作</th></tr></thead><tbody>${listRows}</tbody></table>`
+      : '<p style="color:var(--text-light);font-size:13px;padding:16px;">データがありません。</p>';
+  }
+  window.renderSales = renderSales;
+
+  async function markRefund(docId) {
+    const a = __salesCache.find(x => x.id === docId);
+    if (!a) return;
+    const def = parseAmount(a.fee);
+    const input = prompt('返金額を入力してください（円）', String(def));
+    if (input === null) return;
+    const amount = Number(String(input).replace(/[^0-9]/g,'')) || 0;
+    const reason = prompt('返金理由（任意）', '') || '';
+    if (!confirm(`${a.name||''} さんの決済を返金処理として記録します。\n返金額：${yen(amount)}\nよろしいですか？`)) return;
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), {
+        refunded: true, refundedAt: serverTimestamp(), refundAmount: amount, refundReason: reason,
+      });
+      a.refunded = true; a.refundAmount = amount; a.refundReason = reason; a.refundedAt = { toDate: () => new Date() };
+      renderSales();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.markRefund = markRefund;
+
+  async function cancelRefund(docId) {
+    const a = __salesCache.find(x => x.id === docId);
+    if (!a) return;
+    if (!confirm(`${a.name||''} さんの返金処理を取り消しますか？`)) return;
+    try {
+      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), { refunded: false });
+      a.refunded = false;
+      renderSales();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.cancelRefund = cancelRefund;
 
   // 初期ロード時に未回答バッジを表示
   async function initAllBadges() {
