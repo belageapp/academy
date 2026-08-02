@@ -922,9 +922,10 @@
             <div class="thead-title">🏥 実習先届出一覧</div>
             <div class="thead-acts">
               <select id="venue-filter-sel" onchange="window.setVenueFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
-                <option value="pending">未対応・未定</option>
+                <option value="pending">要対応（未対応・未定・資料送付待ち）</option>
                 <option value="all">すべて</option>
                 <option value="mitei">未定のみ</option>
+                <option value="awaiting">資料送付待ち</option>
                 <option value="done">対応済み</option>
               </select>
               <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
@@ -1442,7 +1443,7 @@ async function doLogin() {
           <td class="venue-cell" style="font-size:12px;" title="${venueInfo}">${venueInfo}</td>
           <td style="font-size:12px;">${contactInfo}</td>
           <td style="font-size:12px;">${fmtD(a.venueCheckedAt)}</td>
-          <td style="font-size:12px;${dim}">—</td>
+          <td style="font-size:12px;">${fmtD(a.materialsSentAt)}</td>
           <td style="font-size:12px;">${fmtD(a.reportApprovedAt)}</td>
           <td style="font-size:12px;">${fmtD(a.completedAt)}</td>
           <td style="font-size:12px;">${fmtD(a.certificateIssuedAt)}</td>
@@ -2732,30 +2733,40 @@ async function doLogin() {
     const el = document.getElementById('venue-list');
     if (!__venueCache) return;
 
-    // 3グループに分類：未対応 / 未定 / 対応済み
-    const mitei   = [], pending = [], done = [];
+    // グループ分類：未対応 / 未定 / 資料送付待ち / 対応済み
+    const mitei = [], pending = [], awaiting = [], done = [];
     __venueCache.forEach(r => {
       if (r.practiceVenue?.name === '未定') mitei.push(r);
-      else if (r.venueChecked) done.push(r);
+      else if (r.venueChecked && r.materialsSent) done.push(r);
+      else if (r.venueChecked) awaiting.push(r);
       else pending.push(r);
     });
 
-    const showPending = __venueFilter === 'pending' || __venueFilter === 'all';
-    const showMitei   = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'mitei';
-    const showDone    = __venueFilter === 'done'    || __venueFilter === 'all';
+    const showPending  = __venueFilter === 'pending' || __venueFilter === 'all';
+    const showMitei    = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'mitei';
+    const showAwaiting = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'awaiting';
+    const showDone     = __venueFilter === 'done'    || __venueFilter === 'all';
 
     function rowHtml(r) {
       const v = r.practiceVenue || {};
       const date      = r.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
-      const isDone    = !!r.venueChecked;
-      const fullName  = r.name || ((r.sei||'')+(r.mei||'')) || '—';
+      const sentAt    = r.materialsSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+      const nm        = r.name || ((r.sei||'')+(r.mei||''));
+      const fullName  = nm || '—';
       const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">再提出</span>' : '';
       const pendingBadge  = v.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
       const name      = `<strong>${fullName}</strong>${resubmitBadge}${pendingBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
-      const statusCell = isDone
-        ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedAt ? '<br><span style="font-size:11px;color:#888;">'+checkedAt+'</span>' : ''}`
-        : `<button onclick="markVenueChecked('${r.__id}','${r.name||(r.sei||'')+(r.mei||'')}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
+      const checkedLine = checkedAt ? `<br><span style="font-size:11px;color:#888;">対応日：${checkedAt}</span>` : '';
+      const sentLine    = sentAt    ? `<br><span style="font-size:11px;color:#888;">送付日：${sentAt}</span>` : '';
+      let statusCell;
+      if (r.venueChecked && r.materialsSent) {
+        statusCell = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedLine}${sentLine}`;
+      } else if (r.venueChecked) {
+        statusCell = `<span style="background:#FFF3E0;color:#E65100;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📦 資料送付待ち</span>${checkedLine}<br><button onclick="markMaterialsSent('${r.__id}','${nm}')" style="margin-top:4px;padding:5px 12px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
+      } else {
+        statusCell = `<button onclick="markVenueChecked('${r.__id}','${nm}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
+      }
       return `<tr>
         <td>${name}</td>
         <td>${(v.corp ? '<span style="font-size:11px;color:#888;">'+v.corp+'</span><br>' : '') + (v.name || '—')}</td>
@@ -2771,11 +2782,13 @@ async function doLogin() {
     let body = '';
     if (showPending && pending.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
     if (showMitei   && mitei.length)   body += `<tr><td colspan="8" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
+    if (showAwaiting && awaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF3E0;font-size:12px;font-weight:700;color:#E65100;">▼ 資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
     if (showDone    && done.length)    body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
     if (!body) {
       el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">' +
-        (__venueFilter === 'pending' ? '未対応・未定の届出はありません。' :
+        (__venueFilter === 'pending' ? '要対応の届出はありません。' :
          __venueFilter === 'mitei'   ? '未定の届出はありません。' :
+         __venueFilter === 'awaiting'? '資料送付待ちの届出はありません。' :
          __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
       return;
     }
@@ -2806,7 +2819,7 @@ async function doLogin() {
   window.loadVenueList = loadVenueList;
 
   async function markVenueChecked(docId, name) {
-    if (!confirm(`${name} さんの実習先届出を対応済みにしますか？`)) return;
+    if (!confirm(`${name} さんの実習先届出を対応済みにしますか？（資料送付待ちに進みます）`)) return;
     try {
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'applications', docId), {
@@ -2823,6 +2836,25 @@ async function doLogin() {
     }
   }
   window.markVenueChecked = markVenueChecked;
+
+  async function markMaterialsSent(docId, name) {
+    if (!confirm(`${name} さんへ資料を送付済みにしますか？（対応済みに進みます）`)) return;
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), {
+        materialsSent: true,
+        materialsSentAt: serverTimestamp(),
+      });
+      if (__venueCache) {
+        const r = __venueCache.find(r => r.__id === docId);
+        if (r) { r.materialsSent = true; r.materialsSentAt = { toDate: () => new Date(), toMillis: () => Date.now() }; }
+      }
+      renderVenueTable();
+    } catch(e) {
+      alert('エラー：' + e.message);
+    }
+  }
+  window.markMaterialsSent = markMaterialsSent;
 
   let __videoCache = null;
   let __videoFilter = 'pending';
