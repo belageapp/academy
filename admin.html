@@ -688,17 +688,17 @@
         <div class="stat">
           <div class="stat-lbl">入金待ち</div>
           <div class="stat-val" id="st-pend" style="color:var(--yellow-warn)">—</div>
-          <span class="stat-tag tag-y">要確認</span>
+          <span class="sbadge sbadge-pending">入金待ち</span>
         </div>
         <div class="stat">
           <div class="stat-lbl">受講確定</div>
           <div class="stat-val" id="st-confirmed" style="color:var(--blue)">—</div>
-          <span class="stat-tag tag-b">確定</span>
+          <span class="sbadge sbadge-confirmed">受講確定</span>
         </div>
         <div class="stat">
           <div class="stat-lbl">受講中</div>
           <div class="stat-val" id="st-active" style="color:var(--blue)">—</div>
-          <span class="stat-tag tag-b">学習中</span>
+          <span class="sbadge sbadge-active">受講中</span>
         </div>
         <div class="stat">
           <div class="stat-lbl">仮修了</div>
@@ -708,14 +708,13 @@
         <div class="stat">
           <div class="stat-lbl">修了</div>
           <div class="stat-val" id="st-completed" style="color:var(--teal)">—</div>
-          <span class="stat-tag tag-t">完了</span>
+          <span class="sbadge sbadge-completed">修了</span>
         </div>
       </div>
 
       <div class="tcard">
         <div class="thead">
-          <div class="thead-title">申し込み一覧</div>
-          <div class="thead-acts">
+          <div class="thead-acts" style="margin-left:auto;">
             <div class="search-wrap">
               <span class="search-ico">🔍</span>
               <input type="text" id="q" placeholder="名前・メールで検索…" oninput="doFilter()">
