@@ -2636,9 +2636,6 @@ async function doLogin() {
     set('phone', a.phone);
     set('zip', a.zip); set('address', a.address);
     set('altZip', a.altZip); set('altAddress', a.altAddress);
-    const isPurchase = a.textbook === 'purchase' || (a.textbook || '').includes('購入');
-    const sel = document.getElementById('aedit-textbook');
-    if (sel) sel.value = isPurchase ? 'purchase' : 'なし';
     const v = a.practiceVenue || {};
     set('venueCorp', v.corp); set('venueName', v.name);
     set('venueZip', v.zip); set('venueAddress', v.address);
@@ -2662,7 +2659,6 @@ async function doLogin() {
     errEl.textContent = '';
     const sei = get('sei'), mei = get('mei');
     const seiFuri = get('seiFuri'), meiFuri = get('meiFuri');
-    const textbookVal = document.getElementById('aedit-textbook')?.value || 'なし';
     const updateData = {
       sei, mei, seiFuri, meiFuri,
       name: sei + mei,
@@ -2670,7 +2666,6 @@ async function doLogin() {
       phone: get('phone'),
       zip: get('zip'), address: get('address'),
       altZip: get('altZip'), altAddress: get('altAddress'),
-      textbook: textbookVal,
       adminMemo: get('adminMemo'),
       'practiceVenue.corp': get('venueCorp'),
       'practiceVenue.name': get('venueName'),
@@ -2690,7 +2685,7 @@ async function doLogin() {
         Object.assign(a, { sei, mei, seiFuri, meiFuri, name: sei+mei, kana: seiFuri+meiFuri,
           phone: get('phone'), zip: get('zip'), address: get('address'),
           altZip: get('altZip'), altAddress: get('altAddress'),
-          textbook: textbookVal, adminMemo: get('adminMemo') });
+          adminMemo: get('adminMemo') });
         if (!a.practiceVenue) a.practiceVenue = {};
         Object.assign(a.practiceVenue, {
           corp: get('venueCorp'), name: get('venueName'),
@@ -4894,12 +4889,6 @@ async function doLogin() {
         <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
           <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先〒</label><input id="aedit-altZip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
           <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先住所</label><input id="aedit-altAddress" type="text" placeholder="証明書の別途送付先（なければ空欄）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-        </div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">テキスト</label>
-          <select id="aedit-textbook" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
-            <option value="なし">不要（なし）</option>
-            <option value="purchase">購入あり</option>
-          </select>
         </div>
 
         <!-- 実習先情報 -->
