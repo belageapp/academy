@@ -1615,7 +1615,7 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    AEGISC-LMSアカウントは<strong>ステータスを「受講中」に変更した瞬間に自動発行</strong>されます。まだ「受講確定」のままであれば発行されていません。書類承認・誓約書同意が完了したら受講中に変更してください。
+                    AEGISC-LMSアカウントは<strong>ステータスが「受講中」に変わった瞬間に自動発行</strong>されます。受講中への変更は、書類承認・誓約書同意がすべて完了するとシステムが自動で行います。条件が揃っているにもかかわらずアカウントが届いていない場合は、申し込み管理の詳細モーダルでアカウントIDが発行されているか確認してください。
                     <div class="note">📌 アカウントID・パスワードは申し込み管理の詳細モーダルで確認できます。</div>
                   </div>
                 </div>
@@ -2762,7 +2762,7 @@ async function doLogin() {
   function qaToggle(header) {
     const body = header.nextElementSibling;
     const arrow = header.querySelector('.qa-q-arrow');
-    const isOpen = body.style.display !== 'none';
+    const isOpen = getComputedStyle(body).display !== 'none';
     body.style.display = isOpen ? 'none' : 'block';
     if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
   }
