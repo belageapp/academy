@@ -669,6 +669,10 @@
     <div class="sb-section">ガイド</div>
     <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理機能ガイド</div>
     <div class="sb-item" id="menu-student-guide" onclick="if(window.showSection)window.showSection('student-guide')"><span class="ico">👤</span>受講生対応ガイド</div>
+    <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
+    <div class="sb-section">受講生マイページ掲載</div>
+    <div class="sb-item" id="menu-mypage-guide" onclick="if(window.showSection)window.showSection('mypage-guide')"><span class="ico">📖</span>受講ガイド</div>
+    <div class="sb-item" id="menu-mypage-gakusoku" onclick="if(window.showSection)window.showSection('mypage-gakusoku')"><span class="ico">📜</span>学則／誓約書</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -2167,6 +2171,14 @@
         </div>
       </div><!-- /section-student-guide -->
 
+      <div id="section-mypage-guide" style="display:none;height:calc(100vh - 56px);margin:-20px;">
+        <iframe src="guide.html" style="width:100%;height:100%;border:none;display:block;" title="受講ガイド"></iframe>
+      </div><!-- /section-mypage-guide -->
+
+      <div id="section-mypage-gakusoku" style="display:none;height:calc(100vh - 56px);margin:-20px;">
+        <iframe src="gakusoku.html" style="width:100%;height:100%;border:none;display:block;" title="学則／誓約書"></iframe>
+      </div><!-- /section-mypage-gakusoku -->
+
     </div>
   </div>
 </div>
@@ -3141,8 +3153,10 @@ async function doLogin() {
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
     document.getElementById('section-sales').style.display        = section === 'sales'        ? 'block' : 'none';
-    document.getElementById('section-guide').style.display         = section === 'guide'         ? 'block' : 'none';
-    document.getElementById('section-student-guide').style.display = section === 'student-guide' ? 'block' : 'none';
+    document.getElementById('section-guide').style.display          = section === 'guide'          ? 'block' : 'none';
+    document.getElementById('section-student-guide').style.display  = section === 'student-guide'  ? 'block' : 'none';
+    document.getElementById('section-mypage-guide').style.display   = section === 'mypage-guide'   ? 'block' : 'none';
+    document.getElementById('section-mypage-gakusoku').style.display= section === 'mypage-gakusoku'? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
@@ -3174,8 +3188,10 @@ async function doLogin() {
       section === 'certificate'  ? '📜 正式修了証明書発行' :
       section === 'autonotice'   ? '⏰ 自動通知設定' :
       section === 'sales'        ? '💴 決済・売上' :
-      section === 'guide'         ? '📖 管理機能ガイド' :
-      section === 'student-guide' ? '👤 受講生対応ガイド' : '';
+      section === 'guide'           ? '📖 管理機能ガイド' :
+      section === 'student-guide'   ? '👤 受講生対応ガイド' :
+      section === 'mypage-guide'    ? '📖 受講ガイド（マイページ掲載）' :
+      section === 'mypage-gakusoku' ? '📜 学則／誓約書（マイページ掲載）' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
