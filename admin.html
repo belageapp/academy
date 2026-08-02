@@ -656,11 +656,11 @@
     <div class="sb-item" id="menu-documents" onclick="if(window.showSection)window.showSection('documents')"><span class="ico">🪪</span>書類確認<span id="doc-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-inquiry" onclick="if(window.showSection)window.showSection('inquiry')"><span class="ico">📬</span>問い合わせ<span id="inquiry-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-change" onclick="if(window.showSection)window.showSection('change')"><span class="ico">📝</span>届出書<span id="change-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>実習先届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-facility" onclick="if(window.showSection)window.showSection('facility')"><span class="ico">🏢</span>実習先管理<span id="facility-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-venue" onclick="if(window.showSection)window.showSection('venue')"><span class="ico">🏥</span>OJT施設届出<span id="venue-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-facility" onclick="if(window.showSection)window.showSection('facility')"><span class="ico">🏢</span>OJT施設管理<span id="facility-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-video" onclick="if(window.showSection)window.showSection('video')"><span class="ico">🎬</span>動画視聴完了届出<span id="video-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-tempcert" onclick="if(window.showSection)window.showSection('tempcert')"><span class="ico">📄</span>仮修了証明書発行<span id="tempcert-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
-    <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>実習修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
+    <div class="sb-item" id="menu-ojt" onclick="if(window.showSection)window.showSection('ojt')"><span class="ico">📋</span>OJT修了報告<span id="ojt-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-report" onclick="if(window.showSection)window.showSection('report')"><span class="ico">📝</span>修了レポート<span id="report-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
@@ -755,11 +755,11 @@
                 <th>AEGISCアカウント</th>
                 <th>パスワード</th>
                 <th>仮修了証発行日</th>
-                <th>実習先情報</th>
+                <th>OJT施設情報</th>
                 <th>連絡先・担当者</th>
-                <th>実習先対応日</th>
+                <th>OJT施設対応日</th>
                 <th>資料送付日</th>
-                <th>実習終了報告受理日</th>
+                <th>OJT終了報告受理日</th>
                 <th>正式修了日</th>
                 <th>正式修了証明書発行</th>
                 <th>修了証発行先</th>
@@ -925,7 +925,7 @@
       <div id="section-venue" style="display:none;">
         <div class="tcard">
           <div class="thead">
-            <div class="thead-title">🏥 実習先届出一覧</div>
+            <div class="thead-title">🏥 OJT施設届出一覧</div>
             <div class="thead-acts">
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-venue" onchange="loadVenueList()" style="cursor:pointer;">🧪 テストデータを表示
@@ -947,7 +947,7 @@
       <div id="section-facility" style="display:none;">
         <div class="tcard">
           <div class="thead">
-            <div class="thead-title">🏢 実習先管理</div>
+            <div class="thead-title">🏢 OJT施設管理</div>
             <div class="thead-acts">
               <button class="refresh-btn" onclick="loadFacilityList()">🔄 更新</button>
               <button onclick="openFacilityEditModal()" style="padding:7px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋ 施設を登録</button>
@@ -983,7 +983,7 @@
       <div id="section-ojt" style="display:none;">
         <div class="tcard">
           <div class="thead">
-            <div class="thead-title">📋 実習修了報告一覧</div>
+            <div class="thead-title">📋 OJT修了報告一覧</div>
             <div class="thead-acts">
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-ojt" onchange="loadOjtList()" style="cursor:pointer;">🧪 テストデータを表示
@@ -1403,7 +1403,7 @@
   const OJT_LABELS = {
     _ojtVenueCorp:'法人名', _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'電話番号',
     _ojtVenueContact:'担当者', _ojtVenueEmail:'担当者メール', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
-    _ojtReportFacility:'実習修了報告の施設名',
+    _ojtReportFacility:'OJT修了報告の施設名',
   };
 
 async function doLogin() {
@@ -1551,7 +1551,7 @@ async function doLogin() {
       a[k] ? `<div class="drow" style="border-bottom:1px solid var(--border);"><dt>${lbl}</dt><dd>${a[k]}</dd></div>` : ''
     ).join('');
     const ojtSection = ojtRows
-      ? `<div class="modal-sec"><div class="modal-sec-hd">🏥 実習先情報</div>${ojtRows}</div>`
+      ? `<div class="modal-sec"><div class="modal-sec-hd">🏥 OJT施設情報</div>${ojtRows}</div>`
       : '';
     document.getElementById('modal-dl').innerHTML =
       `<div class="modal-sec-hd">📋 基本情報</div>${baseRows}${ojtSection}`;
@@ -1676,7 +1676,7 @@ async function doLogin() {
     confirmedHtml += `<div class="prog-item">
       <div class="prog-item-left">
         <div class="prog-dot ${venueState}">${venueIcons[venueState]}</div>
-        <span class="prog-label">実習先届出の提出</span>
+        <span class="prog-label">OJT施設届出の提出</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         ${venueExtraBtn}
@@ -1710,7 +1710,7 @@ async function doLogin() {
       pi('テスト１の完了',           test1State,      'test1Passed',       a.test1Passed===true) +
       pi('テスト２の完了',           test2State,      'test2Passed',       a.test2Passed===true) +
       pi('仮修了証明書の発行',        tempCertState,   'tempCertIssued',    a.tempCertIssued===true) +
-      pi('実習修了報告の完了',        ojtState,        'ojtReported',       a.ojtReported===true) +
+      pi('OJT修了報告の完了',        ojtState,        'ojtReported',       a.ojtReported===true) +
       pi('修了レポートの提出・承認',   reportState,     'reportSubmitted',   a.reportSubmitted===true) +
       pi('正式修了証明書の発行',      certState,       'certificateIssued', a.certificateIssued===true);
   }
@@ -1730,7 +1730,7 @@ async function doLogin() {
   window.toggleProgressField = toggleProgressField;
 
   async function resetVenueSubmission(docId) {
-    if (!confirm('生徒のマイページの届出書セクションに「実習先変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
+    if (!confirm('生徒のマイページの届出書セクションに「OJT施設変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true, venueIsResubmit: true });
       const idx = all.findIndex(a => a.id === docId);
@@ -1742,8 +1742,8 @@ async function doLogin() {
       const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
       if (appSnap.exists()) {
         const d = appSnap.data();
-        const title = '実習先の再届出をお願いします';
-        const body  = 'スクールより実習先情報の再提出依頼が届いています。マイページの「届出書」セクションにある「実習先変更届」からご提出ください。';
+        const title = 'OJT施設の再届出をお願いします';
+        const body  = 'スクールよりOJT施設情報の再提出依頼が届いています。マイページの「届出書」セクションにある「OJT施設変更届」からご提出ください。';
         try {
           await window.__addDoc(window.__col(window.__db, 'notices'), {
             applicationId: docId,
@@ -2029,7 +2029,7 @@ async function doLogin() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
     const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
     const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
-    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','実習先情報','連絡先・担当者','実習先対応日','資料送付日','実習終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
+    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','OJT施設対応日','資料送付日','OJT終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
       const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
@@ -2090,10 +2090,10 @@ async function doLogin() {
       section === 'notices'      ? '📢 お知らせ管理' :
       section === 'textorder'    ? '📦 テキスト発注' :
       section === 'documents'    ? '🪪 書類確認' :
-      section === 'venue'        ? '🏥 実習先届出' :
-      section === 'facility'     ? '🏢 実習先管理' :
+      section === 'venue'        ? '🏥 OJT施設届出' :
+      section === 'facility'     ? '🏢 OJT施設管理' :
       section === 'video'        ? '🎬 動画教材（AEGISC-LMS）視聴完了届出' :
-      section === 'ojt'          ? '📋 実習修了報告' :
+      section === 'ojt'          ? '📋 OJT修了報告' :
       section === 'inquiry'      ? '📬 問い合わせ' :
       section === 'change'       ? '📝 届出書' :
       section === 'report'       ? '📝 修了レポート' :
@@ -2701,7 +2701,7 @@ async function doLogin() {
   }
   window.saveAdminEdit = saveAdminEdit;
 
-  // ===== 実習先管理 =====
+  // ===== OJT施設管理 =====
   let __facilityEditId = null;
   let __facilityFromAppId = null;
   let __facilityLinkId = null;
@@ -2725,7 +2725,7 @@ async function doLogin() {
       const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const snap = await getDocs(query(collection(window.__db, 'facilities'), orderBy('createdAt', 'desc')));
       if (snap.empty) {
-        el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">施設はまだ登録されていません。<br><small>実習先届出一覧の「🏢 施設登録」ボタンから登録できます。</small></p>';
+        el.innerHTML = '<p style="color:#888;padding:20px;text-align:center;">施設はまだ登録されていません。<br><small>OJT施設届出一覧の「🏢 施設登録」ボタンから登録できます。</small></p>';
         return;
       }
       el.innerHTML = snap.docs.map(d => {
@@ -3106,7 +3106,7 @@ async function doLogin() {
   window.loadVenueList = loadVenueList;
 
   async function markVenueChecked(docId, name) {
-    if (!confirm(`${name} さんの実習先届出を対応済みにしますか？（資料送付待ちに進みます）`)) return;
+    if (!confirm(`${name} さんのOJT施設届出を対応済みにしますか？（資料送付待ちに進みます）`)) return;
     try {
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'applications', docId), {
@@ -3240,7 +3240,7 @@ async function doLogin() {
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">報告はまだありません。</p>'; return; }
       const showTest = document.getElementById('show-test-ojt')?.checked;
       let html = '<table><thead><tr>' +
-        '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>備考</th><th>報告日</th><th>ステータス</th><th>操作</th>' +
+        '<th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>備考</th><th>報告日</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
@@ -3275,7 +3275,7 @@ async function doLogin() {
   }
 
   async function approveOjt(docId, email, name) {
-    if (!confirm(`${name} さんの実習修了を承認しますか？`)) return;
+    if (!confirm(`${name} さんのOJT修了を承認しますか？`)) return;
     try {
       const { doc, updateDoc, serverTimestamp, addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'applications', docId), {
@@ -3284,8 +3284,8 @@ async function doLogin() {
       });
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
-        title: '実習修了報告が承認されました',
-        body: '実習修了報告が承認されました。修了レポートの承認も完了次第、正式な修了証明書を発行します。',
+        title: 'OJT修了報告が承認されました',
+        body: 'OJT修了報告が承認されました。修了レポートの承認も完了次第、正式な修了証明書を発行します。',
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -3319,8 +3319,8 @@ async function doLogin() {
       });
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
-        title: '実習修了報告が差し戻されました',
-        body: `実習修了報告を確認しましたが、以下の理由により差し戻しとなりました。\n\n【差し戻し理由】\n${reason}\n\nご確認の上、再度ご報告ください。`,
+        title: 'OJT修了報告が差し戻されました',
+        body: `OJT修了報告を確認しましたが、以下の理由により差し戻しとなりました。\n\n【差し戻し理由】\n${reason}\n\nご確認の上、再度ご報告ください。`,
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -3414,7 +3414,7 @@ async function doLogin() {
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
         title: '仮修了証明書を郵送しました',
-        body: '仮修了証明書を郵送しました。お手元に届きましたら、介護施設での実習にお進みください。',
+        body: '仮修了証明書を郵送しました。お手元に届きましたら、介護施設でのOJTにお進みください。',
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -3793,7 +3793,7 @@ async function doLogin() {
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
       const showTest = document.getElementById('show-test-certificate')?.checked;
       let html = '<table><thead><tr>' +
-        '<th>受講生</th><th>実習施設名</th><th>実習期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>ステータス</th><th>操作</th>' +
+        '<th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
@@ -3835,7 +3835,7 @@ async function doLogin() {
     }
   }
 
-  // 実習先から郵送されたOJT修了報告書類を、スクール管理者が受領確認する
+  // OJT施設から郵送されたOJT修了報告書類を、スクール管理者が受領確認する
   async function markOjtDocReceived(docId, email, name) {
     if (!confirm(`${name} さんのOJT修了報告書類を受領済みにしますか？\n（正式修了証明書の発行が可能になります）`)) return;
     try {
@@ -3844,7 +3844,7 @@ async function doLogin() {
         facilityReported: true,
         facilityReportedAt: serverTimestamp(),
       });
-      // 実習修了報告・修了レポートも承認済みなら、両承認完了メールを送信
+      // OJT修了報告・修了レポートも承認済みなら、両承認完了メールを送信
       const snap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
       const d = snap.data();
       if (d && d.ojtPassed === true && d.reportApproved === true) {
@@ -3955,7 +3955,7 @@ async function doLogin() {
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
         title: '修了レポートが承認されました',
-        body: '修了レポートが承認されました。実習修了報告の承認も完了次第、正式な修了証明書を発行します。',
+        body: '修了レポートが承認されました。OJT修了報告の承認も完了次第、正式な修了証明書を発行します。',
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -3966,7 +3966,7 @@ async function doLogin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email })
       });
-      // 実習修了報告と施設報告も完了していれば完了メール
+      // OJT修了報告と施設報告も完了していれば完了メール
       const appSnap3 = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
       if (appSnap3.data().ojtPassed === true && appSnap3.data().facilityReported === true) {
         await sendBothApprovedNotice(docId, email, name);
@@ -4012,7 +4012,7 @@ async function doLogin() {
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
         title: '全ての課程が完了しました',
-        body: '実習修了報告・施設からの実習終了報告・修了レポートの全ての承認が完了しました。正式な修了証明書を発行し、ご登録のご住所に郵送します。',
+        body: 'OJT修了報告・施設からのOJT終了報告・修了レポートの全ての承認が完了しました。正式な修了証明書を発行し、ご登録のご住所に郵送します。',
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
@@ -4624,7 +4624,7 @@ async function doLogin() {
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
       } catch(e) {}
 
-      // 実習先届出：対応待ち
+      // OJT施設届出：対応待ち
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('practiceVenueReported', '==', true)));
         const count = snap.docs.filter(d => {
@@ -4645,7 +4645,7 @@ async function doLogin() {
         else if (badge) badge.style.display = 'none';
       } catch(e) {}
 
-      // 実習修了報告：未承認
+      // OJT修了報告：未承認
       try {
         const snap = await getDocs(query(collection(window.__db, 'applications'), where('ojtReported', '==', true)));
         const count = snap.docs.filter(d => d.data().ojtPassed !== true && d.data().isTest !== true).length;
@@ -4700,8 +4700,8 @@ async function doLogin() {
   // ===== 自動通知設定 =====
   const AUTONOTICE_DEFAULTS = {
     venue_pending: {
-      label: '実習先未定リマインド',
-      description: '実習先が未定のまま受講中の生徒に定期的に提出を促します',
+      label: 'OJT施設未定リマインド',
+      description: 'OJT施設が未定のまま受講中の生徒に定期的に提出を促します',
       enabled: true,
       intervalDays: 14,
       fields: [{ key: 'intervalDays', label: '送信間隔（日）', type: 'number', min: 1 }],
@@ -4891,8 +4891,8 @@ async function doLogin() {
           <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先住所</label><input id="aedit-altAddress" type="text" placeholder="証明書の別途送付先（なければ空欄）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
 
-        <!-- 実習先情報 -->
-        <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">実習先情報（届出データ）</div>
+        <!-- OJT施設情報 -->
+        <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">OJT施設情報（届出データ）</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">法人名</label><input id="aedit-venueCorp" type="text" placeholder="社会福祉法人◯◯" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
           <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名</label><input id="aedit-venueName" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
