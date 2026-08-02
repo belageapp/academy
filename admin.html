@@ -1805,15 +1805,8 @@
 
       <div class="modal-status">
         <label>ステータスを変更する</label>
-<select id="m-status">
-              <option value="pending">入金待ち（振込）</option>
-              <option value="confirmed">受講確定</option>
-              <option value="active">受講中</option>
-              <option value="completed">修了</option>
-              <option value="cancelled">キャンセル</option>
-              <option value="suspended">休講中</option>
-              <option value="withdrawn">退講</option>
-            </select>
+<select id="m-status"></select>
+            <div id="m-status-note" style="display:none;font-size:11px;color:#E65100;margin-top:4px;">※ テストデータ以外は手動変更できるステータスを制限しています</div>
             <button class="save-btn" onclick="saveStatus()">保存する</button>
             <div id="bank-confirm-area" style="display:none; margin-top:12px;">
               <button onclick="confirmBankPayment()" style="width:100%; padding:12px; background:#4CAF72; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">
@@ -2197,7 +2190,40 @@ async function doLogin() {
   if (a.adminMemo) { memoText.textContent = a.adminMemo; memoEl.style.display = 'block'; }
   else { memoEl.style.display = 'none'; }
 
-  document.getElementById('m-status').value = a.status || 'pending';
+  // ステータスドロップダウンを動的構築
+  (function() {
+    const sel = document.getElementById('m-status');
+    const noteEl = document.getElementById('m-status-note');
+    const cur = a.status || 'pending';
+    const isTest = !!a.isTest;
+    const ALL = [
+      { value: 'pending',          label: '入金待ち（振込）' },
+      { value: 'awaiting_payment', label: '入金待ち（カード）' },
+      { value: 'confirmed',        label: '受講確定' },
+      { value: 'active',           label: '受講中' },
+      { value: 'completed',        label: '修了' },
+      { value: 'cancelled',        label: 'キャンセル' },
+      { value: 'suspended',        label: '休講中' },
+      { value: 'withdrawn',        label: '退講' },
+    ];
+    const ALLOWED = ['cancelled', 'suspended', 'withdrawn'];
+    if (isTest) {
+      sel.innerHTML = ALL.map(s => `<option value="${s.value}"${s.value===cur?' selected':''}>${s.label}</option>`).join('');
+      noteEl.style.display = 'none';
+    } else {
+      const curLabel = ALL.find(s => s.value===cur)?.label || cur;
+      let html = '';
+      if (!ALLOWED.includes(cur)) {
+        html += `<option value="${cur}" selected disabled>${curLabel}（現在・変更不可）</option>`;
+      }
+      html += ALLOWED.map(v => {
+        const s = ALL.find(x => x.value===v);
+        return `<option value="${v}"${v===cur?' selected':''}>${s.label}</option>`;
+      }).join('');
+      sel.innerHTML = html;
+      noteEl.style.display = 'block';
+    }
+  })();
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
   document.getElementById('bank-confirm-area').style.display = isBankPending ? 'block' : 'none';
