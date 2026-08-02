@@ -582,7 +582,7 @@
     display: flex; gap: 12px; z-index: 10001;
   }
 
-  /* 生徒画面プレビューモーダル */
+  /* 受講生画面プレビューモーダル */
   .preview-modal-bg {
     display: none; position: fixed; inset: 0;
     background: rgba(10,80,95,0.6); z-index: 400;
@@ -1390,7 +1390,7 @@
                   <ul>
                     <li><strong>＋ 施設を登録</strong>：法人名・施設名・事業所番号・住所・TEL/FAX・メール・担当者情報を登録（WAMNETで事業所番号を確認できます）</li>
                     <li><strong>✏️ 編集</strong>：登録済み施設情報の編集</li>
-                    <li><strong>＋ 生徒を追加</strong>：受講生を施設に紐付け（氏名・ふりがな・受講番号・メールで検索）</li>
+                    <li><strong>＋ 受講生を追加</strong>：受講生を施設に紐付け（氏名・ふりがな・受講番号・メールで検索）</li>
                     <li><strong>📋 やりとり</strong>：施設詳細モーダルを開き、基本情報の確認ややりとり履歴の追記ができます</li>
                   </ul>
 
@@ -1537,9 +1537,9 @@
                   <h4>設定項目</h4>
                   <table>
                     <tr><th>通知名</th><th>対象</th><th>デフォルト設定</th></tr>
-                    <tr><td>OJT施設未定リマインド</td><td>OJT施設が未定のまま受講中の生徒</td><td>14日間隔で送信</td></tr>
-                    <tr><td>仮修了期限アラート</td><td>受講開始から3か月の仮修了期限が近い生徒</td><td>期限の30・14・7・3・1日前に送信</td></tr>
-                    <tr><td>正式修了期限アラート</td><td>受講開始から8か月の正式修了期限が近い生徒</td><td>期限の30・14日前に送信</td></tr>
+                    <tr><td>OJT施設未定リマインド</td><td>OJT施設が未定のまま受講中の受講生</td><td>14日間隔で送信</td></tr>
+                    <tr><td>仮修了期限アラート</td><td>受講開始から3か月の仮修了期限が近い受講生</td><td>期限の30・14・7・3・1日前に送信</td></tr>
+                    <tr><td>正式修了期限アラート</td><td>受講開始から8か月の正式修了期限が近い受講生</td><td>期限の30・14日前に送信</td></tr>
                   </table>
 
                   <h4>操作手順</h4>
@@ -1761,7 +1761,7 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    申し込み管理の受講生詳細モーダル右上にある <strong>「👁 生徒画面」ボタン</strong> をクリックすると、その受講生のマイページをそのまま確認できます。ログインは不要です。<br>
+                    申し込み管理の受講生詳細モーダル右上にある <strong>「👁 受講生画面」ボタン</strong> をクリックすると、その受講生のマイページをそのまま確認できます。ログインは不要です。<br>
                     確認できる主な内容：
                     <ul>
                       <li>受講ステータス・進捗バー</li>
@@ -2087,7 +2087,7 @@
       <span class="modal-hd-title">📋 申し込み詳細</span>
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="preview-btn" onclick="openAdminEditModal()" style="background:#FFF8E1;color:#E65100;border:1px solid #FFE082;">✏️ 編集</button>
-        <button class="preview-btn" onclick="openPreview()">👁 生徒画面</button>
+        <button class="preview-btn" onclick="openPreview()">👁 受講生画面</button>
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
     </div>
@@ -2251,17 +2251,17 @@
   </div>
 </div>
 
-<!-- 生徒画面プレビューモーダル -->
+<!-- 受講生画面プレビューモーダル -->
 <div class="preview-modal-bg" id="preview-modal">
   <div class="preview-modal">
     <div class="preview-modal-hd">
       <div>
-        <div class="preview-modal-hd-title">👁 生徒画面プレビュー</div>
+        <div class="preview-modal-hd-title">👁 受講生画面プレビュー</div>
         <div class="preview-modal-hd-sub">読み取り専用 — 操作は無効です</div>
       </div>
       <button class="preview-modal-close" onclick="closePreview()">✕</button>
     </div>
-    <iframe id="preview-iframe" src="" title="生徒画面プレビュー"></iframe>
+    <iframe id="preview-iframe" src="" title="受講生画面プレビュー"></iframe>
   </div>
 </div>
 
@@ -2710,7 +2710,7 @@ async function doLogin() {
   window.toggleProgressField = toggleProgressField;
 
   async function resetVenueSubmission(docId) {
-    if (!confirm('生徒のマイページの届出書セクションに「OJT施設変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
+    if (!confirm('受講生のマイページの届出書セクションに「OJT施設変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true, venueIsResubmit: true });
       const idx = all.findIndex(a => a.id === docId);
@@ -3912,7 +3912,7 @@ async function doLogin() {
             </div>
             <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
               <button onclick="openFacilityEditModal('${d.id}')" style="padding:6px 14px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">✏️ 編集</button>
-              <button onclick="openFacilityLinkModal('${d.id}','${safeName}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 生徒を追加</button>
+              <button onclick="openFacilityLinkModal('${d.id}','${safeName}')" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 受講生を追加</button>
               <button onclick="openFacilityDetailModal('${d.id}')" style="padding:6px 14px;background:#fff;color:#5C6BC0;border:1.5px solid #9FA8DA;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 やりとり</button>
             </div>
           </div>
@@ -5615,14 +5615,14 @@ async function doLogin() {
     try {
       const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-      // ① お問い合わせ（生徒→管理者の質問と回答）
+      // ① お問い合わせ（受講生→管理者の質問と回答）
       const inqSnap = await getDocs(query(
         collection(window.__db, 'inquiries'),
         where('applicationId', '==', applicationId),
         orderBy('createdAt', 'desc')
       ));
 
-      // ② この生徒宛のお知らせ（管理者→生徒。個別送信のみ。全体配信は除外）
+      // ② この受講生宛のお知らせ（管理者→受講生。個別送信のみ。全体配信は除外）
       const noticeSnap = await getDocs(query(
         collection(window.__db, 'notices'),
         orderBy('createdAt', 'desc')
@@ -5671,7 +5671,7 @@ async function doLogin() {
           </div>`;
         }
 
-        // お問い合わせ（生徒からの質問＋回答）
+        // お問い合わせ（受講生からの質問＋回答）
         const isAnswered = t.status === 'answered';
         return `<div style="background:white;border:1px solid ${isAnswered ? '#eee' : '#FDE68A'};border-radius:8px;padding:12px 14px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -6047,21 +6047,21 @@ async function doLogin() {
   const AUTONOTICE_DEFAULTS = {
     venue_pending: {
       label: 'OJT施設未定リマインド',
-      description: 'OJT施設が未定のまま受講中の生徒に定期的に提出を促します',
+      description: 'OJT施設が未定のまま受講中の受講生に定期的に提出を促します',
       enabled: true,
       intervalDays: 14,
       fields: [{ key: 'intervalDays', label: '送信間隔（日）', type: 'number', min: 1 }],
     },
     completion_deadline: {
       label: '正式修了期限アラート',
-      description: '正式修了期限（受講開始から8か月）が近い受講中の生徒に警告を送ります',
+      description: '正式修了期限（受講開始から8か月）が近い受講中の受講生に警告を送ります',
       enabled: true,
       alertDays: [30, 14],
       fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],
     },
     temp_completion_deadline: {
       label: '仮修了期限アラート',
-      description: '仮修了期限（受講開始から3か月）が近い受講中の生徒に警告を送ります',
+      description: '仮修了期限（受講開始から3か月）が近い受講中の受講生に警告を送ります',
       enabled: true,
       alertDays: [30, 14, 7, 3, 1],
       fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],
