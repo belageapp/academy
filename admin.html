@@ -158,7 +158,7 @@
     .content { padding: 28px; min-width: 0; }
 
     /* 統計カード */
-    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+    .stats { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; margin-bottom: 24px; }
     .stat {
       background: white; border-radius: 12px;
       border: 1px solid var(--border); padding: 20px 22px;
@@ -691,13 +691,23 @@
           <span class="stat-tag tag-y">要確認</span>
         </div>
         <div class="stat">
-          <div class="stat-lbl">受講確定・受講中</div>
-          <div class="stat-val" id="st-prog" style="color:var(--blue)">—</div>
-          <span class="stat-tag tag-b">進行中</span>
+          <div class="stat-lbl">受講確定</div>
+          <div class="stat-val" id="st-confirmed" style="color:var(--blue)">—</div>
+          <span class="stat-tag tag-b">確定</span>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">受講中</div>
+          <div class="stat-val" id="st-active" style="color:var(--blue)">—</div>
+          <span class="stat-tag tag-b">学習中</span>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">仮修了</div>
+          <div class="stat-val" id="st-tempcert" style="color:var(--teal)">—</div>
+          <span class="stat-tag tag-t">実習中</span>
         </div>
         <div class="stat">
           <div class="stat-lbl">修了</div>
-          <div class="stat-val" id="st-done" style="color:var(--teal)">—</div>
+          <div class="stat-val" id="st-completed" style="color:var(--teal)">—</div>
           <span class="stat-tag tag-t">完了</span>
         </div>
       </div>
@@ -1446,10 +1456,12 @@ async function doLogin() {
   window.loadData = loadData;
 
   function updateStats() {
-    document.getElementById('st-total').textContent = all.length;
-    document.getElementById('st-pend').textContent  = all.filter(a => a.status==='pending').length;
-    document.getElementById('st-prog').textContent  = all.filter(a => ['confirmed','active'].includes(a.status)).length;
-    document.getElementById('st-done').textContent  = all.filter(a => a.status==='completed').length;
+    document.getElementById('st-total').textContent     = all.length;
+    document.getElementById('st-pend').textContent      = all.filter(a => ['pending','awaiting_payment'].includes(a.status)).length;
+    document.getElementById('st-confirmed').textContent = all.filter(a => a.status==='confirmed').length;
+    document.getElementById('st-active').textContent    = all.filter(a => a.status==='active' && a.tempCertIssued !== true).length;
+    document.getElementById('st-tempcert').textContent  = all.filter(a => a.tempCertIssued === true && a.status !== 'completed').length;
+    document.getElementById('st-completed').textContent = all.filter(a => a.status==='completed').length;
   }
 
   function doFilter() {
