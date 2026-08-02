@@ -689,5 +689,14 @@
 
 </script>
 
+<script>
+  if (new URLSearchParams(location.search).get('adminView') === 'true') {
+    document.addEventListener('DOMContentLoaded', function() {
+      const hide = ['agree-form', 'nav-footer'];
+      hide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    });
+  }
+</script>
+
 </body>
 </html>
