@@ -668,6 +668,7 @@
     <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
     <div class="sb-section">ガイド</div>
     <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理機能ガイド</div>
+    <div class="sb-item" id="menu-student-guide" onclick="if(window.showSection)window.showSection('student-guide')"><span class="ico">👤</span>受講生対応ガイド</div>
     </div><!-- /.sb-scroll -->
     <div class="sb-foot">
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -1760,6 +1761,302 @@
         </div>
       </div><!-- /section-guide -->
 
+      <!-- 受講生対応ガイド -->
+      <div id="section-student-guide" style="display:none;">
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">👤 受講生対応ガイド</div>
+          </div>
+          <div style="padding:16px 20px;">
+
+            <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;padding:10px 14px;background:var(--teal-pale);border-radius:8px;border-left:3px solid var(--teal);">
+              受講生からよく寄せられる質問と対応方法をまとめています。受講生への案内の参考にしてください。
+            </div>
+
+            <!-- 検索 -->
+            <div style="margin-bottom:16px;">
+              <input id="sg-search" type="text" placeholder="キーワードで検索（例：ログイン、OJT、修了証…）"
+                oninput="sgSearch(this.value)"
+                style="width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+
+            <style>
+              .sg-cat { font-size:11px;font-weight:700;color:var(--teal-dark);letter-spacing:0.08em;text-transform:uppercase;margin:20px 0 8px;padding:0 4px; }
+              .sg-cat:first-child { margin-top:0; }
+            </style>
+
+            <div id="sg-list">
+
+              <div class="sg-cat">🔐 ログイン・アカウント</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">ログインできません / パスワードを忘れました</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  ログイン画面の<strong>「パスワードをお忘れの方はこちら」</strong>からメールアドレスを入力してリセットメールを送信するよう案内してください。
+                  <ul>
+                    <li>リセットメールが届かない場合は<strong>迷惑メールフォルダ</strong>をご確認いただくよう伝えてください</li>
+                    <li>メールアドレス自体が不明な場合は、申し込み管理で登録メールアドレスを確認して案内してください</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">AEGISC-LMSにログインできません / IDがわかりません</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  AEGISC-LMSのID・パスワードは<strong>受講中に変更されたタイミングで自動メール送信</strong>されます。
+                  <ul>
+                    <li>申し込み管理の詳細モーダルで「AEGISCアカウント」欄を確認し、ID・パスワードを案内してください</li>
+                    <li>まだ受講中に変わっていない場合（受講確定中など）はアカウントが未発行です。受講中になると自動発行されることをお伝えください</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="sg-cat">📋 申し込み・受講開始</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">申し込みをしましたが、次に何をすれば良いですか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  申し込み後の流れを案内してください。
+                  <ul>
+                    <li>① 入金（振込またはカード決済）→ スクールが確認次第「受講確定」メールが届きます</li>
+                    <li>② マイページから<strong>顔写真・本人確認書類の提出</strong>と<strong>受講誓約書への同意</strong>を行います</li>
+                    <li>③ 書類承認完了後、AEGISC-LMSのアカウントが発行され受講開始となります</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">振り込みをしましたが確認されていないようです</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  振込入金の確認はスクール側の手動操作です。申し込み管理で該当受講生を確認し、入金が確認できれば<strong>「振込入金確認」ボタン</strong>をクリックして受講確定に変更してください。受講生に確認メールが自動送信されます。
+                  <div class="qa-a note">📌 振込の場合、銀行の反映に数日かかる場合があります。入金日から数日経っても確認できない場合は振込明細をご確認いただくよう案内してください。</div>
+                </div>
+              </div>
+
+              <div class="sg-cat">🪪 書類提出</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">書類はどのように提出しますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページにログイン後、<strong>顔写真・本人確認書類</strong>のアップロードと<strong>受講誓約書への同意</strong>を行うよう案内してください。
+                  <ul>
+                    <li>顔写真：正面・明るい場所で撮影した最近のもの</li>
+                    <li>本人確認書類：運転免許証・マイナンバーカード・パスポートなど顔写真付きのもの</li>
+                  </ul>
+                  <div class="qa-a note">📌 書類に不備があった場合は管理者が「否認」し、受講生に再提出を促す通知が送られます。書類確認ページで対応してください。</div>
+                </div>
+              </div>
+
+              <div class="sg-cat">📦 テキスト</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">テキストはいつ届きますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  テキスト購入を申し込まれた受講生には、スクール側でテキストを発注後に発送します。テキスト発注ページで発注状況を確認してください。発注後の到着目安は発送方法によって異なります。
+                </div>
+              </div>
+
+              <div class="sg-cat">🏥 OJT（実技指導）</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">OJT施設はどのように探せばいいですか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  受講生自身が介護施設・老人ホームなどにOJT（実技指導）の受け入れを依頼します。
+                  <ul>
+                    <li>知人・家族が勤める施設や、通いやすい近隣施設に相談するとスムーズです</li>
+                    <li>施設が見つかったらマイページから<strong>OJT施設届出</strong>を提出するよう案内してください</li>
+                    <li>スクールから施設宛にOJT実施に関するレターや合意書を送付します</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">OJT施設が見つかりません / なかなか受け入れてもらえません</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  施設探しに時間がかかるケースはよくあります。以下の点を案内してください。
+                  <ul>
+                    <li>求人サイトで介護施設を検索して直接問い合わせる方法もあります</li>
+                    <li>OJTは通常30時間以上が必要です。受け入れ可能な時間数も確認してもらいましょう</li>
+                    <li>仮修了証明書は先に取得できる場合があります（担当者に相談するよう案内してください）</li>
+                    <li>受講期限（受講開始から8か月）が迫っている場合は早めにご相談いただくよう伝えてください</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">OJT修了報告はどのように提出しますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  OJT（実技指導）が完了したら、マイページの<strong>「OJT修了報告」</strong>から報告を提出するよう案内してください。提出後、管理者が内容を確認して承認します。
+                  <div class="qa-a note">📌 施設から郵送されるOJT修了報告書類（書面）は、スクール側で受領確認が必要です。正式修了証明書発行ページの「📥 書類受領」ボタンで受領処理してください。</div>
+                </div>
+              </div>
+
+              <div class="sg-cat">🎬 動画教材（AEGISC-LMS）</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">動画の視聴完了はどのように届け出るのですか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  AEGISC-LMSで動画を視聴後、マイページの<strong>「動画視聴完了届出」</strong>から届出を提出するよう案内してください。届出後、管理者が承認します。
+                </div>
+              </div>
+
+              <div class="sg-cat">📝 修了レポート・修了証明書</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">修了レポートはどのように提出しますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページの<strong>「修了レポート」</strong>から提出するよう案内してください。提出後、管理者が内容を確認して承認します。
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">仮修了証明書と正式修了証明書の違いは何ですか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  <ul>
+                    <li><strong>仮修了証明書</strong>：動画視聴・修了レポートなどの学習部分が完了した段階で発行されます。OJTがまだ完了していない場合でも取得できます。就職活動の際に活用できますが、正式な修了証明書ではありません。</li>
+                    <li><strong>正式修了証明書（介護職員初任者研修修了証明書）</strong>：OJT修了報告・修了レポート・施設からのOJT書類受領の3条件が揃った後に発行される正式な証明書です。</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">修了証明書はいつ届きますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  以下の3条件がすべて揃い、管理者が発行処理を完了次第、郵送します。
+                  <ul>
+                    <li>① OJT修了報告の承認</li>
+                    <li>② 修了レポートの承認</li>
+                    <li>③ 施設から郵送されたOJT修了書類の受領確認</li>
+                  </ul>
+                  送付先は登録住所です。別の住所への送付を希望する場合は<strong>別途郵送先</strong>の登録をご案内ください（申し込み管理の✏️ 編集から設定できます）。
+                </div>
+              </div>
+
+              <div class="sg-cat">📅 受講期間・変更・休講</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">受講期間はいつまでですか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  <ul>
+                    <li><strong>仮修了期限</strong>：受講開始日から<strong>3か月</strong></li>
+                    <li><strong>正式修了期限</strong>：受講開始日から<strong>8か月</strong></li>
+                  </ul>
+                  マイページや申し込み管理（一覧の「仮修了期限」「修了期限」列）で確認できます。期限が近い受講生には自動通知が送られます。
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">住所・氏名が変わりました</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページの<strong>届出書</strong>から変更届を提出するよう案内してください。届出書ページで内容を確認後、申し込み管理の「✏️ 編集」から情報を更新してください。
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">受講を一時中断したい / 退講したい</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  申し込み管理で該当受講生のステータスを変更してください。
+                  <ul>
+                    <li><strong>一時中断</strong>：ステータスを「休講中」に変更</li>
+                    <li><strong>退講</strong>：ステータスを「退講」に変更</li>
+                  </ul>
+                  返金が発生する場合は別途Stripe管理画面での対応が必要です。
+                </div>
+              </div>
+
+              <div class="sg-cat">📬 問い合わせ・その他</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">問い合わせはどこからできますか</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページの<strong>「お問い合わせ」</strong>から送信できます。送信された内容は管理者の「問い合わせ」メニューに届きます。返信すると受講生のマイページに表示されます。
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">支払い方法を変更したい</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  申し込み後の支払い方法変更はシステム上できません。個別対応が必要な場合はスクール担当者にご相談いただくよう案内してください。
+                </div>
+              </div>
+
+            </div><!-- /sg-list -->
+          </div>
+        </div>
+      </div><!-- /section-student-guide -->
+
     </div>
   </div>
 </div>
@@ -2734,7 +3031,8 @@ async function doLogin() {
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
     document.getElementById('section-sales').style.display        = section === 'sales'        ? 'block' : 'none';
-    document.getElementById('section-guide').style.display        = section === 'guide'        ? 'block' : 'none';
+    document.getElementById('section-guide').style.display         = section === 'guide'         ? 'block' : 'none';
+    document.getElementById('section-student-guide').style.display = section === 'student-guide' ? 'block' : 'none';
     if (section === 'documents') loadDocuments();
     if (section === 'applications') loadData();
     if (section === 'notices') loadNotices();
@@ -2766,13 +3064,54 @@ async function doLogin() {
       section === 'certificate'  ? '📜 正式修了証明書発行' :
       section === 'autonotice'   ? '⏰ 自動通知設定' :
       section === 'sales'        ? '💴 決済・売上' :
-      section === 'guide'        ? '📖 管理機能ガイド' : '';
+      section === 'guide'         ? '📖 管理機能ガイド' :
+      section === 'student-guide' ? '👤 受講生対応ガイド' : '';
     document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
     document.getElementById('menu-' + section).classList.add('active');
     }
   window.showSection = showSection;
 
   // ===== 管理者ガイド =====
+  function sgSearch(q) {
+    const kw = q.trim();
+    const kwLower = kw.toLowerCase();
+    document.querySelectorAll('#sg-list .qa-item').forEach(item => {
+      const ans = item.querySelector('.qa-a');
+      const arrow = item.querySelector('.qa-q-arrow');
+      if (ans && __guideOrigHTML.has(ans)) ans.innerHTML = __guideOrigHTML.get(ans);
+      const qText = item.querySelector('.qa-q-text');
+      if (qText && __guideOrigHTML.has(qText)) qText.innerHTML = __guideOrigHTML.get(qText);
+      if (!kw) { item.style.display = 'block'; item.style.outline = 'none'; return; }
+      const match = item.textContent.toLowerCase().includes(kwLower);
+      item.style.display = match ? 'block' : 'none';
+      item.style.outline = match ? '2px solid var(--teal)' : 'none';
+      if (match) {
+        if (ans) {
+          if (!__guideOrigHTML.has(ans)) __guideOrigHTML.set(ans, ans.innerHTML);
+          ans.style.display = 'block';
+          if (arrow) arrow.textContent = '▲';
+          ans.innerHTML = guideHighlightText(ans.innerHTML, kw);
+        }
+        if (qText) {
+          if (!__guideOrigHTML.has(qText)) __guideOrigHTML.set(qText, qText.innerHTML);
+          qText.innerHTML = guideHighlightText(qText.innerHTML, kw);
+        }
+      }
+    });
+    // カテゴリラベルの表示制御
+    document.querySelectorAll('#sg-list .sg-cat').forEach(cat => {
+      if (!kw) { cat.style.display = 'block'; return; }
+      let next = cat.nextElementSibling;
+      let hasVisible = false;
+      while (next && !next.classList.contains('sg-cat')) {
+        if (next.style.display !== 'none') { hasVisible = true; break; }
+        next = next.nextElementSibling;
+      }
+      cat.style.display = hasVisible ? 'block' : 'none';
+    });
+  }
+  window.sgSearch = sgSearch;
+
   function switchGuideTab(tab) {
     document.getElementById('gtab-manual').style.display = tab === 'manual' ? 'block' : 'none';
     document.getElementById('gtab-qa').style.display     = tab === 'qa'     ? 'block' : 'none';
