@@ -1441,6 +1441,12 @@ async function doLogin() {
         const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ') || '—';
         const dim = 'color:var(--text-light);'; // 未対応列（データ未保存）
         const statusBadge = `<span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span>`;
+        // 修了証発行先：書類送付先(別途住所)があればそちら、なければ登録住所
+        const hasAltAddr = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
+        const certDest = hasAltAddr
+          ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}`
+          : (a.address ? `${a.zip ? '〒'+a.zip+' ' : ''}${a.address}<br><span style="font-size:11px;color:var(--text-light);">登録住所</span>` : '—');
+        const certDestPlain = hasAltAddr ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress||''}${a.altAddress2 ? ' '+a.altAddress2 : ''}` : `${a.zip ? '〒'+a.zip+' ' : ''}${a.address||''}`;
         return `<tr>
           <td>${statusBadge}</td>
           <td style="font-size:12px;color:var(--teal-dark);font-weight:700;">${a.studentNo||'—'}</td>
@@ -1465,7 +1471,7 @@ async function doLogin() {
           <td style="font-size:12px;">${fmtD(a.reportApprovedAt)}</td>
           <td style="font-size:12px;">${fmtD(a.completedAt)}</td>
           <td style="font-size:12px;">${fmtD(a.certificateIssuedAt)}</td>
-          <td style="font-size:12px;${dim}">—</td>
+          <td class="addr-cell" style="font-size:12px;" title="${certDestPlain}">${certDest}</td>
           <td><button class="detail-btn" onclick="openModal('${a.id}')">詳細</button></td>
         </tr>`;
       }).join('');
