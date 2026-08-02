@@ -1970,11 +1970,24 @@ async function doLogin() {
   window.confirmBankPayment = confirmBankPayment;
 
   function exportCSV() {
-    const headers = ['申込日時','お名前','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','支払方法','テキスト','お勤め先','優待コード','ステータス'];
+    const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
+    const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
+    const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
+    const headers = ['ステータス','受講者番号','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','AEDISアカウント','パスワード','仮修了証発行日','実習先情報','連絡先・担当者','実習先対応日','資料送付日','実習終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
-      const d = a.createdAt?.toDate?.() ? a.createdAt.toDate().toLocaleDateString('ja-JP') : '';
-      return [d,a.name,a.kana,a.gender,a.birthdate,a.phone,a.email,a.zip,a.address,a.payment,a.textbook,a.workplace,a.coupon,a.status]
-        .map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',');
+      const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
+      const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
+      const hasAltAddr  = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
+      const certDest    = hasAltAddr
+        ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}`
+        : (a.address ? `${a.zip ? '〒'+a.zip+' ' : ''}${a.address}（登録住所）` : '');
+      return [
+        statusLabel(a.status), a.studentNo, fmtD(a.activeAt), fmtLimit(a.activeAt,3), fmtLimit(a.activeAt,8),
+        a.name, a.kana, a.gender, a.birthdate, a.phone, a.email, a.zip, a.address,
+        a.edulioId, a.edulioPassword, fmtD(a.tempCertSentAt), venueInfo, contactInfo,
+        fmtD(a.venueCheckedAt), fmtD(a.materialsSentAt), fmtD(a.reportApprovedAt),
+        fmtD(a.completedAt), fmtD(a.certificateIssuedAt), certDest
+      ].map(v=>`"${String(v ?? '').replace(/"/g,'""')}"`).join(',');
     });
     const csv = '\uFEFF'+[headers.join(','),...rows].join('\n');
     const a = document.createElement('a');
