@@ -2417,9 +2417,8 @@
   // 講座の流れ
   // 講座の流れ（スタイリッシュ版）
   function renderProgressBar(data, progressData) {
-    console.log('[renderProgressBar] called, card=', document.getElementById('step-progress-card'), 'data.status=', data?.status);
     const card = document.getElementById('step-progress-card');
-    if (!card) { console.warn('[renderProgressBar] card not found'); return; }
+    if (!card) return;
     const docStatus = data.documentStatus || {};
     const pd = progressData || {};
 
@@ -2459,17 +2458,29 @@
     const step4Done = s4 === 3;
     const status = data.status || '';
     const isActive = ['active', 'completed'].includes(status);
-    const isConfirmed = ['confirmed', 'active', 'completed'].includes(status);
     const test2Ok = data.test2Passed === true;
     const certIssued = data.certificateIssued === true;
 
-    let activeStep = certIssued ? 5 : step3Done ? 4 : step2Done ? 3 : step1Done ? 2 : 1;
+    // ロック判定: 実際の進捗データに基づく（スコア閾値ではなく実績で判定）
+    const step3HasProgress = s3 > 0;
+    const step4HasProgress = s4 > 0;
+
+    // 現在のアクティブステップ: test2合格・OJT進行中なら後半ステップを優先
+    const atStep4 = step4Done || step4HasProgress || test2Ok;
+    const atStep3 = !atStep4 && (step3Done || step3HasProgress || step2Done);
+    const atStep2 = !atStep4 && !atStep3 && (step1Done || isActive);
+    let activeStep;
+    if (certIssued) activeStep = 5;
+    else if (atStep4) activeStep = 4;
+    else if (atStep3) activeStep = 3;
+    else if (atStep2) activeStep = 2;
+    else activeStep = 1;
 
     const stepInfo = [
       { done: step1Done, act: activeStep === 1, score: s1, max: 4 },
       { done: step2Done, act: activeStep === 2, score: s2, max: 12, locked: !isActive },
-      { done: step3Done, act: activeStep === 3, score: s3, max: 3, locked: !step2Done },
-      { done: step4Done, act: activeStep === 4, score: s4, max: 3, locked: !test2Ok && !step3Done },
+      { done: step3Done, act: activeStep === 3, score: s3, max: 3, locked: !step3HasProgress && !step2Done },
+      { done: step4Done, act: activeStep === 4, score: s4, max: 3, locked: !step4HasProgress && !step3Done && !test2Ok },
     ];
 
     card.style.display = 'block';
