@@ -564,6 +564,11 @@
   body.admin-preview-mode a, body.admin-preview-mode button,
   body.admin-preview-mode select, body.admin-preview-mode input,
   body.admin-preview-mode textarea { pointer-events: none; opacity: 0.85; }
+  /* 管理者プレビューでもアコーディオン／カードの開閉ヘッダーだけは操作可能にする（データは変更不可のまま） */
+  body.admin-preview-mode .toggle-header,
+  body.admin-preview-mode .card-toggle-header { pointer-events: auto !important; opacity: 1 !important; }
+  body.admin-preview-mode .toggle-header, body.admin-preview-mode .toggle-header *,
+  body.admin-preview-mode .card-toggle-header, body.admin-preview-mode .card-toggle-header * { cursor: pointer !important; }
   </style>
 </head>
 <body>
