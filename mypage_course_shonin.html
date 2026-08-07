@@ -1487,8 +1487,15 @@
   window.__isAdminPreview = isAdminPreview;
   if (isAdminPreview) {
     document.body.classList.add('admin-preview-mode');
+    // データを変更しない表示切替（アコーディオン／カードの開閉）だけは許可し、それ以外の操作は無効化する
+    const SAFE_TOGGLE = /^\s*(toggleSection|toggleStep|toggleCard)\s*\(/;
+    const isSafeToggle = e => {
+      const el = e.target && e.target.closest && e.target.closest('[onclick]');
+      return !!(el && SAFE_TOGGLE.test(el.getAttribute('onclick') || ''));
+    };
     ['click', 'submit', 'touchend', 'mousedown', 'pointerdown'].forEach(type => {
       document.addEventListener(type, e => {
+        if (isSafeToggle(e)) return;
         e.preventDefault();
         e.stopImmediatePropagation();
       }, true);
