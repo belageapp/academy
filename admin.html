@@ -2685,7 +2685,7 @@ async function doLogin() {
 
   function openPreview() {
     if (!curId) return;
-    const url = `mypage_course_shonin.html?id=${curId}&adminPreview=true`;
+    const url = `mypage_course_shonin.html?id=${curId}&adminPreview=true&_=${Date.now()}`;
     document.getElementById('preview-iframe').src = url;
     document.getElementById('preview-modal').classList.add('open');
   }
