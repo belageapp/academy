@@ -566,9 +566,11 @@
   body.admin-preview-mode textarea { pointer-events: none; opacity: 0.85; }
   /* 管理者プレビューでもアコーディオン／カードの開閉ヘッダーだけは操作可能にする（データは変更不可のまま） */
   body.admin-preview-mode .toggle-header,
-  body.admin-preview-mode .card-toggle-header { pointer-events: auto !important; opacity: 1 !important; }
+  body.admin-preview-mode .card-toggle-header,
+  body.admin-preview-mode .step-header { pointer-events: auto !important; opacity: 1 !important; }
   body.admin-preview-mode .toggle-header, body.admin-preview-mode .toggle-header *,
-  body.admin-preview-mode .card-toggle-header, body.admin-preview-mode .card-toggle-header * { cursor: pointer !important; }
+  body.admin-preview-mode .card-toggle-header, body.admin-preview-mode .card-toggle-header *,
+  body.admin-preview-mode .step-header, body.admin-preview-mode .step-header * { cursor: pointer !important; }
   </style>
 </head>
 <body>
@@ -1493,7 +1495,7 @@
   if (isAdminPreview) {
     document.body.classList.add('admin-preview-mode');
     // データを変更しない表示切替（アコーディオン／カードの開閉）だけは許可し、それ以外の操作は無効化する
-    const SAFE_TOGGLE = /^\s*(toggleSection|toggleStep|toggleCard)\s*\(/;
+    const SAFE_TOGGLE = /(toggleSection|toggleStep|toggleCard)\s*\(/;
     const isSafeToggle = e => {
       const el = e.target && e.target.closest && e.target.closest('[onclick]');
       return !!(el && SAFE_TOGGLE.test(el.getAttribute('onclick') || ''));
