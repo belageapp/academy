@@ -724,6 +724,7 @@
             </div>
             <select class="fsel" id="sf" onchange="doFilter()">
               <option value="">すべてのステータス</option>
+              <option value="ojt_hold">OJT施設待ち（お支払い前）</option>
               <option value="pending">入金待ち（振込）</option>
               <option value="confirmed">受講確定</option>
               <option value="active">受講中</option>
@@ -1959,11 +1960,11 @@
               <div class="qa-item">
                 <div class="qa-q" onclick="qaToggle(this)">
                   <span class="qa-q-label">Q</span>
-                  <span class="qa-q-text">OJT実習は何時間・何日かかりますか</span>
+                  <span class="qa-q-text">OJTOJTは何時間・何日かかりますか</span>
                   <span class="qa-q-arrow">▼</span>
                 </div>
                 <div class="qa-a">
-                  OJT実習時間は<strong>約14〜15時間</strong>です。1日でまとめて行う必要はなく、複数日に分けていただいて構いません。日程や回数はOJT実施者（施設担当者）の都合に合わせてください。
+                  OJTOJT時間は<strong>約14〜15時間</strong>です。1日でまとめて行う必要はなく、複数日に分けていただいて構いません。日程や回数はOJT実施者（施設担当者）の都合に合わせてください。
                 </div>
               </div>
 
@@ -1985,7 +1986,7 @@
                   <span class="qa-q-arrow">▼</span>
                 </div>
                 <div class="qa-a">
-                  はい。OJT施設届出が提出されると、<strong>スクールから施設の担当者に実施内容・チェック表などを連絡</strong>します。受講生ご自身で実習の詳細を施設に説明する必要はありません。まずはOJT受け入れの了承を得てから、マイページのOJT施設届出を提出するよう案内してください。
+                  はい。OJT施設届出が提出されると、<strong>スクールから施設の担当者に実施内容・チェック表などを連絡</strong>します。受講生ご自身でOJTの詳細を施設に説明する必要はありません。まずはOJT受け入れの了承を得てから、マイページのOJT施設届出を提出するよう案内してください。
                 </div>
               </div>
 
@@ -1998,7 +1999,7 @@
                 <div class="qa-a">
                   以下の持ち物を案内してください。
                   <ul>
-                    <li>実習できる服装</li>
+                    <li>OJTできる服装</li>
                     <li>上靴（シューズタイプ）</li>
                     <li>テキスト3巻</li>
                     <li>介護手順書</li>
@@ -2033,7 +2034,7 @@
                   施設探しに時間がかかるケースはよくあります。以下の点を案内してください。
                   <ul>
                     <li>求人サイトで介護施設を検索して直接問い合わせる方法もあります</li>
-                    <li>OJT実習時間は約14〜15時間です。複数日に分けて受け入れ可能かどうか確認してもらいましょう</li>
+                    <li>OJTOJT時間は約14〜15時間です。複数日に分けて受け入れ可能かどうか確認してもらいましょう</li>
                     <li>仮修了証明書は先に取得できる場合があります（担当者に相談するよう案内してください）</li>
                     <li>受講期限（受講開始から8か月）が迫っている場合は早めにご相談いただくよう伝えてください</li>
                   </ul>
@@ -2528,7 +2529,7 @@ async function doLogin() {
 
   function updateStats() {
     document.getElementById('st-total').textContent     = all.length;
-    document.getElementById('st-pend').textContent      = all.filter(a => ['pending','awaiting_payment'].includes(a.status)).length;
+    document.getElementById('st-pend').textContent      = all.filter(a => ['pending','awaiting_payment','ojt_hold'].includes(a.status)).length;
     document.getElementById('st-confirmed').textContent = all.filter(a => a.status==='confirmed').length;
     document.getElementById('st-active').textContent    = all.filter(a => a.status==='active' && a.tempCertIssued !== true).length;
     document.getElementById('st-tempcert').textContent  = all.filter(a => a.tempCertIssued === true && a.status !== 'completed').length;
@@ -2561,7 +2562,7 @@ async function doLogin() {
         const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ') || '—';
         const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ') || '—';
         const dim = 'color:var(--text-light);'; // 未対応列（データ未保存）
-        const statusBadge = `<span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span>`;
+        const statusBadge = `<span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span>`;
         // 修了証発行先：書類送付先(別途住所)があればそちら、なければ登録住所
         const hasAltAddr = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
         const certDest = hasAltAddr
@@ -2703,7 +2704,7 @@ async function doLogin() {
     const isTest = a.isTest === true;
 
     // 各ブロック表示制御
-    const showPending   = ['pending','awaiting_payment'].includes(status);
+    const showPending   = ['pending','awaiting_payment','ojt_hold'].includes(status);
     const showConfirmed = ['confirmed','active','completed','suspended','withdrawn'].includes(status);
     const showActive    = ['active','completed','suspended','withdrawn'].includes(status);
 
@@ -2743,7 +2744,7 @@ async function doLogin() {
     }
 
     // ---- 入金待ちブロック ----
-    const paymentDone = !['pending','awaiting_payment'].includes(status);
+    const paymentDone = !['pending','awaiting_payment','ojt_hold'].includes(status);
     document.getElementById('prog-pending-items').innerHTML =
       pi('入金確認', paymentDone ? 'done' : 'none', null, null);
 
@@ -3133,7 +3134,7 @@ async function doLogin() {
   function exportCSV() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
     const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
-    const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
+    const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
     const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','OJT施設対応日','資料送付日','OJT終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
@@ -5865,7 +5866,7 @@ async function doLogin() {
   // ===== 決済・売上 =====
   let __salesCache = [];
   let __salesFY = null; // 表示中の年度（4月始まり）
-  const SALES_STATUS = {pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'};
+  const SALES_STATUS = {pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'};
   const yen = (n) => '¥' + (Number(n)||0).toLocaleString('ja-JP');
   const parseAmount = (v) => Number(String(v ?? '').replace(/[^0-9]/g,'')) || 0;
   const isPaidStatus = (a) => !['pending','awaiting_payment','cancelled','withdrawn'].includes(a.status);
@@ -5996,7 +5997,7 @@ async function doLogin() {
       const nm = (a.name || ((a.sei||'')+(a.mei||''))).toLowerCase();
       if (q && !(nm.includes(q) || String(a.studentNo||'').toLowerCase().includes(q) || String(a.email||'').toLowerCase().includes(q))) return false;
       if (sf === 'paid'   && !isPaidStatus(a)) return false;
-      if (sf === 'unpaid' && !['pending','awaiting_payment'].includes(a.status)) return false;
+      if (sf === 'unpaid' && !['pending','awaiting_payment','ojt_hold'].includes(a.status)) return false;
       if (sf === 'dead'   && !['cancelled','withdrawn'].includes(a.status)) return false;
       if (pf !== 'all' && a.payment !== pf) return false;
       if (rf === 'refunded' && a.refunded !== true) return false;

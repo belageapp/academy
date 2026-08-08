@@ -415,6 +415,18 @@
             </div>
           </div>
 
+          <div class="f-row">
+            <div class="f-label">OJT施設<span class="req">必須</span></div>
+            <div>
+              <div class="radio-row">
+                <label class="r-label"><input type="radio" name="ojt" value="ある">現在ある（勤務先／自分で確保済み）</label>
+                <label class="r-label"><input type="radio" name="ojt" value="ない">ない・未定</label>
+              </div>
+              <p style="font-size:12px;color:var(--text-light);margin-top:6px;line-height:1.6;">介護OJTは原則ご自身の勤務先または受講者ご自身で手配していただきます。「ない・未定」の場合、この時点ではお支払いに進めません。お申し込み後、OJT施設が決まりましたらマイページで入力いただくとお支払いに進めます。</p>
+              <div class="err-msg" id="err-ojt">OJT施設の有無を選択してください</div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -708,6 +720,24 @@
     </div>
   </div>
 
+  <!-- ===== 完了画面（OJT保留・未決済） ===== -->
+  <div id="complete-screen-hold" style="display:none;">
+    <div class="complete-box">
+      <div class="complete-icon" style="color: white; font-weight: 900; font-size: 44px;">✓</div>
+      <h2>お申し込みを受け付けました</h2>
+      <p>
+        現在、OJT施設が未定のため、<strong style="color:var(--teal-dark)">お支払い前の保留状態</strong>です。<br><br>
+        ご登録のメールアドレスへ、マイページへのログイン情報をお送りしました。<br>
+        OJT施設が決まりましたら、マイページにログインしてOJT施設を入力してください。入力後、お支払いにお進みいただけます。
+      </p>
+      <div style="background:#FFF8E1;border:1px solid #FDE68A;border-radius:12px;padding:14px 18px;margin:14px 0;text-align:left;font-size:13px;color:#92400E;line-height:1.9;">
+        ℹ️ OJT施設は原則、ご自身の勤務先または受講者ご自身でご手配ください。<br>
+        担当より確認のご連絡をする場合があります。
+      </div>
+      <p style="font-size:13px;color:var(--text-mid);">ご不明な点は <strong style="color:var(--teal-dark)">082-545-2402</strong> までお問い合わせください。</p>
+    </div>
+  </div>
+
 </div>
 
 <!-- フッター -->
@@ -887,6 +917,13 @@ const fieldErrMap = {
         document.getElementById('err-gender').classList.remove('show');
       });
     });
+    // OJT有無ラジオ変更時
+    document.querySelectorAll('[name="ojt"]').forEach(function(el) {
+      el.addEventListener('change', function() {
+        document.getElementById('err-ojt').classList.remove('show');
+        document.getElementById('error-banner').style.display = 'none';
+      });
+    });
     // 生年月日ピッカー選択時（closeBdPickerで処理済みのため不要）
   });
 
@@ -942,6 +979,11 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       gLabels.forEach(el => el.closest('label').style.border = '');
     }
 
+    const oj = document.querySelector('[name="ojt"]:checked');
+    const eoj = document.getElementById('err-ojt');
+    if (!oj) { eoj.classList.add('show'); ok = false; }
+    else     { eoj.classList.remove('show'); }
+
     const isAlt = document.querySelector('[name="alt_addr"]:checked') &&
                   document.querySelector('[name="alt_addr"]:checked').value === '別の住所に送る';
     if (isAlt) {
@@ -965,6 +1007,8 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       fee:        '33,000円（税込）',
       textbook:   fd.get('textbook'),
       payment:    fd.get('payment'),
+      ojt:        fd.get('ojt'),
+      ojtDeclared: fd.get('ojt') === 'ある' ? 'has' : 'none',
       name:       (fd.get('sei') || '') + '　' + (fd.get('mei') || ''),
       kana:       (fd.get('sei_kana') || '') + '　' + (fd.get('mei_kana') || ''),
       gender:     fd.get('gender'),
@@ -982,7 +1026,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
 
   const LABELS = {
     course:'講座名', fee:'受講料',
-    textbook:'テキスト', payment:'支払方法',
+    textbook:'テキスト', payment:'支払方法', ojt:'OJT施設',
     name:'お名前', kana:'ふりがな', gender:'性別',
     birthdate:'生年月日', phone:'電話番号', email:'メールアドレス',
     zip:'郵便番号', address:'ご住所', altAddr:'テキスト・書類の郵送先', altAddress:'別途郵送先住所',
@@ -1027,7 +1071,10 @@ const gLabels = document.querySelectorAll('[name="gender"]');
     const _payment = vals.payment;
     const _btn = document.getElementById('final-btn');
     const _desc = document.getElementById('confirm-desc');
-    if (_payment === 'クレジットカード') {
+    if (vals.ojtDeclared !== 'has') {
+      _btn.textContent = 'この内容で申し込む →';
+      _desc.textContent = 'OJT施設が未定のため、この時点ではお支払いは行いません。お申し込み後、マイページでOJT施設を入力いただくとお支払いにお進みいただけます。';
+    } else if (_payment === 'クレジットカード') {
       _btn.textContent = '申し込みを確定する →';
       _desc.textContent = '以下の内容でよろしければ決済画面へ進んでください。決済が完了した時点で申し込みが確定されます。';
     } else {
@@ -1074,7 +1121,21 @@ const payment = window.__formVals.payment;
     try {
       let docId;
 
-      if (payment === 'クレジットカード') {
+      if (window.__formVals.ojtDeclared !== 'has') {
+        // OJT施設なし（未定申告）→ 決済に進めず「OJT保留」として保存。連絡先は残り、後日マイページでOJT施設入力→決済へ
+        const ref = await window.__addDoc(
+          window.__col(window.__db, 'applications'),
+          Object.assign({}, window.__formVals, { formType: 'shonin_online', status: 'ojt_hold', practiceVenue: { name: '未定' }, createdAt: window.__ts() })
+        );
+        docId = ref.id;
+        document.getElementById('confirm-screen').classList.remove('active');
+        document.getElementById('complete-screen-hold').style.display = 'block';
+        document.getElementById('s2').classList.replace('active', 'done');
+        document.getElementById('line2').classList.add('done');
+        document.getElementById('s3').classList.add('active');
+        if (window.__clearFormDraft) window.__clearFormDraft();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (payment === 'クレジットカード') {
         // 案２：まずFirestoreに保存してアカウント作成・メール送信、その後Stripe決済へ
         const ref = await window.__addDoc(
           window.__col(window.__db, 'applications'),
@@ -1162,6 +1223,8 @@ const payment = window.__formVals.payment;
     if (gender) draft.gender = gender.value;
     const textbook = document.querySelector('[name="textbook"]:checked');
     if (textbook) draft.textbook = textbook.value;
+    const ojt = document.querySelector('[name="ojt"]:checked');
+    if (ojt) draft.ojt = ojt.value;
     const altAddr = document.querySelector('[name="alt_addr"]:checked');
     if (altAddr) draft.alt_addr = altAddr.value;
     // 生年月日
@@ -1186,6 +1249,10 @@ const payment = window.__formVals.payment;
       }
       if (draft.textbook) {
         const r = document.querySelector('[name="textbook"][value="' + draft.textbook + '"]');
+        if (r) r.checked = true;
+      }
+      if (draft.ojt) {
+        const r = document.querySelector('[name="ojt"][value="' + draft.ojt + '"]');
         if (r) r.checked = true;
       }
       if (draft.alt_addr) {

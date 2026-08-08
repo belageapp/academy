@@ -129,7 +129,7 @@
       display: inline-block; font-size: 11px; font-weight: 700;
       padding: 3px 10px; border-radius: 20px;
     }
-    .status-入金待ち, .status-pending, .status-awaiting_payment { background: var(--yellow-light); color: #B8860B; }
+    .status-入金待ち, .status-pending, .status-awaiting_payment, .status-ojt_hold { background: var(--yellow-light); color: #B8860B; }
     .status-受講確定, .status-confirmed { background: var(--teal-light); color: var(--teal-dark); }
     .status-active { background: var(--teal-light); color: var(--teal-dark); }
     .status-修了, .status-completed { background: var(--green-light); color: #2E7D47; }
@@ -696,8 +696,8 @@
           <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJT施設は原則として受講生ご自身でご用意いただきます。施設が決まっている場合はSTEP1のOJT施設届出から情報を入力してください。未定の場合も届出が必要です。施設が決まり次第、届出書セクションの「OJT施設変更届」から提出してください。</div>
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
-          <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJT実習は何時間・何日かかりますか</summary>
-          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJT実習時間は約14〜15時間です。1日でまとめて行う必要はなく、複数日に分けていただいて構いません。日程・回数はOJT実施者（施設担当者）の都合に合わせてください。</div>
+          <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJTOJTは何時間・何日かかりますか</summary>
+          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJTOJT時間は約14〜15時間です。1日でまとめて行う必要はなく、複数日に分けていただいて構いません。日程・回数はOJT実施者（施設担当者）の都合に合わせてください。</div>
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJT実施者（施設の担当者）の要件はありますか</summary>
@@ -705,11 +705,11 @@
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">施設への説明や連絡はスクールがしてくれますか</summary>
-          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">はい。OJT施設届出が提出されると、スクールから施設の担当者に実施内容・チェック表などを連絡します。受講生ご自身で実習の詳細を施設に説明する必要はありません。</div>
+          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">はい。OJT施設届出が提出されると、スクールから施設の担当者に実施内容・チェック表などを連絡します。受講生ご自身でOJTの詳細を施設に説明する必要はありません。</div>
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJT当日の持ち物を教えてください</summary>
-          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">実習できる服装・上靴（シューズタイプ）・テキスト3巻・介護手順書・筆記用具をお持ちください。</div>
+          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJTできる服装・上靴（シューズタイプ）・テキスト3巻・介護手順書・筆記用具をお持ちください。</div>
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">補助資料集がテキストに入っていないがどこにありますか</summary>
@@ -1526,7 +1526,7 @@
   // 動画データはFirestoreから取得
 
   const statusLabel = {
-    pending: '入金待ち（振込）', awaiting_payment: '入金待ち（カード）',
+    pending: '入金待ち（振込）', awaiting_payment: '入金待ち（カード）', ojt_hold: 'OJT施設待ち（お支払い前）',
     confirmed: '受講確定', active: '受講中', completed: '修了',
     task_done: '添削課題完了', ojt_done: 'OJT完了', cancelled: 'キャンセル', suspended: '休講中', withdrawn: '退講',
   };
@@ -2559,6 +2559,13 @@
           '</div>';
       }
       let html = '';
+      if (status === 'ojt_hold') {
+        html += '<div style="background:#FFF8E1;border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-bottom:14px;">'
+          + '<div style="font-weight:700;color:#B45309;font-size:13px;margin-bottom:6px;">🏥 OJT施設の入力をお願いします</div>'
+          + '<div style="font-size:12px;color:#92400E;line-height:1.8;">OJT施設が未定のため、現在はお支払い前の保留状態です。OJT施設が決まりましたら下のボタンから施設情報を入力してください。<strong>ご入力後、お支払いにお進みいただけます。</strong></div>'
+          + '<button onclick="openVenueModal()" class="action-btn" style="margin-top:10px;font-size:13px;padding:8px 16px;">🏥 OJT施設を届け出る</button>'
+          + '</div>';
+      }
       const nyukinExtra = isConfirmed
         ? '<span style="font-size:11px;background:#EBF7EF;color:#166534;padding:2px 8px;border-radius:10px;font-weight:700;">✅ 入金済み</span>'
         : payBtn;
@@ -2567,8 +2574,9 @@
       html += sfi('顔写真の提出', photoOk, isConfirmed && !photoOk, photoExtra);
       html += sfi('本人確認書類の提出', idOk, isConfirmed && !idOk, idExtra);
       html += sfi('誓約書への同意', pledgeOk, isConfirmed && !pledgeOk, pledgeExtra);
-      const venueExtra = isConfirmed && !venueOk ? '<button onclick="openVenueModal()" class="action-btn" style="font-size:11px;padding:4px 10px;">届け出る</button>' : '';
-      html += sfi('介護OJT施設の有無届出', venueOk, isConfirmed && !venueOk, venueExtra);
+      const canDeclareVenue = (isConfirmed || status === 'ojt_hold') && !venueOk;
+      const venueExtra = canDeclareVenue ? '<button onclick="openVenueModal()" class="action-btn" style="font-size:11px;padding:4px 10px;">届け出る</button>' : '';
+      html += sfi('介護OJT施設の有無届出', venueOk, canDeclareVenue, venueExtra);
       if (isConfirmed) {
         if (pledgeOk) {
           html += '<div style="margin-top:10px;"><a href="gakusoku.html?id=' + window.__docId + '" style="font-size:12px;color:var(--teal-dark);text-decoration:none;">📖 学則・修了要件・誓約書を確認する</a></div>';
@@ -2957,6 +2965,18 @@
       }
 
       await updateDoc(doc(db, 'applications', docId), venueData);
+
+      // OJT保留（未決済）の申込者が実施設を届け出たら、支払方法に応じて決済に進めるよう解放
+      try {
+        const holdSnap = await getDoc(doc(db, 'applications', docId));
+        const holdData = holdSnap.data();
+        if (holdData.status === 'ojt_hold' && choice === 'have') {
+          await updateDoc(doc(db, 'applications', docId), {
+            status: (holdData.payment === 'クレジットカード' || holdData.payment === 'コンビニ払い') ? 'awaiting_payment' : 'pending',
+          });
+        }
+      } catch (e) { console.warn('OJT保留の解放に失敗:', e); }
+
       // active判定
       try {
         const appSnap = await getDoc(doc(db, 'applications', docId));
@@ -3633,6 +3653,8 @@
       else if (!pledgeOk) { icon = '📋'; text = '学則・修了要件を確認し、誓約書に同意してください'; targetSection = 'step1-body'; }
       else if (!venueOk) { icon = '🏥'; text = '介護OJT施設の有無を届け出てください'; targetSection = 'step1-body'; }
       else { icon = '⏳'; text = '書類確認中です。しばらくお待ちください'; targetSection = 'step1-body'; }
+    } else if (status === 'ojt_hold') {
+      icon = '🏥'; text = 'OJT施設を入力するとお支払いに進めます';
     } else if (status === 'pending' || status === 'awaiting_payment') {
       icon = '💳'; text = 'ご入金をお待ちしています'; targetSection = 'payment-item';
     }
