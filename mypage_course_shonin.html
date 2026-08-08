@@ -2987,7 +2987,12 @@
         const pledgeOk = appData.pledgeSigned === true;
         // 受講開始済みなら何もしない（再届出でIDや開始日を上書きしない）
         if (photoOk && idOk && pledgeOk && appData.status !== 'active') {
-          if (appData.edulioId) {
+          if (appData.isTest === true) {
+            // テストデータはAEGISC（edulio）を発番しない（counters/edulio を消費しない）
+            await updateDoc(doc(db, 'applications', docId), {
+              status: 'active', activeAt: serverTimestamp(),
+            });
+          } else if (appData.edulioId) {
             // IDが事前割り当て済み（欠番再利用など）の場合は発番せずそのまま受講開始
             await updateDoc(doc(db, 'applications', docId), {
               status: 'active', activeAt: serverTimestamp(),

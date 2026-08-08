@@ -1230,7 +1230,7 @@
 
                   <h4>受講中への変更時に自動で行われること</h4>
                   <ul>
-                    <li>AEGISC-LMSアカウント（ID・パスワード）を自動発行（未発行の場合のみ）</li>
+                    <li>AEGISC-LMSアカウント（ID・パスワード）を自動発行（未発行の場合のみ／<strong>テストデータ（isTest=true）には発番しません</strong>）</li>
                     <li>受講生に受講開始メールを自動送信</li>
                     <li>受講開始日（activeAt）が記録され、仮修了期限（＋3か月）・正式修了期限（＋8か月）が自動計算されます</li>
                   </ul>
@@ -3049,7 +3049,7 @@ async function doLogin() {
       if (ns === 'active') {
         try {
           const existingSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
-          if (!existingSnap.data()?.edulioId) {
+          if (!existingSnap.data()?.edulioId && existingSnap.data()?.isTest !== true) {
             const { edulioId, edulioPassword } = await issueEdulioId();
             await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
               edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
@@ -3766,7 +3766,9 @@ async function doLogin() {
     console.log('active判定:', { photoOk, idOk, pledgeOk, venueOk });
     if (photoOk && idOk && pledgeOk && venueOk) {
       const activeUpdateData = { status: 'active', activeAt: window.__serverTs() };
-      if (!appData.edulioId) {
+      if (appData.isTest === true) {
+        console.log('edulio ID発行スキップ（テストデータ）');
+      } else if (!appData.edulioId) {
         const { edulioId, edulioPassword } = await issueEdulioId();
         Object.assign(activeUpdateData, { edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() });
         fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {

@@ -2,6 +2,19 @@
 
 ---
 
+## v1.45.1 - 2026/08/08
+
+### テストデータにはAEGISC-LMS（edulio）IDを発番しないようガードを追加
+
+- テスト申込（`isTest === true`）が受講開始（active）になっても、**AEGISCのID・パスワードを発番しない**よう、発番3経路すべてにガードを追加：
+  - `mypage_course_shonin.html`（実習→OJT届出後のactive判定）：テストデータはIDを採番せず受講開始のみ
+  - `admin.html`（書類承認→active）：テストデータはID発番をスキップ
+  - `admin.html`（手動でactiveに変更）：`isTest !== true` を条件に追加
+- 目的：テスト運用で `counters/edulio` の採番カウンターを消費したり、本物のID番号が使われる事故を防止（active化・フロー検証自体は可能）
+- 管理機能ガイドに「テストデータ（isTest=true）にはAEGISCを発番しない」旨を明記
+
+---
+
 ## v1.45.0 - 2026/08/08
 
 ### 申込フローにOJT（実習）施設ゲートを追加 — OJTなしは受講確定させない
