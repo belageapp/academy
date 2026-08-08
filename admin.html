@@ -1216,6 +1216,7 @@
                   <h4>ステータス一覧</h4>
                   <table>
                     <tr><th>ステータス</th><th>意味・状態</th><th style="white-space:nowrap;">変更方法</th></tr>
+                    <tr><td><span class="tag tag-orange">OJT施設待ち（お支払い前）</span></td><td>お申し込み時に「OJT施設なし」を選んだ保留申込。お支払い前で受講確定していません。受講生がマイページでOJT施設を入力するとお支払いに進めます（門前払いではなく保留）。電話での確認・フォローに使います。</td><td>自動（受講生のOJT施設入力で解放）</td></tr>
                     <tr><td><span class="tag tag-orange">入金待ち（振込）</span></td><td>振込入金の確認待ち。</td><td>「振込入金確認」ボタン</td></tr>
                     <tr><td><span class="tag tag-orange">入金待ち（カード）</span></td><td>Stripeカード決済の完了待ち。</td><td>自動</td></tr>
                     <tr><td><span class="tag tag-blue">受講確定</span></td><td>入金確認済み。受講生がマイページで書類提出・誓約書同意できる状態。</td><td>自動</td></tr>
@@ -1387,6 +1388,7 @@
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
                     <li><strong>絞り込み</strong>：要対応（未対応・未定・資料送付待ち）・すべて・未定のみ・資料送付待ち・対応済みで絞り込み可能</li>
                   </ul>
+                  <div class="note">📌 お申し込み時に「OJT施設なし」を選んだ方は、<strong>お支払い前の保留</strong>（申し込み管理のステータス「OJT施設待ち（お支払い前）」）になります。決済前のためこの届出一覧には出ません。<strong>申し込み管理</strong>で確認・電話フォローしてください。受講生がマイページでOJT施設を入力するとお支払いに進み、以降は通常どおりこの届出一覧で管理できます。</div>
                 </div>
               </div>
 
@@ -2020,6 +2022,23 @@
                     <li>知人・家族が勤める施設や、通いやすい近隣施設に相談するとスムーズです</li>
                     <li>施設が見つかったらマイページから<strong>OJT施設届出</strong>を提出するよう案内してください</li>
                     <li>スクールから施設宛にOJT実施に関するレターや合意書を送付します</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">「OJT施設待ち（お支払い前）」の申込者への対応は？</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  お申し込み時に「OJT施設なし」を選んだ方で、<strong>お支払い前の保留</strong>状態です（まだ受講確定していません。門前払いではありません）。
+                  <ul>
+                    <li>連絡先は登録されているので、電話等でOJT施設の状況を確認・フォローできます</li>
+                    <li>OJT施設は原則、ご自身の勤務先または受講者ご自身で手配していただく旨をご案内ください</li>
+                    <li>施設が決まったら、受講生がマイページにログインして<strong>OJT施設を入力</strong>すると、そのままお支払いに進めます（管理者の承認操作は不要）</li>
+                    <li>この状態の方は申し込み管理のステータス絞り込み「OJT施設待ち（お支払い前）」で一覧できます</li>
                   </ul>
                 </div>
               </div>
