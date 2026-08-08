@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>実習先マイページ | ホリスケアアカデミー</title>
+  <title>OJT施設マイページ | ホリスケアアカデミー</title>
   <link rel="icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
@@ -163,7 +163,7 @@
 <div id="login-view">
   <div class="login-box">
     <img src="assets/logo.png" class="login-logo" alt="ホリスケアアカデミー">
-    <div class="login-title">実習先マイページ</div>
+    <div class="login-title">OJT施設マイページ</div>
     <div class="login-sub">担当者ID・パスワードでログインしてください</div>
     <div class="login-field"><label>メールアドレス</label><input type="email" id="login-email" placeholder="info@example.com" autocomplete="email"></div>
     <div class="login-field"><label>パスワード</label><input type="password" id="login-password" placeholder="パスワード" autocomplete="current-password"></div>
@@ -387,7 +387,7 @@ function studentCardHTML(s) {
   const name = s.name || ((s.sei||'')+(s.mei?'　'+s.mei:'')) || '—';
   const consented = !!s.facilityConsent?.agreed;
   const reported  = !!s.facilityReported;
-  const badge = reported ? '実習終了報告済み' : consented ? '受け入れ同意済み' : '未同意';
+  const badge = reported ? 'OJT終了報告済み' : consented ? '受け入れ同意済み' : '未同意';
 
   return `<div class="student-card" id="scard-${s.id}">
     <div class="student-card-hd">
@@ -422,12 +422,12 @@ function step1HTML(s) {
     <div class="step-body ${!consented?'open':''}" id="s1-${s.id}">
       ${consented
         ? `<div class="done-badge">✅ ${agreedAt} に同意済み（${fName} / ${fPerson}）</div>`
-        : `<div class="consent-note">受講生の実習を受け入れることに同意いただける場合は、施設名・担当者名を確認のうえ、チェックを入れて送信してください。</div>
+        : `<div class="consent-note">受講生のOJTを受け入れることに同意いただける場合は、施設名・担当者名を確認のうえ、チェックを入れて送信してください。</div>
            <div class="form-group"><label>施設名</label><input type="text" id="cf-${s.id}" value="${fName}" placeholder="施設名"></div>
            <div class="form-group"><label>担当者名</label><input type="text" id="cp-${s.id}" value="${fPerson}" placeholder="担当者名"></div>
            <div class="consent-check-row">
              <input type="checkbox" id="cc-${s.id}" onchange="toggleConsentBtn('${s.id}')">
-             <label for="cc-${s.id}" style="font-size:13px;line-height:1.6;cursor:pointer;">上記受講生の実習を受け入れることに同意します。受講生の個人情報は実習指導目的にのみ使用します。</label>
+             <label for="cc-${s.id}" style="font-size:13px;line-height:1.6;cursor:pointer;">上記受講生のOJTを受け入れることに同意します。受講生の個人情報はOJT指導目的にのみ使用します。</label>
            </div>
            <button class="submit-btn" id="cbtn-${s.id}" onclick="saveConsent('${s.id}')" disabled>同意して送信する</button>`
       }
@@ -468,7 +468,7 @@ function step2HTML(s) {
   </div>`;
 }
 
-/* ===== STEP 3: 実習終了報告 ===== */
+/* ===== STEP 3: OJT終了報告 ===== */
 function step3HTML(s) {
   const reported   = !!s.facilityReported;
   const reportedAt = s.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
@@ -481,7 +481,7 @@ function step3HTML(s) {
     return `<div class="step-item">
       <div class="step-hd" onclick="toggleStep('s3-${s.id}','a3-${s.id}')">
         <div class="step-num done">✓</div>
-        <div class="step-title">実習終了報告</div>
+        <div class="step-title">OJT終了報告</div>
         <div class="step-status">報告済み ${reportedAt}</div>
         <div class="step-arrow" id="a3-${s.id}">▼</div>
       </div>
@@ -489,7 +489,7 @@ function step3HTML(s) {
         <div class="reported-box">
           <div class="reported-icon">✅</div>
           <div>
-            <div class="reported-text">実習終了報告を送信しました</div>
+            <div class="reported-text">OJT終了報告を送信しました</div>
             <div class="reported-sub">${reportedAt} 送信</div>
           </div>
         </div>
@@ -500,12 +500,12 @@ function step3HTML(s) {
   return `<div class="step-item">
     <div class="step-hd" onclick="toggleStep('s3-${s.id}','a3-${s.id}')">
       <div class="step-num cur">3</div>
-      <div class="step-title">実習終了報告</div>
+      <div class="step-title">OJT終了報告</div>
       <div class="step-status">${doneItems}/${totalItems} 項目完了</div>
       <div class="step-arrow" id="a3-${s.id}">▼</div>
     </div>
     <div class="step-body" id="s3-${s.id}">
-      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">全科目の指導が完了したら、各項目を確認・チェックしてください。実習中の参照は「<button onclick="showTab('guide')" style="background:none;border:none;color:var(--teal);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;">📖 OJTガイド</button>」タブをご活用ください。</p>
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">全科目の指導が完了したら、各項目を確認・チェックしてください。OJT中の参照は「<button onclick="showTab('guide')" style="background:none;border:none;color:var(--teal);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;">📖 OJTガイド</button>」タブをご活用ください。</p>
       ${OJT.map(ch=>`
         <div class="checklist-chapter">
           <div class="checklist-chapter-hd">① ${ch.title}<span style="font-size:11px;color:var(--text-mid);font-weight:400;margin-left:8px;">${ch.hours}　${ch.ref}</span></div>
@@ -526,7 +526,7 @@ function step3HTML(s) {
       `).join('')}
       <div class="report-actions">
         <span class="report-hint" id="rhint-${s.id}">${allDone?'':'すべての項目をチェックすると送信できます'}</span>
-        <button class="submit-btn" id="rbtn-${s.id}" onclick="submitReport('${s.id}')" ${allDone?'':'disabled'}>実習終了を報告する →</button>
+        <button class="submit-btn" id="rbtn-${s.id}" onclick="submitReport('${s.id}')" ${allDone?'':'disabled'}>OJT終了を報告する →</button>
       </div>
     </div>
   </div>`;
@@ -576,7 +576,7 @@ async function saveConsent(sid) {
 }
 
 async function submitReport(sid) {
-  if (!confirm('実習終了を報告します。送信後は取り消しできません。よろしいですか？')) return;
+  if (!confirm('OJT終了を報告します。送信後は取り消しできません。よろしいですか？')) return;
   const checks = {};
   OJT.forEach(ch=>ch.items.forEach(it=>{
     const cb = document.getElementById(`ck-${sid}-${it.id}`);
@@ -590,8 +590,8 @@ async function submitReport(sid) {
       facilityOjtChecks:checks,
     });
     await window.__addDoc(window.__col(window.__db,'notices'), {
-      title:'【施設より】実習終了報告が届きました',
-      body:(__facility?.name||'実習先施設')+'より実習終了報告が届きました。',
+      title:'【施設より】OJT終了報告が届きました',
+      body:(__facility?.name||'OJT施設')+'よりOJT終了報告が届きました。',
       target:'admin',
       applicationId:sid,
       createdAt:window.__serverTs(),
