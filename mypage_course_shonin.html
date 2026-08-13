@@ -693,7 +693,7 @@
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJT施設は自分で探す必要がありますか</summary>
-          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJT施設は原則として受講生ご自身でご用意いただきます。施設が決まっている場合はSTEP1のOJT施設届出から情報を入力してください。未定の場合も届出が必要です。施設が決まり次第、届出書セクションの「OJT施設変更届」から提出してください。</div>
+          <div style="font-size:12px;color:var(--text-mid);line-height:1.7;margin-top:8px;">OJT施設は原則として受講生ご自身でご用意いただきます（ご自身の勤務先での実施も可能です）。受け入れが決まったら、STEP1のOJT施設届出から施設情報を入力してください。OJT施設の届出が完了しないと受講開始・正式修了に進めません。届出後に施設を変更する場合は、届出書セクションの「OJT施設変更届」から提出してください。</div>
         </details>
         <details style="background:var(--bg);border-radius:8px;padding:10px 14px;">
           <summary style="font-size:12px;font-weight:700;cursor:pointer;">OJTOJTは何時間・何日かかりますか</summary>
@@ -1168,7 +1168,7 @@
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <label style="font-size:12px;color:var(--text-mid);">担当者 メールアドレス <span style="color:red;">*</span></label>
+          <label style="font-size:12px;color:var(--text-mid);">担当者 メールアドレス <span style="color:#999;font-size:11px;">（任意）</span></label>
           <input id="venue-email" type="email" placeholder="info@example.com" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
         </div>
         <div style="margin-bottom:10px;">
@@ -2916,14 +2916,14 @@
             !document.getElementById('venue-address').value.trim() ||
             !document.getElementById('venue-phone').value.trim() ||
             !document.getElementById('venue-contact').value.trim() ||
-            !venueEmail || !reason ||
+            !reason ||
             ((reason === '勤務予定' || reason === 'その他') && !detail)) {
           alert('必須項目を入力してください' + (reason === '勤務予定' && !detail ? '（勤務開始予定日を入力してください）' : reason === 'その他' && !detail ? '（理由の詳細を入力してください）' : ''));
           btn.textContent = '届出を送信する';
           btn.style.pointerEvents = 'auto';
           return;
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(venueEmail)) {
+        if (venueEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(venueEmail)) {
           alert('担当者メールアドレスの形式が正しくありません');
           btn.textContent = '届出を送信する';
           btn.style.pointerEvents = 'auto';
