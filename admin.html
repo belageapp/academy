@@ -4103,6 +4103,11 @@ async function doLogin() {
     const app = all.find(a => a.id === appId);
     if (!app) return;
     const v = app.practiceVenue || {};
+    // 既に施設と紐付け済みなら既存施設の編集モーダルを開く（重複作成防止）
+    if (app.linkedFacilityId) {
+      openFacilityEditModal(app.linkedFacilityId);
+      return;
+    }
     openFacilityEditModal(null, {
       __appId: appId,
       corpName: v.corp || '',
