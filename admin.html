@@ -4573,13 +4573,11 @@ async function doLogin() {
       const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">再提出</span>' : '';
       const pendingBadge  = v.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
       const name      = `<strong>${fullName}</strong>${resubmitBadge}${pendingBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
-      const checkedLine = checkedAt ? `<br><span style="font-size:11px;color:#888;">対応日：${checkedAt}</span>` : '';
-      const sentLine    = sentAt    ? `<br><span style="font-size:11px;color:#888;">送付日：${sentAt}</span>` : '';
       let statusCell;
       if (r.venueChecked && r.materialsSent) {
-        statusCell = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedLine}${sentLine}`;
+        statusCell = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>`;
       } else if (r.venueChecked) {
-        statusCell = `<span style="background:#E8F0FE;color:#1A56DB;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📞 連絡済み</span>${checkedLine}<br><button onclick="markMaterialsSent('${r.__id}','${nm}')" style="margin-top:4px;padding:5px 12px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
+        statusCell = `<span style="background:#E8F0FE;color:#1A56DB;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📞 連絡済み</span><br><button onclick="markMaterialsSent('${r.__id}','${nm}')" style="margin-top:4px;padding:5px 12px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
       } else {
         statusCell = `<button onclick="markVenueChecked('${r.__id}','${nm}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">連絡済みにする</button>`;
       }
@@ -4596,15 +4594,17 @@ async function doLogin() {
         <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—') + (v.email ? '<br><span style="font-size:11px;color:#888;">'+v.email+'</span>' : '')}</td>
         <td>${v.reason || '—'}</td>
         <td>${date}</td>
+        <td style="font-size:12px;">${checkedAt || '—'}</td>
+        <td style="font-size:12px;">${sentAt || '—'}</td>
         <td style="white-space:nowrap;">${statusCell}${facilityBtn}</td>
       </tr>`;
     }
 
     let body = '';
-    if (showPending && pending.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
-    if (showMitei   && mitei.length)   body += `<tr><td colspan="8" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
-    if (showAwaiting && awaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 連絡済み・資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
-    if (showDone    && done.length)    body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
+    if (showPending && pending.length) body += `<tr><td colspan="10" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
+    if (showMitei   && mitei.length)   body += `<tr><td colspan="10" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
+    if (showAwaiting && awaiting.length) body += `<tr><td colspan="10" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 連絡済み・資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
+    if (showDone    && done.length)    body += `<tr><td colspan="10" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
     if (!body) {
       el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">' +
         (__venueFilter === 'pending' ? '要対応の届出はありません。' :
@@ -4614,7 +4614,7 @@ async function doLogin() {
       return;
     }
     el.innerHTML = '<table><thead><tr>' +
-      '<th>受講生</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>ステータス</th>' +
+      '<th>受講生</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>連絡日</th><th>資料送付日</th><th>ステータス</th>' +
       '</tr></thead><tbody>' + body + '</tbody></table>';
   }
 
