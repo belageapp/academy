@@ -2258,6 +2258,12 @@
           <div id="prog-confirmed-items"></div>
         </div>
 
+        <!-- OJT施設対応 -->
+        <div id="prog-block-ojt" style="display:none;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">OJT施設対応</div>
+          <div id="prog-ojt-items"></div>
+        </div>
+
         <!-- 受講中 -->
         <div id="prog-block-active" style="display:none;margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">受講中</div>
@@ -2809,6 +2815,33 @@ async function doLogin() {
       </div>
     </div>`;
     document.getElementById('prog-confirmed-items').innerHTML = confirmedHtml;
+
+    // ---- OJT施設対応ブロック ----
+    const hasRealVenue = a.practiceVenueReported &&
+      a.practiceVenue?.name && a.practiceVenue.name !== '当校指定' && a.practiceVenue.name !== '未定';
+    document.getElementById('prog-block-ojt').style.display = (showConfirmed && hasRealVenue) ? 'block' : 'none';
+    if (showConfirmed && hasRealVenue) {
+      const checkedAt = a.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || null;
+      const sentAt    = a.materialsSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || null;
+      const editBtn = (field, lbl) =>
+        `<button onclick="editOjtDate('${id}','${field}','${lbl}')" ` +
+        `style="padding:3px 10px;font-size:11px;background:#fff;border:1px solid #26B5C8;color:#26B5C8;border-radius:6px;cursor:pointer;font-weight:600;">` +
+        `${checkedAt || sentAt ? '修正' : '入力'}</button>`;
+      const ojtRow = (label, date, field, lbl) => `
+        <div class="prog-item">
+          <div class="prog-item-left">
+            <div class="prog-dot ${date ? 'done' : 'none'}">${date ? '✓' : '–'}</div>
+            <span class="prog-label">${label}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${editBtn(field, lbl)}
+            <span class="prog-badge ${date ? 'done' : 'none'}">${date || '未入力'}</span>
+          </div>
+        </div>`;
+      document.getElementById('prog-ojt-items').innerHTML =
+        ojtRow('施設対応日', checkedAt, 'venueCheckedAt', '施設対応日を入力してください') +
+        ojtRow('資料送付日', sentAt,    'materialsSentAt', '資料送付日を入力してください');
+    }
 
     // ---- 受講中ブロック ----
     const eLearningState  = a.taskAllDone === true ? 'done' : a.taskStarted === true ? 'started' : 'none';
@@ -4607,41 +4640,97 @@ async function doLogin() {
   }
   window.loadVenueList = loadVenueList;
 
-  async function markVenueChecked(docId, name) {
-    if (!confirm(`${name} さんのOJT施設届出を対応済みにしますか？（資料送付待ちに進みます）`)) return;
+  // 日付入力ダイアログ（Promise）
+  function askDate(label) {
+    return new Promise((resolve) => {
+      const today = new Date().toISOString().split('T')[0];
+      const bg = document.createElement('div');
+      bg.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;display:flex;align-items:center;justify-content:center;';
+      bg.innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 24px 64px rgba(0,0,0,.28);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:18px;color:#1e2738;">${label}</div>
+          <input type="date" id="askdate-input" value="${today}"
+            style="width:100%;padding:10px 14px;border:1.5px solid #d0d3d8;border-radius:8px;font-size:14px;margin-bottom:20px;box-sizing:border-box;outline:none;">
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button id="askdate-cancel" style="padding:9px 20px;border:1.5px solid #d0d3d8;background:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">キャンセル</button>
+            <button id="askdate-ok" style="padding:9px 20px;background:#26B5C8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">確定</button>
+          </div>
+        </div>`;
+      document.body.appendChild(bg);
+      document.getElementById('askdate-ok').onclick = () => {
+        const val = document.getElementById('askdate-input').value;
+        document.body.removeChild(bg);
+        resolve(val || null);
+      };
+      document.getElementById('askdate-cancel').onclick = () => {
+        document.body.removeChild(bg);
+        resolve(null);
+      };
+    });
+  }
+
+  // Firestoreにdate文字列(YYYY-MM-DD)をTimestampで保存し、キャッシュ・画面を更新
+  async function saveOjtDate(docId, field, dateStr) {
+    const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const ts = Timestamp.fromDate(new Date(y, m - 1, d, 12, 0, 0));
+    const mockTs = { toDate: () => new Date(y, m - 1, d, 12, 0, 0), toMillis: () => new Date(y, m - 1, d, 12, 0, 0).getTime() };
+    await updateDoc(doc(window.__db, 'applications', docId), { [field]: ts });
+    const idx = all.findIndex(a => a.id === docId);
+    if (idx > -1) all[idx][field] = mockTs;
+    if (__venueCache) { const r = __venueCache.find(r => r.__id === docId); if (r) r[field] = mockTs; }
+  }
+
+  // モーダルから日付を後から修正する
+  async function editOjtDate(docId, field, label) {
+    const dateStr = await askDate(label);
+    if (!dateStr) return;
     try {
-      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await saveOjtDate(docId, field, dateStr);
+      const a = all.find(x => x.id === docId);
+      if (a) renderProgress(docId, a);
+      renderVenueTable();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.editOjtDate = editOjtDate;
+
+  async function markVenueChecked(docId, name) {
+    const dateStr = await askDate(`${name} さんの施設対応日を入力してください`);
+    if (!dateStr) return;
+    try {
+      const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const ts = Timestamp.fromDate(new Date(y, m - 1, d, 12, 0, 0));
       await updateDoc(doc(window.__db, 'applications', docId), {
         venueChecked: true,
-        venueCheckedAt: serverTimestamp(),
+        venueCheckedAt: ts,
       });
       if (__venueCache) {
         const r = __venueCache.find(r => r.__id === docId);
-        if (r) { r.venueChecked = true; r.venueCheckedAt = { toDate: () => new Date(), toMillis: () => Date.now() }; }
+        if (r) { r.venueChecked = true; r.venueCheckedAt = { toDate: () => new Date(y, m - 1, d, 12, 0, 0), toMillis: () => new Date(y, m - 1, d, 12, 0, 0).getTime() }; }
       }
       renderVenueTable();
-    } catch(e) {
-      alert('エラー：' + e.message);
-    }
+    } catch(e) { alert('エラー：' + e.message); }
   }
   window.markVenueChecked = markVenueChecked;
 
   async function markMaterialsSent(docId, name) {
-    if (!confirm(`${name} さんへ資料を送付済みにしますか？（対応済みに進みます）`)) return;
+    const dateStr = await askDate(`${name} さんへの資料送付日を入力してください`);
+    if (!dateStr) return;
     try {
-      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const ts = Timestamp.fromDate(new Date(y, m - 1, d, 12, 0, 0));
       await updateDoc(doc(window.__db, 'applications', docId), {
         materialsSent: true,
-        materialsSentAt: serverTimestamp(),
+        materialsSentAt: ts,
       });
       if (__venueCache) {
         const r = __venueCache.find(r => r.__id === docId);
-        if (r) { r.materialsSent = true; r.materialsSentAt = { toDate: () => new Date(), toMillis: () => Date.now() }; }
+        if (r) { r.materialsSent = true; r.materialsSentAt = { toDate: () => new Date(y, m - 1, d, 12, 0, 0), toMillis: () => new Date(y, m - 1, d, 12, 0, 0).getTime() }; }
       }
       renderVenueTable();
-    } catch(e) {
-      alert('エラー：' + e.message);
-    }
+    } catch(e) { alert('エラー：' + e.message); }
   }
   window.markMaterialsSent = markMaterialsSent;
 
