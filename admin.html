@@ -766,7 +766,7 @@
                 <th>仮修了証発行日</th>
                 <th>OJT施設情報</th>
                 <th>連絡先・担当者</th>
-                <th>OJT施設対応日</th>
+                <th>連絡日</th>
                 <th>資料送付日</th>
                 <th>OJT終了報告受理日</th>
                 <th>正式修了日</th>
@@ -940,10 +940,10 @@
                 <input type="checkbox" id="show-test-venue" onchange="loadVenueList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
               <select id="venue-filter-sel" onchange="window.setVenueFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
-                <option value="pending">要対応（未対応・未定・資料送付待ち）</option>
+                <option value="pending">要対応（未対応・未定・連絡済み）</option>
                 <option value="all">すべて</option>
                 <option value="mitei">未定のみ</option>
-                <option value="awaiting">資料送付待ち</option>
+                <option value="awaiting">連絡済み（資料送付待ち）</option>
                 <option value="done">対応済み</option>
               </select>
               <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
@@ -1376,8 +1376,8 @@
                   <h4>ステータスの流れ</h4>
                   <table>
                     <tr><th>ステータス</th><th>意味</th><th>次の操作</th></tr>
-                    <tr><td><span class="tag tag-orange">未対応</span></td><td>届出を受け付けたが未確認</td><td>「対応済みにする」→ 資料送付待ちへ</td></tr>
-                    <tr><td><span class="tag tag-blue">資料送付待ち</span></td><td>施設への資料送付を準備中</td><td>「資料送付済み」→ 対応済みへ</td></tr>
+                    <tr><td><span class="tag tag-orange">未対応</span></td><td>届出を受け付けたが未連絡</td><td>「連絡済みにする」→ 連絡済みへ</td></tr>
+                    <tr><td><span class="tag tag-blue">連絡済み</span></td><td>施設への連絡済み・資料送付待ち</td><td>「資料送付済み」→ 対応済みへ</td></tr>
                     <tr><td><span class="tag tag-green">対応済み</span></td><td>資料の送付が完了</td><td>—</td></tr>
                   </table>
 
@@ -1386,7 +1386,7 @@
                     <li><strong>🏢 施設登録ボタン</strong>：届出データをOJT施設管理マスターに自動プリフィルして登録できます</li>
                     <li><strong>再届出を許可ボタン</strong>：施設が「未定」の受講生に表示されます。クリックすると受講生のマイページに「OJT施設変更届」が再表示され、正式な施設が決まった時点で届け出られるようになります。許可後は「再届出待ち」表示に変わります。</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
-                    <li><strong>絞り込み</strong>：要対応（未対応・未定・資料送付待ち）・すべて・未定のみ・資料送付待ち・対応済みで絞り込み可能</li>
+                    <li><strong>絞り込み</strong>：要対応（未対応・未定・連絡済み）・すべて・未定のみ・連絡済み・対応済みで絞り込み可能</li>
                   </ul>
                   <div class="note">📌 お申し込み時に「OJT施設なし」を選んだ方は、<strong>お支払い前の保留</strong>（申し込み管理のステータス「OJT施設待ち（お支払い前）」）になります。決済前のためこの届出一覧には出ません。<strong>申し込み管理</strong>で確認・電話フォローしてください。受講生がマイページでOJT施設を入力するとお支払いに進み、以降は通常どおりこの届出一覧で管理できます。</div>
                 </div>
@@ -1701,10 +1701,10 @@
                     OJT施設届出は3段階で管理しています。
                     <ul>
                       <li><strong>未対応</strong>：受講生から届出が来たが、まだスクール側が確認していない状態</li>
-                      <li><strong>資料送付待ち</strong>：内容を確認し施設への資料（合意書・レターなど）を準備・送付中</li>
+                      <li><strong>連絡済み</strong>：施設へ連絡済み・資料（合意書・レターなど）の送付待ち</li>
                       <li><strong>対応済み</strong>：資料の送付が完了した状態</li>
                     </ul>
-                    「対応済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
+                    「連絡済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
                   </div>
                 </div>
 
@@ -2839,7 +2839,7 @@ async function doLogin() {
           </div>
         </div>`;
       document.getElementById('prog-ojt-items').innerHTML =
-        ojtRow('施設対応日', checkedAt, 'venueCheckedAt', '施設対応日を入力してください') +
+        ojtRow('連絡日', checkedAt, 'venueCheckedAt', '連絡日を入力してください') +
         ojtRow('資料送付日', sentAt,    'materialsSentAt', '資料送付日を入力してください');
     }
 
@@ -3187,7 +3187,7 @@ async function doLogin() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
     const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
     const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
-    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','OJT施設対応日','資料送付日','OJT終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
+    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','連絡日','資料送付日','OJT終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
       const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
@@ -4579,9 +4579,9 @@ async function doLogin() {
       if (r.venueChecked && r.materialsSent) {
         statusCell = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>${checkedLine}${sentLine}`;
       } else if (r.venueChecked) {
-        statusCell = `<span style="background:#FFF3E0;color:#E65100;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📦 資料送付待ち</span>${checkedLine}<br><button onclick="markMaterialsSent('${r.__id}','${nm}')" style="margin-top:4px;padding:5px 12px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
+        statusCell = `<span style="background:#E8F0FE;color:#1A56DB;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📞 連絡済み</span>${checkedLine}<br><button onclick="markMaterialsSent('${r.__id}','${nm}')" style="margin-top:4px;padding:5px 12px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
       } else {
-        statusCell = `<button onclick="markVenueChecked('${r.__id}','${nm}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>`;
+        statusCell = `<button onclick="markVenueChecked('${r.__id}','${nm}')" style="padding:5px 12px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">連絡済みにする</button>`;
       }
       const facilityBtn = (v.name && v.name !== '未定')
         ? (r.linkedFacilityId
@@ -4603,13 +4603,13 @@ async function doLogin() {
     let body = '';
     if (showPending && pending.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
     if (showMitei   && mitei.length)   body += `<tr><td colspan="8" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
-    if (showAwaiting && awaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF3E0;font-size:12px;font-weight:700;color:#E65100;">▼ 資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
+    if (showAwaiting && awaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 連絡済み・資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
     if (showDone    && done.length)    body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
     if (!body) {
       el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">' +
         (__venueFilter === 'pending' ? '要対応の届出はありません。' :
          __venueFilter === 'mitei'   ? '未定の届出はありません。' :
-         __venueFilter === 'awaiting'? '資料送付待ちの届出はありません。' :
+         __venueFilter === 'awaiting'? '連絡済みの届出はありません。' :
          __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
       return;
     }
@@ -4695,7 +4695,7 @@ async function doLogin() {
   window.editOjtDate = editOjtDate;
 
   async function markVenueChecked(docId, name) {
-    const dateStr = await askDate(`${name} さんの施設対応日を入力してください`);
+    const dateStr = await askDate(`${name} さんへの連絡日を入力してください`);
     if (!dateStr) return;
     try {
       const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
