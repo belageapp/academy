@@ -4420,10 +4420,10 @@ async function doLogin() {
   // ===== 施設詳細モーダル =====
   let __facilityDetailId = null;
 
-  async function openFacilityDetailModal(facilityId) {
+  async function openFacilityDetailModal(facilityId, tab = 'info') {
     __facilityDetailId = facilityId;
     window.__facilityDetailId = facilityId;
-    switchFacilityDetailTab('info');
+    switchFacilityDetailTab(tab);
     document.getElementById('facility-detail-modal').style.display = 'block';
     const infoEl = document.getElementById('fdetail-info-content');
     infoEl.innerHTML = '読み込み中...';
@@ -4867,6 +4867,9 @@ async function doLogin() {
       const note = hasReport ? (r.note || '—') : '—';
       const reportedDate = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const receivedDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const facilityLogBtn = a.linkedFacilityId
+        ? `<br><button onclick="openFacilityDetailModal('${a.linkedFacilityId}','log')" style="margin-top:4px;padding:4px 10px;background:#fff;color:#5C6BC0;border:1.5px solid #9FA8DA;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 施設とのやりとり</button>`
+        : `<br><button onclick="openFacilityRegFromVenue('${a.__id}')" style="margin-top:4px;padding:4px 10px;background:#5D4037;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🏢 施設登録</button>`;
       const statusBadge = {
         reportWaiting: '<span style="background:#F5F5F5;color:#757575;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">OJT修了報告待ち</span>',
         docWaiting:    '<span style="background:#E8F0FE;color:#1A56DB;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">OJT書類待ち</span>',
@@ -4881,7 +4884,7 @@ async function doLogin() {
           : '—';
       return `<tr>
         <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-        <td>${facilityName}</td>
+        <td>${facilityName}${facilityLogBtn}</td>
         <td>${period}</td>
         <td>${note}</td>
         <td>${reportedDate}</td>
