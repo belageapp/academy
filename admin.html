@@ -4879,7 +4879,7 @@ async function doLogin() {
       const actionHtml = a.facilityReported !== true
         ? `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`
         : stage === 'reviewing'
-          ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">書類承認</button>`
+          ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ 書類承認</button>`
           : '—';
       return `<tr>
         <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
