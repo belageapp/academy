@@ -997,6 +997,14 @@
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-ojt" onchange="loadOjtList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
+              <select id="ojt-filter-sel" onchange="window.setOjtFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="active">要対応（OJT待ち・未受付・確認中）</option>
+                <option value="all">すべて</option>
+                <option value="waiting">OJT待ちのみ</option>
+                <option value="unreceived">未受付のみ</option>
+                <option value="reviewing">受付済み・確認中のみ</option>
+                <option value="approved">承認済みのみ</option>
+              </select>
               <button class="refresh-btn" onclick="loadOjtList()">🔄 更新</button>
             </div>
           </div>
@@ -4818,53 +4826,112 @@ async function doLogin() {
   }
   window.loadVideoList = loadVideoList;
 
+  let __ojtCache = null;
+  let __ojtFilter = 'active';
+
+  function setOjtFilter(f) {
+    __ojtFilter = f;
+    const sel = document.getElementById('ojt-filter-sel');
+    if (sel) sel.value = f;
+    renderOjtTable();
+  }
+  window.setOjtFilter = setOjtFilter;
+
+  // ojtReported（学生のオンライン報告）・facilityReported（施設書類の受領）・ojtPassed（承認）
+  // は互いに独立して立ちうる（施設書類が学生報告より先に届くこともある）ため、3フラグからステータスを算出する
+  function ojtStage(a) {
+    if (a.ojtPassed === true) return 'approved';
+    if (a.ojtReported === true && a.facilityReported === true) return 'reviewing';
+    if (a.ojtReported === true) return 'unreceived';
+    if (a.facilityReported === true) return 'docsEarly';
+    return 'waiting';
+  }
+
+  function renderOjtTable() {
+    const el = document.getElementById('ojt-list');
+    if (!__ojtCache) return;
+
+    const groups = { waiting: [], docsEarly: [], unreceived: [], reviewing: [], approved: [] };
+    __ojtCache.forEach(a => groups[ojtStage(a)].push(a));
+
+    const showWaiting   = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'waiting';
+    const showUnreceived= __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'unreceived';
+    const showReviewing = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'reviewing';
+    const showApproved  = __ojtFilter === 'approved' || __ojtFilter === 'all';
+
+    function rowHtml(a, stage) {
+      const r = a.ojtReport || {};
+      const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
+      const hasReport = stage !== 'waiting' && stage !== 'docsEarly';
+      const facilityName = hasReport ? (r.facility || '—') : (a.practiceVenue?.name || '—');
+      const period = hasReport ? `${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}` : '—';
+      const note = hasReport ? (r.note || '—') : '—';
+      const reportedDate = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const receivedDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const statusBadge = {
+        waiting:    '<span style="background:#F5F5F5;color:#757575;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">OJT待ち</span>',
+        docsEarly:  '<span style="background:#E8F0FE;color:#1A56DB;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">書類受領済み・報告待ち</span>',
+        unreceived: '<span style="background:#F5F5F5;color:#757575;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未受付</span>',
+        reviewing:  '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">受付済み・確認中</span>',
+        approved:   '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>',
+      }[stage];
+      const actionHtml = (stage === 'waiting' || stage === 'unreceived')
+        ? `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 受付</button>`
+        : stage === 'reviewing'
+          ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">承認</button>
+             <button onclick="rejectOjt('${a.__id}','${a.email}','${name}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>`
+          : '—';
+      return `<tr>
+        <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+        <td>${facilityName}</td>
+        <td>${period}</td>
+        <td>${note}</td>
+        <td>${reportedDate}</td>
+        <td>${receivedDate}</td>
+        <td>${statusBadge}</td>
+        <td>${actionHtml}</td>
+      </tr>`;
+    }
+
+    let body = '';
+    if (showWaiting && groups.waiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;font-weight:700;color:#757575;">▼ OJT待ち (${groups.waiting.length}件)</td></tr>` + groups.waiting.map(a => rowHtml(a,'waiting')).join('');
+    if (showWaiting && groups.docsEarly.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 書類受領済み・報告待ち (${groups.docsEarly.length}件)</td></tr>` + groups.docsEarly.map(a => rowHtml(a,'docsEarly')).join('');
+    if (showUnreceived && groups.unreceived.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#F4F6F8;font-size:12px;font-weight:700;color:#757575;">▼ 未受付 (${groups.unreceived.length}件)</td></tr>` + groups.unreceived.map(a => rowHtml(a,'unreceived')).join('');
+    if (showReviewing && groups.reviewing.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 受付済み・確認中 (${groups.reviewing.length}件)</td></tr>` + groups.reviewing.map(a => rowHtml(a,'reviewing')).join('');
+    if (showApproved && groups.approved.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F5E9;font-size:12px;font-weight:700;color:#2E7D32;">▼ 承認済み (${groups.approved.length}件)</td></tr>` + groups.approved.map(a => rowHtml(a,'approved')).join('');
+
+    if (!body) {
+      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">該当する申込者はいません。</p>';
+      return;
+    }
+    el.innerHTML = '<table><thead><tr>' +
+      '<th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>備考</th><th>報告日</th><th>受付日</th><th>ステータス</th><th>操作</th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
+  }
+
   async function loadOjtList() {
     const el = document.getElementById('ojt-list');
     el.innerHTML = '読み込み中...';
     try {
-      const { collection, getDocs, query, where, orderBy, updateDoc, doc, serverTimestamp, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDocs(query(
-        collection(window.__db, 'applications'),
-        where('ojtReported', '==', true),
-        orderBy('ojtReportedAt', 'desc')
-      ));
-      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">報告はまだありません。</p>'; return; }
+      const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const [reportedSnap, venueDoneSnap] = await Promise.all([
+        getDocs(query(collection(window.__db, 'applications'), where('ojtReported', '==', true))),
+        getDocs(query(collection(window.__db, 'applications'), where('venueChecked', '==', true), where('materialsSent', '==', true))),
+      ]);
       const showTest = document.getElementById('show-test-ojt')?.checked;
-      let html = '<table><thead><tr>' +
-        '<th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>備考</th><th>報告日</th><th>ステータス</th><th>操作</th>' +
-        '</tr></thead><tbody>';
-      snap.docs.forEach(d => {
+      const byId = new Map();
+      [...reportedSnap.docs, ...venueDoneSnap.docs].forEach(d => {
+        if (byId.has(d.id)) return;
         const a = d.data();
         if (!showTest && a.isTest) return;
-        const r = a.ojtReport || {};
-        const date = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
-        const isReceived = a.facilityReported === true;
-        const isPassed = a.ojtPassed === true;
-        html += `<tr>
-          <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-          <td>${r.facility||'—'}</td>
-          <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
-          <td>${r.note||'—'}</td>
-          <td>${date}</td>
-          <td>${isPassed
-            ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>'
-            : isReceived
-              ? '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">受付済み・確認中</span>'
-              : '<span style="background:#F5F5F5;color:#757575;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未受付</span>'
-          }</td>
-          <td>
-            ${isPassed ? '—' : isReceived ? `
-              <button onclick="approveOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">承認</button>
-              <button onclick="rejectOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>
-            ` : `
-              <button onclick="markOjtDocReceived('${d.id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 受付</button>
-            `}
-          </td>
-        </tr>`;
+        byId.set(d.id, { ...a, __id: d.id });
       });
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      __ojtCache = [...byId.values()].sort((x, y) => {
+        const tx = (x.ojtReportedAt || x.facilityReportedAt || x.materialsSentAt)?.toMillis?.() || 0;
+        const ty = (y.ojtReportedAt || y.facilityReportedAt || y.materialsSentAt)?.toMillis?.() || 0;
+        return ty - tx;
+      });
+      renderOjtTable();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
