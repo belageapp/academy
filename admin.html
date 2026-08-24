@@ -768,7 +768,7 @@
                 <th>連絡先・担当者</th>
                 <th>連絡日</th>
                 <th>資料送付日</th>
-                <th>OJT終了報告受理日</th>
+                <th>修了レポート承認日</th>
                 <th>正式修了日</th>
                 <th>正式修了証明書発行</th>
                 <th>修了証発行先</th>
@@ -3187,7 +3187,7 @@ async function doLogin() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
     const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
     const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
-    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','連絡日','資料送付日','OJT終了報告受理日','正式修了日','正式修了証明書発行','修了証発行先'];
+    const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','連絡日','資料送付日','修了レポート承認日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
       const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
@@ -4839,6 +4839,7 @@ async function doLogin() {
         const r = a.ojtReport || {};
         const date = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
         const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
+        const isReceived = a.facilityReported === true;
         const isPassed = a.ojtPassed === true;
         html += `<tr>
           <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
@@ -4848,13 +4849,17 @@ async function doLogin() {
           <td>${date}</td>
           <td>${isPassed
             ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>'
-            : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">確認中</span>'
+            : isReceived
+              ? '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">受付済み・確認中</span>'
+              : '<span style="background:#F5F5F5;color:#757575;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">未受付</span>'
           }</td>
           <td>
-            ${!isPassed ? `
+            ${isPassed ? '—' : isReceived ? `
               <button onclick="approveOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">承認</button>
               <button onclick="rejectOjt('${d.id}','${a.email}','${name}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>
-            ` : '—'}
+            ` : `
+              <button onclick="markOjtDocReceived('${d.id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 受付</button>
+            `}
           </td>
         </tr>`;
       });
@@ -5428,7 +5433,7 @@ async function doLogin() {
 
   // OJT施設から郵送されたOJT修了報告書類を、スクール管理者が受領確認する
   async function markOjtDocReceived(docId, email, name) {
-    if (!confirm(`${name} さんのOJT修了報告書類を受領済みにしますか？\n（正式修了証明書の発行が可能になります）`)) return;
+    if (!confirm(`${name} さんのOJT修了報告書類を受付済みにしますか？`)) return;
     try {
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await updateDoc(doc(window.__db, 'applications', docId), {
@@ -5441,7 +5446,8 @@ async function doLogin() {
       if (d && d.ojtPassed === true && d.reportApproved === true) {
         try { await sendBothApprovedNotice(docId, email, name); } catch(e) { console.warn('両承認完了メール失敗:', e); }
       }
-      loadCertificateList();
+      if (document.getElementById('ojt-list')) loadOjtList();
+      if (document.getElementById('certificate-list')) loadCertificateList();
     } catch(e) {
       alert('エラー：' + e.message);
     }
