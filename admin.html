@@ -4879,8 +4879,7 @@ async function doLogin() {
       const actionHtml = a.facilityReported !== true
         ? `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`
         : stage === 'reviewing'
-          ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:4px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:4px;display:block;">書類承認</button>
-             <button onclick="rejectOjt('${a.__id}','${a.email}','${name}')" style="padding:4px 12px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:block;">差し戻し</button>`
+          ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">書類承認</button>`
           : '—';
       return `<tr>
         <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
@@ -4971,39 +4970,8 @@ async function doLogin() {
     }
   }
 
-  async function rejectOjt(docId, email, name) {
-    const reason = prompt('差し戻し理由を入力してください：');
-    if (!reason) return;
-    try {
-      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await updateDoc(doc(window.__db, 'applications', docId), {
-        ojtReported: false,
-        ojtReport: null,
-      });
-      await addDoc(collection(window.__db, 'notices'), {
-        applicationId: docId,
-        title: 'OJT修了報告が差し戻されました',
-        body: `OJT修了報告を確認しましたが、以下の理由により差し戻しとなりました。\n\n【差し戻し理由】\n${reason}\n\nご確認の上、再度ご報告ください。`,
-        target: 'specific',
-        emails: [email],
-        createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
-      });
-      await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendOjtRejectedMail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, reason })
-      });
-      alert('差し戻しました');
-      loadOjtList();
-    } catch(e) {
-      alert('エラー：' + e.message);
-    }
-  }
-
   window.loadOjtList = loadOjtList;
   window.approveOjt = approveOjt;
-  window.rejectOjt = rejectOjt;
 
   async function loadTempCertList() {
     const el = document.getElementById('tempcert-list');
