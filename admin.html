@@ -2309,6 +2309,27 @@
         <div class="modal-sec-hd">📬 やりとり履歴</div>
         <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
       </div>
+
+      <!-- 危険な操作：申込削除（入金前のみ・削除権限を持つ管理者のみ） -->
+      <div id="app-delete-section" class="modal-sec" style="display:none;border:1.5px solid #FCA5A5;border-radius:10px;padding:14px 16px;">
+        <div class="modal-sec-hd" style="color:#B91C1C;">⚠️ 危険な操作</div>
+        <p style="font-size:12px;color:var(--text-mid);line-height:1.7;margin:0 0 10px;">重複申込・誤入力など、記録として残す必要のない申込のみ削除してください。削除前の内容は自動的に控えを残しますが、通常の運用は「キャンセル」ステータスをご利用ください。</p>
+        <button onclick="openDeleteConfirm()" style="padding:9px 16px;background:#fff;color:#B91C1C;border:1.5px solid #B91C1C;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ この申込を削除する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 申込削除の確認モーダル -->
+<div id="delete-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
+    <div style="font-size:15px;font-weight:700;color:#B91C1C;margin-bottom:10px;">申込を削除しますか？</div>
+    <p style="font-size:13px;color:var(--text-mid);line-height:1.7;margin:0 0 14px;">この操作は取り消せません（控えは残ります）。確認のため、対象者のお名前「<strong id="delete-confirm-name"></strong>」を入力してください。</p>
+    <input id="delete-confirm-input" type="text" placeholder="お名前を入力" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:10px;">
+    <textarea id="delete-confirm-reason" placeholder="削除理由（任意・記録に残ります）" rows="2" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:16px;resize:vertical;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeDeleteConfirm()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button id="delete-confirm-btn" onclick="executeDeleteApplication()" disabled style="flex:1;padding:10px;border:none;border-radius:8px;background:#D1D5DB;color:#fff;font-size:13px;font-weight:700;cursor:not-allowed;font-family:inherit;">削除する</button>
     </div>
   </div>
 </div>
@@ -2440,7 +2461,7 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -2469,6 +2490,7 @@
   window.__query     = query;
   window.__orderBy   = orderBy;
   window.__doc       = doc;
+  window.__setDoc    = setDoc;
   window.__updateDoc = updateDoc;
   window.__addDoc    = addDoc;
   window.__serverTs  = serverTimestamp;
@@ -2488,11 +2510,17 @@
     return uid;
   };
 
-  onAuthStateChanged(auth, user => {
+  onAuthStateChanged(auth, async user => {
     if (user) {
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       document.getElementById('t-user').textContent = user.email;
+      try {
+        const adminSnap = await getDoc(doc(db, 'admins', user.email));
+        window.__canDelete = adminSnap.exists() && adminSnap.data().canDelete === true;
+      } catch(e) {
+        window.__canDelete = false;
+      }
       const waitLoad = setInterval(() => {
         if (typeof window.loadData === 'function') {
           clearInterval(waitLoad);
@@ -2724,9 +2752,71 @@ async function doLogin() {
   // お問い合わせ履歴を読み込み
   loadModalInquiries(id, a.email);
 
+  // 削除セクションの表示判定（入金前ステータス かつ 削除権限を持つ管理者のみ）
+  const DELETABLE_STATUSES = ['pending', 'awaiting_payment', 'ojt_hold'];
+  const deleteSection = document.getElementById('app-delete-section');
+  deleteSection.style.display = (window.__canDelete && DELETABLE_STATUSES.includes(a.status || 'pending')) ? 'block' : 'none';
+
   document.getElementById('modal').classList.add('open');
   }
   window.openModal = openModal;
+
+  // ===== 申込削除（危険な操作） =====
+  function openDeleteConfirm() {
+    const a = all.find(x => x.id === curId);
+    if (!a) return;
+    document.getElementById('delete-confirm-name').textContent = a.name || '';
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('delete-confirm-reason').value = '';
+    document.getElementById('delete-confirm-btn').disabled = true;
+    document.getElementById('delete-confirm-btn').style.background = '#D1D5DB';
+    document.getElementById('delete-confirm-btn').style.cursor = 'not-allowed';
+    document.getElementById('delete-confirm-modal').style.display = 'flex';
+  }
+  window.openDeleteConfirm = openDeleteConfirm;
+
+  function closeDeleteConfirm() {
+    document.getElementById('delete-confirm-modal').style.display = 'none';
+  }
+  window.closeDeleteConfirm = closeDeleteConfirm;
+
+  document.getElementById('delete-confirm-input').addEventListener('input', function() {
+    const a = all.find(x => x.id === curId);
+    const btn = document.getElementById('delete-confirm-btn');
+    const match = a && this.value === a.name;
+    btn.disabled = !match;
+    btn.style.background = match ? '#B91C1C' : '#D1D5DB';
+    btn.style.cursor = match ? 'pointer' : 'not-allowed';
+  });
+
+  async function executeDeleteApplication() {
+    const id = curId;
+    const a = all.find(x => x.id === id);
+    if (!a || !window.__canDelete) return;
+    const btn = document.getElementById('delete-confirm-btn');
+    btn.disabled = true;
+    btn.textContent = '削除中…';
+    try {
+      const freshSnap = await window.__getDoc(window.__doc(window.__db, 'applications', id));
+      if (!freshSnap.exists()) { closeDeleteConfirm(); closeModal(); return; }
+      const reason = document.getElementById('delete-confirm-reason').value.trim();
+      await window.__setDoc(window.__doc(window.__db, 'deletedApplications', id), {
+        ...freshSnap.data(),
+        deletedBy: window.__auth.currentUser?.email || '',
+        deletedAt: window.__serverTs(),
+        deletedReason: reason || '（理由未記入）',
+      });
+      await window.__deleteDoc(window.__doc(window.__db, 'applications', id));
+      closeDeleteConfirm();
+      closeModal();
+      window.loadData && window.loadData();
+    } catch(e) {
+      alert('削除に失敗しました: ' + e.message);
+      btn.textContent = '削除する';
+      btn.disabled = false;
+    }
+  }
+  window.executeDeleteApplication = executeDeleteApplication;
 
   function closeModal() { document.getElementById('modal').classList.remove('open'); curId=null; }
   window.closeModal = closeModal;
