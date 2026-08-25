@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    match /admins/{email} {
+      allow read: if isAdmin();
+      allow write: if false; // 管理者の追加・削除はFirebaseコンソール／CLIから行う
+    }
+
+    match /applications/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null
+        && (resource.data.uid == request.auth.uid
+          || resource.data.email == request.auth.token.email
+          || isAdmin());
+
+      match /todoke/{todId} {
+        allow create: if request.auth != null;
+        allow read, update: if request.auth != null
+          && (get(/databases/$(database)/documents/applications/$(docId)).data.uid == request.auth.uid
+            || get(/databases/$(database)/documents/applications/$(docId)).data.email == request.auth.token.email
+            || isAdmin());
+      }
+    }
+
+    match /courses/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /notices/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        isAdmin() ||
+        request.auth.uid != null
+      );
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /counters/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /videos/{videoId} {
+      allow read: if request.auth != null;
+    }
+
+    match /{path=**}/todoke/{todId} {
+      allow read, update: if isAdmin();
+      allow create: if request.auth != null;
+    }
+
+    match /inquiries/{inquiryId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow update: if isAdmin();
+    }
+
+    match /facilities/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /facilityInquiries/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /scheduledNoticeSettings/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

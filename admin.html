@@ -2932,7 +2932,7 @@ async function doLogin() {
             target: 'specific',
             emails: [d.email],
             createdAt: window.__serverTs(),
-            createdBy: 'info@holiscare.or.jp',
+            createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
           });
         } catch(e) { console.warn('お知らせ登録失敗:', e); }
         try {
@@ -3146,7 +3146,7 @@ async function doLogin() {
               target: 'specific',
               emails: [appData.email],
               createdAt: window.__serverTs(),
-              createdBy: 'info@holiscare.or.jp',
+              createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
             });
           } catch(e) { console.warn('お知らせ送信失敗:', e); }
           try {
@@ -3187,7 +3187,7 @@ async function doLogin() {
             target: 'specific',
             emails: [appData.email],
             createdAt: window.__serverTs(),
-            createdBy: 'info@holiscare.or.jp',
+            createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
           });
         } catch(e) { console.warn('お知らせ送信失敗:', e); }
         try {
@@ -3787,7 +3787,7 @@ async function doLogin() {
       target: 'specific',
       emails: [appData.email],
       createdAt: window.__serverTs(),
-      createdBy: 'info@holiscare.or.jp',
+      createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
     });
   }
 
@@ -5053,7 +5053,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendOjtApprovedMail', {
         method: 'POST',
@@ -5151,7 +5151,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendTempCertSentMail', {
         method: 'POST',
@@ -5608,7 +5608,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
         method: 'POST',
@@ -5693,7 +5693,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendReportApprovedMail', {
         method: 'POST',
@@ -5728,7 +5728,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       alert('差し戻しました');
       loadReportList();
@@ -5750,7 +5750,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
         method: 'POST',
@@ -5869,7 +5869,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       alert('対応済みにしました');
       loadChangeList();
@@ -6102,7 +6102,7 @@ async function doLogin() {
         target: 'specific',
         emails: [email],
         createdAt: serverTimestamp(),
-        createdBy: 'info@holiscare.or.jp',
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendInquiryReplyMail', {
         method: 'POST',
