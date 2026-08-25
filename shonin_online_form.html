@@ -535,6 +535,7 @@
               <input type="email" name="email" id="email" placeholder="例）taro@example.com">
               <div class="hint" style="color:#E8823A;">⚠️ マイページのログインにも使用します。ご自身だけがアクセスできるメールアドレスを登録してください。</div>
               <div class="err-msg" id="err-email">正しいメールアドレスを入力してください</div>
+              <div class="err-msg" id="err-email-dup">このメールアドレスは既にお申し込みで使用されています。お一人ずつ別のメールアドレスでお申し込みください。</div>
             </div>
           </div>
 
@@ -911,6 +912,7 @@ const fieldErrMap = {
           const errEl = document.getElementById(fieldErrMap[id]);
           if (errEl) errEl.classList.remove('show');
           document.getElementById('error-banner').style.display = 'none';
+          if (id === 'email') document.getElementById('err-email-dup').classList.remove('show');
         });
       });
     });
@@ -1060,7 +1062,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
     workplace:'お勤め先', message:'ご質問',
   };
 
-  document.getElementById('the-form').addEventListener('submit', function(e) {
+  document.getElementById('the-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     // 生年月日をhiddenフィールドにセット
 
@@ -1081,6 +1083,34 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       return;
     }
     privacyErr.classList.remove('show');
+
+    // 同一メールアドレスでの重複申込チェック（キャンセル・退講済みは除外）
+    const emailEl = document.getElementById('email');
+    const dupErr = document.getElementById('err-email-dup');
+    const submitBtn = document.querySelector('#the-form .submit-btn');
+    dupErr.classList.remove('show');
+    try {
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '確認中…'; }
+      const dupRes = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/checkDuplicateApplication', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailEl.value.trim() }),
+      });
+      const dupData = await dupRes.json();
+      if (dupData.hasActiveApplication) {
+        emailEl.classList.add('err');
+        dupErr.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        emailEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    } catch (dupCheckErr) {
+      console.error('重複申込チェックに失敗しました:', dupCheckErr);
+      // チェックに失敗した場合は申込みをブロックせず続行する
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '入力内容を確認する →'; }
+    }
+
     const vals = getVals();
     window.__formVals = vals;
     document.getElementById('conf-table').innerHTML =
