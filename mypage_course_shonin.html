@@ -1154,7 +1154,7 @@
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <label style="font-size:12px;color:var(--text-mid);">電話番号 <span style="color:red;">*</span></label>
+          <label style="font-size:12px;color:var(--text-mid);">施設代表電話番号 <span style="color:red;">*</span></label>
           <input id="venue-phone" type="tel" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px;">
@@ -1166,6 +1166,10 @@
             <label style="font-size:12px;color:var(--text-mid);">担当者 氏名 <span style="color:red;">*</span></label>
             <input id="venue-contact" type="text" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
           </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text-mid);">担当者 直通電話番号 <span style="color:#999;font-size:11px;">（任意・施設代表と同じ場合は空欄で構いません）</span></label>
+          <input id="venue-contact-phone" type="tel" style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
         </div>
         <div style="margin-bottom:10px;">
           <label style="font-size:12px;color:var(--text-mid);">担当者 メールアドレス <span style="color:#999;font-size:11px;">（任意）</span></label>
@@ -2937,6 +2941,7 @@
           phone: document.getElementById('venue-phone').value.trim(),
           dept: document.getElementById('venue-dept').value.trim(),
           contact: document.getElementById('venue-contact').value.trim(),
+          contactPhone: document.getElementById('venue-contact-phone').value.trim(),
           email: venueEmail,
           reason: reason + (detail ? '：' + detail : ''),
         };

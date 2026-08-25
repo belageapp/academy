@@ -2507,8 +2507,8 @@
     workplace:'お勤め先', coupon:'ご優待コード', message:'ご質問',
   };
   const OJT_LABELS = {
-    _ojtVenueCorp:'法人名', _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'電話番号',
-    _ojtVenueContact:'担当者', _ojtVenueEmail:'担当者メール', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
+    _ojtVenueCorp:'法人名', _ojtVenueName:'施設名', _ojtVenueAddress:'住所', _ojtVenuePhone:'施設代表電話番号',
+    _ojtVenueContact:'担当者', _ojtVenueContactPhone:'担当者直通電話', _ojtVenueEmail:'担当者メール', _ojtVenueReason:'届出理由', _ojtVenueDate:'届出日',
     _ojtReportFacility:'OJT修了報告の施設名',
   };
 
@@ -2546,6 +2546,7 @@ async function doLogin() {
           _ojtVenueAddress:   data.practiceVenue ? ((data.practiceVenue.zip ? '〒'+data.practiceVenue.zip+' ' : '') + (data.practiceVenue.address || '')) : '',
           _ojtVenuePhone:     data.practiceVenue?.phone || '',
           _ojtVenueContact:   data.practiceVenue ? ((data.practiceVenue.dept ? data.practiceVenue.dept+' ' : '') + (data.practiceVenue.contact || '')) : '',
+          _ojtVenueContactPhone: data.practiceVenue?.contactPhone || '',
           _ojtVenueEmail:     data.practiceVenue?.email || '',
           _ojtVenueReason:    data.practiceVenue?.reason || '',
           _ojtVenueDate:      data.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '',
@@ -2593,7 +2594,7 @@ async function doLogin() {
       const fmtLimit = (v,m) => { if(!v?.toDate?.()) return '—'; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
       tbody.innerHTML = items.map(a => {
         const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ') || '—';
-        const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ') || '—';
+        const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact, a._ojtVenueContactPhone].filter(Boolean).join(' ') || '—';
         const dim = 'color:var(--text-light);'; // 未対応列（データ未保存）
         const statusBadge = `<span class="sbadge sbadge-${a.status}">${{pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[a.status]||a.status||'—'}</span>`;
         // 修了証発行先：書類送付先(別途住所)があればそちら、なければ登録住所
@@ -3198,7 +3199,7 @@ async function doLogin() {
     const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','連絡日','資料送付日','修了レポート承認日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
       const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ');
-      const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact].filter(Boolean).join(' ');
+      const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact, a._ojtVenueContactPhone].filter(Boolean).join(' ');
       const hasAltAddr  = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
       const certDest    = hasAltAddr
         ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}`
@@ -4077,14 +4078,21 @@ async function doLogin() {
       el.innerHTML = snap.docs.map(d => {
         const f = d.data();
         const linked = (f.linkedApplicationIds || []);
-        const studentTags = linked.map(aid => {
+        const studentRows = linked.map(aid => {
           const s = all.find(a => a.id === aid);
           const nm = s ? (s.name || ((s.sei||'')+(s.mei||''))) : aid;
           const no = s?.studentNo || '';
-          return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--teal-light);color:var(--teal-dark);border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px;">
-            ${nm}${no ? '<span style="font-size:10px;opacity:0.7;"> '+no+'</span>' : ''}
-            <button onclick="unlinkStudent('${d.id}','${aid}')" title="紐付け解除" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;padding:0 0 0 4px;line-height:1;">✕</button>
-          </span>`;
+          const v = s?.practiceVenue || {};
+          const studentContact = [v.dept, v.contact].filter(Boolean).join(' ')
+            + (v.contactPhone ? '　☎ '+v.contactPhone : '')
+            + (v.email ? '　✉ '+v.email : '');
+          return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;background:var(--teal-light);border-radius:8px;padding:6px 10px;margin:2px 0;">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--teal-dark);">${nm}${no ? '<span style="font-size:10px;opacity:0.7;font-weight:400;"> '+no+'</span>' : ''}</div>
+              ${studentContact ? `<div style="font-size:11px;color:var(--text-mid);margin-top:2px;">👤 ${studentContact}</div>` : ''}
+            </div>
+            <button onclick="unlinkStudent('${d.id}','${aid}')" title="紐付け解除" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;padding:0;line-height:1;flex-shrink:0;">✕</button>
+          </div>`;
         }).join('');
         const infoRows = [
           f.businessNo ? `<span style="background:#EEF2FF;color:#3949AB;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">事業所番号：${f.businessNo}</span>` : '',
@@ -4109,7 +4117,7 @@ async function doLogin() {
             </div>
           </div>
           <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">紐付け受講生（${linked.length}名）</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;min-height:24px;">${studentTags || '<span style="font-size:12px;color:#ccc;">なし</span>'}</div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-height:24px;">${studentRows || '<span style="font-size:12px;color:#ccc;">なし</span>'}</div>
         </div>`;
       }).join('');
     } catch(e) {
@@ -4151,6 +4159,7 @@ async function doLogin() {
       email: v.email || '',
       deptName: v.dept || '',
       contactName: v.contact || '',
+      contactTel: v.contactPhone || '',
       contactEmail: v.email || '',
     };
   }
@@ -4679,7 +4688,7 @@ async function doLogin() {
         <td>${(v.corp ? '<span style="font-size:11px;color:#888;">'+v.corp+'</span><br>' : '') + (v.name || '—')}</td>
         <td>${(v.zip ? '〒'+v.zip+' ' : '') + (v.address || '—')}</td>
         <td>${v.phone || '—'}</td>
-        <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—') + (v.email ? '<br><span style="font-size:11px;color:#888;">'+v.email+'</span>' : '')}</td>
+        <td>${(v.dept ? v.dept+'<br>' : '') + (v.contact || '—') + (v.contactPhone ? '<br>☎ '+v.contactPhone : '') + (v.email ? '<br><span style="font-size:11px;color:#888;">'+v.email+'</span>' : '')}</td>
         <td>${v.reason || '—'}</td>
         <td>${date}</td>
         <td style="font-size:12px;">${checkedAt || '—'}</td>
