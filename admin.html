@@ -638,6 +638,7 @@
     </div>
     <button class="login-btn" onclick="doLogin()">ログイン →</button>
     <div class="login-err" id="l-err">メールアドレスまたはパスワードが正しくありません</div>
+    <a href="#" id="l-forgot" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--teal-dark, #1A9AB0);">パスワードをお忘れの方はこちら</a>
   </div>
 </div>
 
@@ -2472,7 +2473,7 @@
 <script type="module">
   import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const cfg = {
@@ -2494,6 +2495,10 @@
   window.__storage   = storage;
   window.__login     = (e,p) => signInWithEmailAndPassword(auth,e,p);
   window.__logout    = () => signOut(auth);
+  window.__resetPassword = (e) => sendPasswordResetEmail(auth, e, {
+    url: 'https://belageapp.github.io/academy/admin.html',
+    handleCodeInApp: false
+  });
   window.__getDocs   = getDocs;
   window.__getDoc    = getDoc;
   window.__col       = collection;
@@ -2522,15 +2527,24 @@
 
   onAuthStateChanged(auth, async user => {
     if (user) {
+      // 管理者一覧に登録されていないアカウントはダッシュボードを表示しない
+      let adminSnap;
+      try {
+        adminSnap = await getDoc(doc(db, 'admins', user.email));
+      } catch(e) {
+        adminSnap = null;
+      }
+      if (!adminSnap || !adminSnap.exists()) {
+        await signOut(auth);
+        document.getElementById('l-err').textContent = 'このアカウントには管理者権限がありません';
+        document.getElementById('l-err').style.display = 'block';
+        return;
+      }
+      window.__canDelete = adminSnap.data().canDelete === true;
+
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       document.getElementById('t-user').textContent = user.email;
-      try {
-        const adminSnap = await getDoc(doc(db, 'admins', user.email));
-        window.__canDelete = adminSnap.exists() && adminSnap.data().canDelete === true;
-      } catch(e) {
-        window.__canDelete = false;
-      }
       const waitLoad = setInterval(() => {
         if (typeof window.loadData === 'function') {
           clearInterval(waitLoad);
@@ -2564,17 +2578,33 @@
   };
 
 async function doLogin() {
-    const e = document.getElementById('l-email').value;
+    const e = document.getElementById('l-email').value.trim();
     const p = document.getElementById('l-pass').value;
-    const adminEmails = ['info@holiscare.or.jp']; // 管理者メールアドレス
-    if (!adminEmails.includes(e)) {
-      document.getElementById('l-err').style.display = 'block';
-      return;
+    const errEl = document.getElementById('l-err');
+    errEl.style.display = 'none';
+    try {
+      // 管理者権限の判定はonAuthStateChanged側で行う
+      await window.__login(e, p);
+    } catch {
+      errEl.textContent = 'メールアドレスまたはパスワードが正しくありません';
+      errEl.style.display = 'block';
     }
-    try { await window.__login(e, p); }
-    catch { document.getElementById('l-err').style.display = 'block'; }
   }
   window.doLogin = doLogin;
+  document.getElementById('l-forgot').addEventListener('click', async ev => {
+    ev.preventDefault();
+    const email = document.getElementById('l-email').value.trim();
+    if (!email) {
+      alert('メールアドレスを入力してから「パスワードをお忘れの方はこちら」をクリックしてください');
+      return;
+    }
+    try {
+      await window.__resetPassword(email);
+      alert('パスワードリセット用のメールを送信しました。メールボックスをご確認ください。');
+    } catch {
+      alert('メールの送信に失敗しました。メールアドレスをご確認ください。');
+    }
+  });
   document.addEventListener('keydown', ev => {
     if (ev.key === 'Enter' && document.getElementById('login-wrap').style.display !== 'none') doLogin();
   });
