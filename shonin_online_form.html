@@ -442,7 +442,7 @@
             <div class="f-label">お名前<span class="req">必須</span></div>
             <div>
               <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
+                <div style="flex:1;" id="sei-col">
                   <input type="text" name="sei" id="sei" placeholder="姓　例）山田">
                 </div>
                 <div style="flex:1;">
@@ -450,6 +450,10 @@
                 </div>
               </div>
               <div class="err-msg" id="err-name">お名前を入力してください</div>
+              <label style="display:inline-flex; align-items:flex-start; gap:6px; cursor:pointer; font-size:12px; color:var(--text-light); margin-top:8px;">
+                <input type="checkbox" id="single-name" style="width:15px; height:15px; accent-color:var(--teal); cursor:pointer; flex-shrink:0; margin-top:1px;">
+                <span>姓と名の区別がない名前です（外国籍の方など）<br><span style="font-size:10px;">Check here if your name has no separate first and last name</span></span>
+              </label>
             </div>
           </div>
 
@@ -457,7 +461,7 @@
             <div class="f-label">ふりがな<span class="req">必須</span></div>
             <div>
               <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
+                <div style="flex:1;" id="sei-kana-col">
                   <input type="text" name="sei_kana" id="sei_kana" placeholder="せい　例）やまだ">
                 </div>
                 <div style="flex:1;">
@@ -924,16 +928,37 @@ const fieldErrMap = {
         document.getElementById('error-banner').style.display = 'none';
       });
     });
+    // 姓と名の区別がない名前（単一名）の切り替え
+    const singleNameCb = document.getElementById('single-name');
+    if (singleNameCb) singleNameCb.addEventListener('change', toggleSingleName);
     // 生年月日ピッカー選択時（closeBdPickerで処理済みのため不要）
   });
 
+  function toggleSingleName() {
+    const cb = document.getElementById('single-name');
+    const checked = !!(cb && cb.checked);
+    const seiCol = document.getElementById('sei-col');
+    const seiKanaCol = document.getElementById('sei-kana-col');
+    const sei = document.getElementById('sei');
+    const seiKana = document.getElementById('sei_kana');
+    if (seiCol) seiCol.style.display = checked ? 'none' : '';
+    if (seiKanaCol) seiKanaCol.style.display = checked ? 'none' : '';
+    if (checked) {
+      if (sei) { sei.value = ''; sei.classList.remove('err'); }
+      if (seiKana) { seiKana.value = ''; seiKana.classList.remove('err'); }
+    }
+    document.getElementById('err-name').classList.remove('show');
+    document.getElementById('err-kana').classList.remove('show');
+  }
+
   function validate() {
     let ok = true;
+    const isSingleName = !!document.getElementById('single-name')?.checked;
     const checks = [
       { id: 'payment',   errId: 'err-payment',   type: 'select' },
-      { id: 'sei',       errId: 'err-name' },
+      ...(isSingleName ? [] : [{ id: 'sei', errId: 'err-name' }]),
       { id: 'mei',       errId: 'err-name' },
-      { id: 'sei_kana',  errId: 'err-kana' },
+      ...(isSingleName ? [] : [{ id: 'sei_kana', errId: 'err-kana' }]),
       { id: 'mei_kana',  errId: 'err-kana' },
       { id: 'birthdate', errId: 'err-birthdate' },
       { id: 'phone',     errId: 'err-phone' },
@@ -1002,6 +1027,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
   function getVals() {
     const fd = new FormData(document.getElementById('the-form'));
     const isAlt = fd.get('alt_addr') === '別の住所に送る';
+    const isSingleName = !!document.getElementById('single-name')?.checked;
     return {
       course:     'オンライン初任者研修',
       fee:        '33,000円（税込）',
@@ -1009,8 +1035,9 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       payment:    fd.get('payment'),
       ojt:        fd.get('ojt'),
       ojtDeclared: fd.get('ojt') === 'ある' ? 'has' : 'none',
-      name:       (fd.get('sei') || '') + '　' + (fd.get('mei') || ''),
-      kana:       (fd.get('sei_kana') || '') + '　' + (fd.get('mei_kana') || ''),
+      name:       isSingleName ? (fd.get('mei') || '') : (fd.get('sei') || '') + '　' + (fd.get('mei') || ''),
+      kana:       isSingleName ? (fd.get('mei_kana') || '') : (fd.get('sei_kana') || '') + '　' + (fd.get('mei_kana') || ''),
+      singleName: isSingleName,
       gender:     fd.get('gender'),
       birthdate: document.getElementById('birthdate').value,
       phone:      fd.get('phone'),
@@ -1227,6 +1254,9 @@ const payment = window.__formVals.payment;
     if (ojt) draft.ojt = ojt.value;
     const altAddr = document.querySelector('[name="alt_addr"]:checked');
     if (altAddr) draft.alt_addr = altAddr.value;
+    // 単一名チェックボックス
+    const singleName = document.getElementById('single-name');
+    if (singleName) draft.singleName = singleName.checked;
     // 生年月日
     const bd = document.getElementById('birthdate');
     if (bd) draft.birthdate = bd.value;
@@ -1255,6 +1285,11 @@ const payment = window.__formVals.payment;
         const r = document.querySelector('[name="ojt"][value="' + draft.ojt + '"]');
         if (r) r.checked = true;
       }
+      // 単一名チェックボックス復元
+      if (draft.singleName) {
+        const cb = document.getElementById('single-name');
+        if (cb) { cb.checked = true; toggleSingleName(); }
+      }
       if (draft.alt_addr) {
         const r = document.querySelector('[name="alt_addr"][value="' + draft.alt_addr + '"]');
         if (r) { r.checked = true; toggleAltAddr(); }
@@ -1275,6 +1310,8 @@ const payment = window.__formVals.payment;
   document.querySelectorAll('[name="gender"],[name="textbook"],[name="alt_addr"],[name="payment"]').forEach(el => {
     el.addEventListener('change', saveFormDraft);
   });
+  const singleNameSaveEl = document.getElementById('single-name');
+  if (singleNameSaveEl) singleNameSaveEl.addEventListener('change', saveFormDraft);
 
   // 送信完了後にドラフトを削除
   window.__clearFormDraft = function() {
