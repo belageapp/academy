@@ -4140,16 +4140,8 @@ async function doLogin() {
   }
   window.openFacilityEditModal = openFacilityEditModal;
 
-  function openFacilityRegFromVenue(appId) {
-    const app = all.find(a => a.id === appId);
-    if (!app) return;
-    const v = app.practiceVenue || {};
-    // 既に施設と紐付け済みなら既存施設の編集モーダルを開く（重複作成防止）
-    if (app.linkedFacilityId) {
-      openFacilityEditModal(app.linkedFacilityId);
-      return;
-    }
-    openFacilityEditModal(null, {
+  function facilityPrefillFromVenue(appId, v) {
+    return {
       __appId: appId,
       corpName: v.corp || '',
       name: v.name || '',
@@ -4160,9 +4152,97 @@ async function doLogin() {
       deptName: v.dept || '',
       contactName: v.contact || '',
       contactEmail: v.email || '',
-    });
+    };
+  }
+
+  // 受講生の申告名は正式名称と限らないため、空白を除いた双方向の部分一致で候補を探す
+  async function findSimilarFacilities(reportedName) {
+    const norm = s => (s || '').replace(/[\s　]/g, '');
+    const target = norm(reportedName);
+    if (!target) return [];
+    const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDocs(collection(window.__db, 'facilities'));
+    return snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(f => {
+        const fn = norm(f.name);
+        return fn && (fn.includes(target) || target.includes(fn));
+      });
+  }
+
+  async function openFacilityRegFromVenue(appId) {
+    const app = all.find(a => a.id === appId);
+    if (!app) return;
+    const v = app.practiceVenue || {};
+    // 既に施設と紐付け済みなら既存施設の編集モーダルを開く（重複作成防止）
+    if (app.linkedFacilityId) {
+      openFacilityEditModal(app.linkedFacilityId);
+      return;
+    }
+    const candidates = await findSimilarFacilities(v.name || '');
+    if (candidates.length) {
+      openFacilityDupeModal(appId, v, candidates);
+    } else {
+      openFacilityEditModal(null, facilityPrefillFromVenue(appId, v));
+    }
   }
   window.openFacilityRegFromVenue = openFacilityRegFromVenue;
+
+  let __facilityDupeAppId = null;
+  let __facilityDupeVenue = null;
+
+  function openFacilityDupeModal(appId, v, candidates) {
+    __facilityDupeAppId = appId;
+    __facilityDupeVenue = v;
+    const el = document.getElementById('fdupe-list');
+    el.innerHTML = candidates.map(f => {
+      const addr = (f.zip ? '〒'+f.zip+' ' : '') + (f.address || '');
+      const contact = [f.deptName, f.contactName].filter(Boolean).join(' ') + (f.contactEmail ? ' / '+f.contactEmail : '');
+      return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+        ${f.corpName ? `<div style="font-size:11px;color:var(--text-light);">${f.corpName}</div>` : ''}
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${f.name||'—'}</div>
+        ${addr.trim() ? `<div style="font-size:12px;color:var(--text-mid);">📍 ${addr}</div>` : ''}
+        ${f.tel ? `<div style="font-size:12px;color:var(--text-mid);">☎ ${f.tel}</div>` : ''}
+        ${contact.trim() ? `<div style="font-size:12px;color:var(--text-mid);">👤 ${contact}</div>` : ''}
+        <button onclick="linkFacilityDupe('${f.id}')" style="margin-top:8px;padding:6px 14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">この施設に紐付ける</button>
+      </div>`;
+    }).join('');
+    document.getElementById('facility-dupe-modal').style.display = 'block';
+  }
+  window.openFacilityDupeModal = openFacilityDupeModal;
+
+  function closeFacilityDupeModal() {
+    document.getElementById('facility-dupe-modal').style.display = 'none';
+    __facilityDupeAppId = null;
+    __facilityDupeVenue = null;
+  }
+  window.closeFacilityDupeModal = closeFacilityDupeModal;
+
+  async function linkFacilityDupe(facilityId) {
+    const appId = __facilityDupeAppId;
+    if (!appId || !facilityId) return;
+    try {
+      const { doc, updateDoc, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'facilities', facilityId), { linkedApplicationIds: arrayUnion(appId) });
+      await updateDoc(doc(window.__db, 'applications', appId), { linkedFacilityId: facilityId });
+      const a = all.find(x => x.id === appId);
+      if (a) a.linkedFacilityId = facilityId;
+
+      closeFacilityDupeModal();
+      showToast('既存の施設に紐付けました', 'success');
+      if (__venueCache) renderVenueTable();
+      if (__ojtCache) renderOjtTable();
+    } catch(e) { alert('エラー：' + e.message); }
+  }
+  window.linkFacilityDupe = linkFacilityDupe;
+
+  function proceedNewFacilityFromDupe() {
+    const appId = __facilityDupeAppId;
+    const v = __facilityDupeVenue || {};
+    closeFacilityDupeModal();
+    openFacilityEditModal(null, facilityPrefillFromVenue(appId, v));
+  }
+  window.proceedNewFacilityFromDupe = proceedNewFacilityFromDupe;
 
   function closeFacilityEditModal() {
     document.getElementById('facility-edit-modal').style.display = 'none';
@@ -6426,6 +6506,21 @@ async function doLogin() {
   }
   window.saveAutoNoticeSetting = saveAutoNoticeSetting;
 </script>
+
+<!-- 施設重複チェックモーダル -->
+<div id="facility-dupe-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9100;overflow:auto;">
+  <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden;">
+    <div style="padding:16px 20px;background:#E8701A;color:#fff;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:700;">⚠️ 似た名前の施設が見つかりました</div>
+      <button onclick="closeFacilityDupeModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">受講生が届け出た施設名と似た名前の施設が既に登録されています。法人名・住所を確認し、同じ施設であれば紐付けてください（重複登録を防げます）。別の施設であれば下の「新規登録する」を押してください。</p>
+      <div id="fdupe-list" style="display:grid;gap:10px;margin-bottom:16px;"></div>
+      <button onclick="proceedNewFacilityFromDupe()" style="width:100%;padding:11px;background:#fff;color:var(--text-mid);border:1.5px dashed var(--border);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">該当なし・新規登録する</button>
+    </div>
+  </div>
+</div>
 
 <!-- 施設登録モーダル -->
 <!-- 施設登録・編集モーダル -->
