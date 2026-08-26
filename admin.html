@@ -1706,12 +1706,20 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    <strong>①まずはセルフサービスでのリセットを案内</strong><br>
-                    受講生マイページのログイン画面（<code>mypage_login.html</code>）に<strong>「パスワードをお忘れの方はこちら」</strong>リンクがあります。メールアドレスを入力して送信するとパスワードリセットメールが届きます。
+                    受講生マイページのログイン画面（<code>mypage_login.html</code>）に<strong>「パスワードをお忘れの方はこちら」</strong>リンクがあります。メールアドレスを入力して送信するとパスワードリセットメールが届きます。受講生に案内してください。
                     <div class="note">📌 迷惑メールフォルダに入っている場合があります。合わせてご案内ください。</div>
+                    <div class="note">📌 そもそも最初のお申し込み確認メールも届いていない・見たことがない、という場合は次の「お申し込み確認メールが届いていない」もご確認ください。</div>
+                  </div>
+                </div>
 
-                    <strong>②お申し込み確認メール自体が最初から届いていない場合</strong><br>
-                    docomo・au（ezweb.ne.jp）・SoftBankなどのキャリアメールは、初期設定でPCドメイン（<code>info@holiscare.or.jp</code>）からのメールを拒否していることが多く、迷惑メールフォルダにも入らずメールが消えてしまうことがあります。この場合は①のリセットメールも同様に届かない可能性が高いため、以下の対応をしてください。
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">お申し込み確認メールが届いていない</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    docomo・au（ezweb.ne.jp）・SoftBankなどのキャリアメールは、初期設定でPCドメイン（<code>info@holiscare.or.jp</code>）からのメールを拒否していることが多く、迷惑メールフォルダにも入らずメールが消えてしまうことがあります。この場合、後から送るパスワードリセットメールも同様に届かない可能性が高いため、以下の対応をしてください。
                     <ul>
                       <li>受講生に、キャリアメール側で<code>holiscare.or.jp</code>ドメインの受信を許可する設定をしてもらう（今後のメールのためにも推奨）</li>
                       <li>登録メールアドレスに誤りがないか本人に確認する</li>
@@ -1920,10 +1928,21 @@
                     <li>リセットメールが届かない場合は<strong>迷惑メールフォルダ</strong>をご確認いただくよう伝えてください</li>
                     <li>メールアドレス自体が不明な場合は、申し込み管理で登録メールアドレスを確認して案内してください</li>
                   </ul>
+                  <div class="note" style="margin-top:10px;">📌 そもそも最初のお申し込み確認メールも届いていない・見たことがない、という場合は次の「お申し込み確認メールが届いていない」もご確認ください。</div>
+                </div>
+              </div>
 
-                  <div class="note" style="margin-top:10px;">📌 <strong>キャリアメール（docomo・au／ezweb.ne.jp・SoftBankなど）の場合、リセットメールも届かないことがあります。</strong>これらのキャリアは初期設定でPCドメイン（<code>info@holiscare.or.jp</code>）からのメールを拒否しており、迷惑メールフォルダにも入らず届かないことがあるためです。この場合は以下の手順で対応してください。</div>
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">お申し込み確認メールが届いていない</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  docomo・au（ezweb.ne.jp）・SoftBankなどのキャリアメールは、初期設定でPCドメイン（<code>info@holiscare.or.jp</code>）からのメールを拒否していることが多く、迷惑メールフォルダにも入らず届かないことがあります。この場合、後から送るパスワードリセットメールも同様に届かない可能性が高いため、以下の手順で対応してください。
                   <ul>
                     <li>受講生に、キャリアメール側で<code>holiscare.or.jp</code>ドメインの受信を許可する設定をしてもらう（今後のメールのためにも推奨）</li>
+                    <li>登録メールアドレスに誤りがないか本人に確認する</li>
                     <li>解決しない場合は開発担当（Claude／システム管理者）に依頼して仮パスワードを発行してもらい、<strong>電話などメール以外の方法</strong>でログインURL（<code>https://belageapp.github.io/academy/mypage_login.html</code>）・メールアドレス（ログインID）・仮パスワードの3点を受講生にお伝えする</li>
                     <li>受講生には、ログイン後に改めて「パスワードをお忘れの方はこちら」で自分のパスワードに変更してもらうよう案内する</li>
                   </ul>
