@@ -2820,10 +2820,14 @@ async function doLogin() {
   }
   window.closeDeleteConfirm = closeDeleteConfirm;
 
+  // 全角/半角スペース・前後の空白の違いを無視して比較する
+  function normalizeNameForConfirm(s) {
+    return (s || '').trim().replace(/[\s　]+/g, ' ');
+  }
   document.getElementById('delete-confirm-input').addEventListener('input', function() {
     const a = all.find(x => x.id === curId);
     const btn = document.getElementById('delete-confirm-btn');
-    const match = a && this.value === a.name;
+    const match = a && normalizeNameForConfirm(this.value) === normalizeNameForConfirm(a.name);
     btn.disabled = !match;
     btn.style.background = match ? '#B91C1C' : '#D1D5DB';
     btn.style.cursor = match ? 'pointer' : 'not-allowed';
