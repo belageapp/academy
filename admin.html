@@ -2820,9 +2820,9 @@ async function doLogin() {
   }
   window.closeDeleteConfirm = closeDeleteConfirm;
 
-  // 全角/半角スペース・前後の空白の違いを無視して比較する
+  // スペース（全角/半角・個数・位置）の違いを無視して比較する
   function normalizeNameForConfirm(s) {
-    return (s || '').trim().replace(/[\s　]+/g, ' ');
+    return (s || '').replace(/\s+/g, '');
   }
   document.getElementById('delete-confirm-input').addEventListener('input', function() {
     const a = all.find(x => x.id === curId);
