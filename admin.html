@@ -2357,12 +2357,33 @@
         <div id="modal-inquiry-list"><span style="font-size:13px;color:var(--text-light);">読み込み中…</span></div>
       </div>
 
+      <!-- アカウント操作：ログインメールアドレス変更（変更権限を持つ管理者のみ） -->
+      <div id="app-email-change-section" class="modal-sec" style="display:none;border:1.5px solid #FDBA74;border-radius:10px;padding:14px 16px;">
+        <div class="modal-sec-hd" style="color:#C2410C;">🔑 アカウント操作</div>
+        <p style="font-size:12px;color:var(--text-mid);line-height:1.7;margin:0 0 10px;">ログイン用メールアドレスを変更します。新しいメールアドレスで別のログインアカウントを作成し、新しいログイン情報（仮パスワード）をそのメールアドレス宛に送信します（既存のログインアカウントはそのまま残ります）。</p>
+        <button onclick="openEmailChangeConfirm()" style="padding:9px 16px;background:#fff;color:#C2410C;border:1.5px solid #C2410C;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📧 ログインメールアドレスを変更する</button>
+      </div>
+
       <!-- 危険な操作：申込削除（入金前のみ・削除権限を持つ管理者のみ） -->
       <div id="app-delete-section" class="modal-sec" style="display:none;border:1.5px solid #FCA5A5;border-radius:10px;padding:14px 16px;">
         <div class="modal-sec-hd" style="color:#B91C1C;">⚠️ 危険な操作</div>
         <p style="font-size:12px;color:var(--text-mid);line-height:1.7;margin:0 0 10px;">重複申込・誤入力など、記録として残す必要のない申込のみ削除してください。削除前の内容は自動的に控えを残しますが、通常の運用は「キャンセル」ステータスをご利用ください。</p>
         <button onclick="openDeleteConfirm()" style="padding:9px 16px;background:#fff;color:#B91C1C;border:1.5px solid #B91C1C;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ この申込を削除する</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ログインメールアドレス変更の確認モーダル -->
+<div id="email-change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
+    <div style="font-size:15px;font-weight:700;color:#C2410C;margin-bottom:10px;">ログインメールアドレスを変更しますか？</div>
+    <p style="font-size:13px;color:var(--text-mid);line-height:1.7;margin:0 0 14px;">現在のメールアドレス：<strong id="email-change-current"></strong><br>新しいメールアドレスで別のログインアカウントを作成し、ログイン情報を自動送信します。</p>
+    <input id="email-change-input" type="email" placeholder="新しいメールアドレス" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:16px;">
+    <div id="email-change-error" style="display:none;color:#B91C1C;font-size:12px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeEmailChangeConfirm()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button id="email-change-btn" onclick="executeEmailChange()" style="flex:1;padding:10px;border:none;border-radius:8px;background:#C2410C;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">変更する</button>
     </div>
   </div>
 </div>
@@ -2577,6 +2598,7 @@
         return;
       }
       window.__canDelete = adminSnap.data().canDelete === true;
+      window.__canChangeEmail = adminSnap.data().canChangeEmail === true;
 
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
@@ -2833,6 +2855,9 @@ async function doLogin() {
   const deleteSection = document.getElementById('app-delete-section');
   deleteSection.style.display = (window.__canDelete && DELETABLE_STATUSES.includes(a.status || 'pending')) ? 'block' : 'none';
 
+  // メールアドレス変更セクションの表示判定（変更権限を持つ管理者のみ）
+  document.getElementById('app-email-change-section').style.display = window.__canChangeEmail ? 'block' : 'none';
+
   document.getElementById('modal').classList.add('open');
   }
   window.openModal = openModal;
@@ -2897,6 +2922,62 @@ async function doLogin() {
     }
   }
   window.executeDeleteApplication = executeDeleteApplication;
+
+  // ===== ログインメールアドレス変更（アカウント操作） =====
+  function openEmailChangeConfirm() {
+    const a = all.find(x => x.id === curId);
+    if (!a) return;
+    document.getElementById('email-change-current').textContent = a.email || '（未登録）';
+    document.getElementById('email-change-input').value = '';
+    document.getElementById('email-change-error').style.display = 'none';
+    const btn = document.getElementById('email-change-btn');
+    btn.disabled = false;
+    btn.textContent = '変更する';
+    document.getElementById('email-change-modal').style.display = 'flex';
+  }
+  window.openEmailChangeConfirm = openEmailChangeConfirm;
+
+  function closeEmailChangeConfirm() {
+    document.getElementById('email-change-modal').style.display = 'none';
+  }
+  window.closeEmailChangeConfirm = closeEmailChangeConfirm;
+
+  async function executeEmailChange() {
+    const id = curId;
+    const a = all.find(x => x.id === id);
+    if (!a || !window.__canChangeEmail) return;
+    const newEmail = document.getElementById('email-change-input').value.trim();
+    const errEl = document.getElementById('email-change-error');
+    errEl.style.display = 'none';
+    if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      errEl.textContent = '正しいメールアドレスを入力してください';
+      errEl.style.display = 'block';
+      return;
+    }
+    const btn = document.getElementById('email-change-btn');
+    btn.disabled = true;
+    btn.textContent = '変更中…';
+    try {
+      const idToken = await window.__auth.currentUser.getIdToken();
+      const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/changeStudentEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+        body: JSON.stringify({ docId: id, newEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '変更に失敗しました');
+      closeEmailChangeConfirm();
+      closeModal();
+      window.loadData && window.loadData();
+      alert('メールアドレスを変更しました。\n\n新しいログイン情報\nURL：https://belageapp.github.io/academy/mypage_login.html\nメールアドレス：' + data.newEmail + '\n初期パスワード：' + data.tempPassword + '\n\n本人にメールが届いていない場合は、この内容を別の方法（電話等）でお伝えください。');
+    } catch(e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '変更する';
+    }
+  }
+  window.executeEmailChange = executeEmailChange;
 
   function closeModal() { document.getElementById('modal').classList.remove('open'); curId=null; }
   window.closeModal = closeModal;
