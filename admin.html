@@ -225,6 +225,10 @@
     .export-btn:hover { opacity: 0.9; }
 
     .tbl-wrap { overflow-x: auto; }
+    /* 申し込み管理：行数が多いと横スクロールバーが画面外（一番下）まで下がってしまうため、
+       表示エリアの高さを画面基準で制限し、内側でスクロールさせる（縦・横スクロールバーが常に画面内に収まる） */
+    .tbl-wrap-tall { max-height: 65vh; overflow-y: auto; }
+    .tbl-wrap-tall thead th { position: sticky; top: 0; z-index: 1; background: #F8FDFE; }
     table { width: 100%; border-collapse: collapse; min-width: 700px; }
     thead tr { background: #F8FDFE; }
     th {
@@ -747,7 +751,7 @@
             </label>
           </div>
         </div>
-        <div class="tbl-wrap">
+        <div class="tbl-wrap tbl-wrap-tall">
           <table id="app-table">
             <thead>
               <tr>
