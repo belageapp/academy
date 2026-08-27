@@ -6114,26 +6114,37 @@ async function doLogin() {
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">レポートはまだありません。</p>'; return; }
       const showTest = document.getElementById('show-test-report')?.checked;
+      const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP') : '—';
+      const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('ja-JP'); };
       let html = '';
       snap.docs.forEach(d => {
         const a = d.data();
         if (!showTest && a.isTest) return;
         const r = a.report || {};
-        const date = a.reportSubmittedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const name = `${a.sei||''}${a.mei||''}`;
+        const date = fmtD(a.reportSubmittedAt);
+        const approvedDate = fmtD(a.reportApprovedAt);
+        const deadline = fmtLimit(a.activeAt, 8);
         const isApproved = a.reportApproved === true;
-        html += `<div style="background:white;border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div>
-              <span style="font-size:14px;font-weight:700;">${a.sei||''}${a.mei||''}</span>
-              <span style="font-size:12px;color:#888;margin-left:8px;">${a.email||''}</span>
+        // 承認済みは閉じた状態、未承認は開いた状態で初期表示
+        html += `<div class="rpt-item" style="background:white;border:1px solid #eee;border-radius:10px;margin-bottom:12px;overflow:hidden;">
+          <div class="rpt-header" onclick="reportToggle(this)" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <span style="font-size:12px;color:#888;font-family:monospace;">${a.studentNo||'—'}</span>
+              <span style="font-size:14px;font-weight:700;">${name}</span>
+              <span style="font-size:12px;color:#888;">${a.email||''}</span>
+              <span style="font-size:12px;color:#888;">提出日：${date}</span>
+              ${isApproved ? `<span style="font-size:12px;color:#888;">承認日：${approvedDate}</span>` : ''}
+              <span style="font-size:12px;color:#888;">修了期限：${deadline}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#888;">提出日：${date}</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
               ${isApproved
-                ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>'
-                : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">確認中</span>'}
+                ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;">承認済み</span>'
+                : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;">確認中</span>'}
+              <span class="rpt-arrow" style="font-size:14px;color:#aaa;">${isApproved ? '▼' : '▲'}</span>
             </div>
           </div>
+          <div class="rpt-body" style="display:${isApproved ? 'none' : 'block'};padding:0 16px 16px;">
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
             ${[['①介護における「尊厳」とは何か',r.q1],['②利用者理解で大切なこと',r.q2],['③コミュニケーションで大切にしたいこと',r.q3],['④介護実技における安全と配慮',r.q4],['⑤今後の目標',r.q5]].map(([q,a])=>`
               <div style="background:#F9FAFB;border-radius:8px;padding:10px;">
@@ -6144,9 +6155,10 @@ async function doLogin() {
           </div>
           ${!isApproved ? `
           <div style="display:flex;gap:8px;">
-            <button onclick="approveReport('${d.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">承認</button>
-            <button onclick="rejectReport('${d.id}','${a.email}','${a.sei||''}${a.mei||''}')" style="padding:6px 16px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">差し戻し</button>
+            <button onclick="event.stopPropagation();approveReport('${d.id}','${a.email}','${name}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">承認</button>
+            <button onclick="event.stopPropagation();rejectReport('${d.id}','${a.email}','${name}')" style="padding:6px 16px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">差し戻し</button>
           </div>` : ''}
+          </div>
         </div>`;
       });
       el.innerHTML = html;
@@ -6215,6 +6227,14 @@ async function doLogin() {
   }
 
   window.loadReportList = loadReportList;
+  function reportToggle(header) {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('.rpt-arrow');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+  }
+  window.reportToggle = reportToggle;
   window.approveReport = approveReport;
   window.rejectReport = rejectReport;
   async function sendBothApprovedNotice(docId, email, name) {
