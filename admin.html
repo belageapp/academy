@@ -487,6 +487,14 @@
       width: 210mm; height: 297mm; position: relative; page-break-after: always;
     }
     .bulk-card-print-sheet:last-child { page-break-after: avoid; }
+
+    /* 修了レポート単票印刷: body に report-print-mode を付けて report-print-area だけ表示 */
+    body.report-print-mode > * { display: none !important; }
+    body.report-print-mode > #report-print-area { display: block !important; }
+    .report-print-page {
+      width: 210mm; min-height: 297mm; box-sizing: border-box;
+      padding: 15mm 18mm; font-family: 'Noto Sans JP', sans-serif; color: #000;
+    }
   }
 
   /* 一括印刷 UI */
@@ -2563,6 +2571,7 @@
 <!-- 一括印刷用コンテナ（hidden） -->
 <div id="bulk-a4-print-all" style="display:none;"></div>
 <div id="bulk-card-print-all" style="display:none;"></div>
+<div id="report-print-area" style="display:none;"></div>
 
 <!-- 発行履歴スナップショットモーダル -->
 <div id="snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11000;align-items:center;justify-content:center;overflow:auto;">
@@ -6162,11 +6171,12 @@ async function doLogin() {
                     <div style="font-size:11px;color:#888;text-align:right;margin-top:2px;">${(v||'').length}字</div>
                   </div>`).join('')}
               </div>
-              ${!isApproved ? `
               <div style="display:flex;gap:8px;">
+                ${!isApproved ? `
                 <button onclick="event.stopPropagation();approveReport('${a.__id}','${a.email}','${name}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">承認</button>
-                <button onclick="event.stopPropagation();rejectReport('${a.__id}','${a.email}','${name}')" style="padding:6px 16px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">差し戻し</button>
-              </div>` : ''}
+                <button onclick="event.stopPropagation();rejectReport('${a.__id}','${a.email}','${name}')" style="padding:6px 16px;background:#f44336;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">差し戻し</button>` : ''}
+                <button onclick="event.stopPropagation();printReport('${a.__id}')" style="padding:6px 16px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ 印刷</button>
+              </div>
             </td>
           </tr>`;
       }).join('');
@@ -6273,6 +6283,45 @@ async function doLogin() {
     if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
   }
   window.reportToggle = reportToggle;
+
+  function reportPrintHTML(a) {
+    const r = a.report || {};
+    const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
+    const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP') : '—';
+    const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('ja-JP'); };
+    const isApproved = a.reportApproved === true;
+    const rows = [
+      ['受講生番号', a.studentNo || '—'],
+      ['氏名', name],
+      ['メールアドレス', a.email || '—'],
+      ['提出日', fmtD(a.reportSubmittedAt)],
+      ['承認日', isApproved ? fmtD(a.reportApprovedAt) : '（未承認）'],
+      ['修了期限', fmtLimit(a.activeAt, 8)],
+    ];
+    return `<div class="report-print-page">
+      <h1 style="font-size:20px;border-bottom:2px solid #333;padding-bottom:10px;margin:0 0 20px;">修了レポート</h1>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;">
+        ${rows.map(([k,v]) => `<tr><td style="width:130px;color:#666;padding:5px 0;">${k}</td><td style="font-weight:700;">${v}</td></tr>`).join('')}
+      </table>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        ${[['①介護における「尊厳」とは何か',r.q1],['②利用者理解で大切なこと',r.q2],['③コミュニケーションで大切にしたいこと',r.q3],['④介護実技における安全と配慮',r.q4],['⑤今後の目標',r.q5]].map(([q,v])=>`
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${q}</div>
+            <div style="font-size:13px;line-height:1.9;white-space:pre-wrap;">${v||'—'}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  function printReport(id) {
+    const a = __reportCache.find(x => x.__id === id);
+    if (!a) return;
+    document.getElementById('report-print-area').innerHTML = reportPrintHTML(a);
+    document.body.classList.add('report-print-mode');
+    window.print();
+    document.body.classList.remove('report-print-mode');
+  }
+  window.printReport = printReport;
   window.approveReport = approveReport;
   window.rejectReport = rejectReport;
   async function sendBothApprovedNotice(docId, email, name) {
