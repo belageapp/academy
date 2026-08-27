@@ -1694,7 +1694,7 @@
 
                   <h4>管理者を追加する</h4>
                   <ul>
-                    <li>「＋ 管理者を追加」から、お名前・メールアドレス（ログインID）を入力し、その方に許可する操作（申込の削除／ログインメールアドレスの変更）にチェックを入れて追加します</li>
+                    <li>「＋ 管理者を追加」から、姓・名・メールアドレス（ログインID）を入力し、その方に許可する操作（申込の削除／ログインメールアドレスの変更）にチェックを入れて追加します</li>
                     <li>追加すると、その場でログイン用の初期パスワードが表示されます。安全な方法（電話など）で本人に伝えてください。この初期パスワードは後から確認できないため、その場でメモしておいてください</li>
                   </ul>
 
@@ -2449,9 +2449,15 @@
 <div id="add-admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
   <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
     <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:14px;">管理者を追加</div>
-    <div style="margin-bottom:10px;">
-      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">お名前</label>
-      <input id="add-admin-name" type="text" placeholder="例）山田太郎" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+    <div style="margin-bottom:10px;display:flex;gap:10px;">
+      <div style="flex:1;">
+        <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">姓</label>
+        <input id="add-admin-sei" type="text" placeholder="山田" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">名</label>
+        <input id="add-admin-mei" type="text" placeholder="太郎" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+      </div>
     </div>
     <div style="margin-bottom:14px;">
       <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">メールアドレス（ログインID）</label>
@@ -3133,7 +3139,8 @@ async function doLogin() {
   window.toggleAdminFlag = toggleAdminFlag;
 
   function openAddAdminModal() {
-    document.getElementById('add-admin-name').value = '';
+    document.getElementById('add-admin-sei').value = '';
+    document.getElementById('add-admin-mei').value = '';
     document.getElementById('add-admin-email').value = '';
     document.getElementById('add-admin-canDelete').checked = false;
     document.getElementById('add-admin-canChangeEmail').checked = false;
@@ -3151,7 +3158,8 @@ async function doLogin() {
   window.closeAddAdminModal = closeAddAdminModal;
 
   async function submitAddAdmin() {
-    const name = document.getElementById('add-admin-name').value.trim();
+    const sei = document.getElementById('add-admin-sei').value.trim();
+    const mei = document.getElementById('add-admin-mei').value.trim();
     const email = document.getElementById('add-admin-email').value.trim();
     const canDelete = document.getElementById('add-admin-canDelete').checked;
     const canChangeEmail = document.getElementById('add-admin-canChangeEmail').checked;
@@ -3170,7 +3178,7 @@ async function doLogin() {
       const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createAdminAccount', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
-        body: JSON.stringify({ email, name, canDelete, canChangeEmail }),
+        body: JSON.stringify({ email, sei, mei, canDelete, canChangeEmail }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '追加に失敗しました');
