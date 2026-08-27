@@ -666,6 +666,11 @@
     <div class="sb-item" id="menu-certificate" onclick="if(window.showSection)window.showSection('certificate')"><span class="ico">📜</span>正式修了証明書発行<span id="certificate-badge" style="display:none;margin-left:auto;background:#F06292;color:#fff;border-radius:10px;font-size:11px;padding:2px 7px;font-weight:700;"></span></div>
     <div class="sb-item" id="menu-autonotice" onclick="if(window.showSection)window.showSection('autonotice')"><span class="ico">⏰</span>自動通知設定</div>
     <div class="sb-item" id="menu-sales" onclick="if(window.showSection)window.showSection('sales')"><span class="ico">💴</span>決済・売上</div>
+    <div id="sb-section-system" style="display:none;">
+      <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
+      <div class="sb-section">システム管理</div>
+      <div class="sb-item" id="menu-users" onclick="if(window.showSection)window.showSection('users')"><span class="ico">👥</span>ユーザー管理</div>
+    </div>
     <div style="margin:10px 16px 0;border-top:1px solid rgba(255,255,255,0.12);"></div>
     <div class="sb-section">管理ガイド</div>
     <div class="sb-item" id="menu-guide" onclick="if(window.showSection)window.showSection('guide')"><span class="ico">📖</span>管理機能ガイド</div>
@@ -1140,6 +1145,22 @@
         </div>
       </div><!-- /section-sales -->
 
+      <div id="section-users" style="display:none;">
+        <div class="tcard">
+          <div class="thead">
+            <div class="thead-title">👥 管理者アカウント</div>
+            <div class="thead-acts">
+              <button class="refresh-btn" onclick="loadAdminsList()">🔄 更新</button>
+              <button onclick="openAddAdminModal()" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">＋ 管理者を追加</button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;font-size:12px;color:var(--text-mid);line-height:1.7;">
+            管理画面にログインできる人を管理します。ここでの操作ができるのはオーナー（長谷川）のみです。追加した管理者には、この画面に表示される初期パスワードを電話など安全な方法でお伝えください。
+          </div>
+          <div class="tbl-wrap"><div id="admins-list" style="min-height:60px;padding:0 20px 20px;">読み込み中…</div></div>
+        </div>
+      </div><!-- /section-users -->
+
       <div id="section-guide" style="display:none;">
         <div class="tcard">
           <div class="thead">
@@ -1180,6 +1201,7 @@
               <button onclick="guideJump('g-certificate')"   class="gjump">📜 正式修了証明書発行</button>
               <button onclick="guideJump('g-autonotice')"    class="gjump">⏰ 自動通知設定</button>
               <button onclick="guideJump('g-sales')"         class="gjump">💴 決済・売上</button>
+              <button onclick="guideJump('g-users')"         class="gjump">👥 ユーザー管理</button>
             </div>
 
             <style>
@@ -1659,6 +1681,31 @@
                     <li><strong>KPIカード</strong>：年間売上・入金件数・返金総額・平均単価を表示</li>
                   </ul>
                   <div class="note">📌 売上集計はステータスが「入金待ち・キャンセル・退講」以外の有効申込を対象としています。</div>
+                </div>
+              </div>
+
+              <div class="guide-section" id="g-users">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">👥 ユーザー管理</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>管理画面にログインできる人（管理者アカウント）を管理します。この画面は<strong>オーナー（長谷川）のみ</strong>が使えます。サイドバーにも、オーナーでログインしたときだけ「ユーザー管理」が表示されます。</p>
+
+                  <h4>管理者を追加する</h4>
+                  <ul>
+                    <li>「＋ 管理者を追加」から、お名前・メールアドレス（ログインID）を入力し、その方に許可する操作（申込の削除／ログインメールアドレスの変更）にチェックを入れて追加します</li>
+                    <li>追加すると、その場でログイン用の初期パスワードが表示されます。安全な方法（電話など）で本人に伝えてください。この初期パスワードは後から確認できないため、その場でメモしておいてください</li>
+                  </ul>
+
+                  <h4>権限の変更・アカウントの無効化</h4>
+                  <ul>
+                    <li>一覧の「申込削除」「メール変更」の欄にあるボタンをクリックすると、許可・不許可を切り替えられます</li>
+                    <li>「状態」欄のボタンで、その管理者を一時的に無効化（ログインできなくする）できます。アカウント自体は削除されないため、後で「有効」に戻せば元通り使えます</li>
+                    <li>オーナー自身の行は変更できません（誤って自分を無効化してしまうことを防ぐためです）</li>
+                  </ul>
+
+                  <div class="note">📌 現在、長谷川がオーナー、佐々木・吉本が管理者として登録されています。オーナー権限自体（他の人をオーナーにする等）はこの画面から変更できません。必要な場合は開発担当（Claude／システム管理者）にご相談ください。</div>
                 </div>
               </div>
 
@@ -2398,6 +2445,34 @@
   </div>
 </div>
 
+<!-- 管理者を追加するモーダル -->
+<div id="add-admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
+    <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:14px;">管理者を追加</div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">お名前</label>
+      <input id="add-admin-name" type="text" placeholder="例）山田太郎" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">メールアドレス（ログインID）</label>
+      <input id="add-admin-email" type="email" placeholder="例）yamada@holiscare.or.jp" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer;">
+        <input id="add-admin-canDelete" type="checkbox" style="width:16px;height:16px;cursor:pointer;">申込の削除を許可する
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer;">
+        <input id="add-admin-canChangeEmail" type="checkbox" style="width:16px;height:16px;cursor:pointer;">ログインメールアドレスの変更を許可する
+      </label>
+    </div>
+    <div id="add-admin-error" style="display:none;color:#B91C1C;font-size:12px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeAddAdminModal()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;cursor:pointer;font-family:inherit;">キャンセル</button>
+      <button id="add-admin-btn" onclick="submitAddAdmin()" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">追加する</button>
+    </div>
+  </div>
+</div>
+
 <!-- 申込削除の確認モーダル -->
 <div id="delete-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
   <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
@@ -2609,6 +2684,8 @@
       }
       window.__canDelete = adminSnap.data().canDelete === true;
       window.__canChangeEmail = adminSnap.data().canChangeEmail === true;
+      window.__isOwner = adminSnap.data().role === 'owner';
+      document.getElementById('sb-section-system').style.display = window.__isOwner ? 'block' : 'none';
 
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
@@ -2988,6 +3065,130 @@ async function doLogin() {
     }
   }
   window.executeEmailChange = executeEmailChange;
+
+  // ===== ユーザー管理（オーナーのみ） =====
+  async function loadAdminsList() {
+    const listEl = document.getElementById('admins-list');
+    listEl.textContent = '読み込み中…';
+    try {
+      const snap = await window.__getDocs(window.__col(window.__db, 'admins'));
+      const admins = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.role === 'owner' ? -1 : 0) - (b.role === 'owner' ? -1 : 0) || (a.name || '').localeCompare(b.name || '', 'ja'));
+      renderAdminsList(admins);
+    } catch(e) {
+      listEl.textContent = '読み込みに失敗しました: ' + e.message;
+    }
+  }
+  window.loadAdminsList = loadAdminsList;
+
+  function renderAdminsList(admins) {
+    const listEl = document.getElementById('admins-list');
+    if (!admins.length) { listEl.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;">管理者がいません</div>'; return; }
+    const myEmail = window.__auth.currentUser?.email;
+    const flagBtn = (email, field, on) =>
+      `<button onclick="toggleAdminFlag('${email}','${field}',${!on})" style="padding:5px 12px;border-radius:14px;border:1.5px solid ${on ? '#4CAF72' : 'var(--border)'};background:${on ? '#E8F7EE' : '#fff'};color:${on ? '#2E7D4F' : 'var(--text-mid)'};font-size:12px;cursor:pointer;font-family:inherit;">${on ? '許可中' : '不可'}</button>`;
+    listEl.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1.5px solid var(--border);text-align:left;color:var(--text-mid);">
+            <th style="padding:10px 8px;">お名前</th>
+            <th style="padding:10px 8px;">メールアドレス</th>
+            <th style="padding:10px 8px;">権限</th>
+            <th style="padding:10px 8px;">申込削除</th>
+            <th style="padding:10px 8px;">メール変更</th>
+            <th style="padding:10px 8px;">状態</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${admins.map(a => {
+            const isSelf = a.id === myEmail;
+            const isOwnerRow = a.role === 'owner';
+            const active = a.active !== false;
+            const stateCell = (isOwnerRow || isSelf)
+              ? (active ? '有効' : '無効')
+              : `<button onclick="toggleAdminFlag('${a.id}','active',${!active})" style="padding:5px 12px;border-radius:14px;border:1.5px solid ${active ? '#4CAF72' : '#B91C1C'};background:${active ? '#E8F7EE' : '#FEE2E2'};color:${active ? '#2E7D4F' : '#B91C1C'};font-size:12px;cursor:pointer;font-family:inherit;">${active ? '有効' : '無効'}</button>`;
+            return `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px 8px;">${a.name || '（未設定）'}${isSelf ? '（あなた）' : ''}</td>
+              <td style="padding:10px 8px;">${a.id}</td>
+              <td style="padding:10px 8px;">${isOwnerRow ? '<span class="tag tag-teal">オーナー</span>' : '<span class="tag tag-gray">管理者</span>'}</td>
+              <td style="padding:10px 8px;">${isOwnerRow ? '—' : flagBtn(a.id, 'canDelete', a.canDelete === true)}</td>
+              <td style="padding:10px 8px;">${isOwnerRow ? '—' : flagBtn(a.id, 'canChangeEmail', a.canChangeEmail === true)}</td>
+              <td style="padding:10px 8px;">${stateCell}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function toggleAdminFlag(email, field, value) {
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'admins', email), { [field]: value });
+      loadAdminsList();
+    } catch(e) {
+      alert('更新に失敗しました: ' + e.message);
+    }
+  }
+  window.toggleAdminFlag = toggleAdminFlag;
+
+  function openAddAdminModal() {
+    document.getElementById('add-admin-name').value = '';
+    document.getElementById('add-admin-email').value = '';
+    document.getElementById('add-admin-canDelete').checked = false;
+    document.getElementById('add-admin-canChangeEmail').checked = false;
+    document.getElementById('add-admin-error').style.display = 'none';
+    const btn = document.getElementById('add-admin-btn');
+    btn.disabled = false;
+    btn.textContent = '追加する';
+    document.getElementById('add-admin-modal').style.display = 'flex';
+  }
+  window.openAddAdminModal = openAddAdminModal;
+
+  function closeAddAdminModal() {
+    document.getElementById('add-admin-modal').style.display = 'none';
+  }
+  window.closeAddAdminModal = closeAddAdminModal;
+
+  async function submitAddAdmin() {
+    const name = document.getElementById('add-admin-name').value.trim();
+    const email = document.getElementById('add-admin-email').value.trim();
+    const canDelete = document.getElementById('add-admin-canDelete').checked;
+    const canChangeEmail = document.getElementById('add-admin-canChangeEmail').checked;
+    const errEl = document.getElementById('add-admin-error');
+    errEl.style.display = 'none';
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errEl.textContent = '正しいメールアドレスを入力してください';
+      errEl.style.display = 'block';
+      return;
+    }
+    const btn = document.getElementById('add-admin-btn');
+    btn.disabled = true;
+    btn.textContent = '追加中…';
+    try {
+      const idToken = await window.__auth.currentUser.getIdToken();
+      const res = await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/createAdminAccount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+        body: JSON.stringify({ email, name, canDelete, canChangeEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '追加に失敗しました');
+      closeAddAdminModal();
+      loadAdminsList();
+      if (data.isNewUser) {
+        alert('管理者を追加しました。\n\nログイン情報\nURL：https://belageapp.github.io/academy/admin.html\nメールアドレス：' + data.email + '\n初期パスワード：' + data.tempPassword + '\n\nこの内容を安全な方法（電話等）でお伝えください。');
+      } else {
+        alert('既に存在するアカウントに管理者権限を付与しました（' + data.email + '）。パスワードは変更していません。');
+      }
+    } catch(e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '追加する';
+    }
+  }
+  window.submitAddAdmin = submitAddAdmin;
 
   function closeModal() { document.getElementById('modal').classList.remove('open'); curId=null; }
   window.closeModal = closeModal;
@@ -3511,6 +3712,7 @@ async function doLogin() {
     document.getElementById('section-certificate').style.display  = section === 'certificate'  ? 'block' : 'none';
     document.getElementById('section-autonotice').style.display   = section === 'autonotice'   ? 'block' : 'none';
     document.getElementById('section-sales').style.display        = section === 'sales'        ? 'block' : 'none';
+    document.getElementById('section-users').style.display        = section === 'users'        ? 'block' : 'none';
     document.getElementById('section-guide').style.display          = section === 'guide'          ? 'block' : 'none';
     document.getElementById('section-student-guide').style.display  = section === 'student-guide'  ? 'block' : 'none';
     document.getElementById('section-mypage-guide').style.display   = section === 'mypage-guide'   ? 'block' : 'none';
@@ -3530,6 +3732,7 @@ async function doLogin() {
     if (section === 'tempcert') loadTempCertList();
     if (section === 'textorder') loadTextOrderList();
     if (section === 'sales') loadSalesData();
+    if (section === 'users') loadAdminsList();
     document.getElementById('topbar-title').textContent =
       section === 'applications' ? '📋 申し込み管理' :
       section === 'notices'      ? '📢 お知らせ管理' :
@@ -3546,6 +3749,7 @@ async function doLogin() {
       section === 'certificate'  ? '📜 正式修了証明書発行' :
       section === 'autonotice'   ? '⏰ 自動通知設定' :
       section === 'sales'        ? '💴 決済・売上' :
+      section === 'users'        ? '👥 ユーザー管理' :
       section === 'guide'           ? '📖 管理機能ガイド' :
       section === 'student-guide'   ? '👤 受講生対応ガイド' :
       section === 'mypage-guide'    ? '📖 受講ガイド（マイページ掲載）' :
