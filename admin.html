@@ -6135,7 +6135,7 @@ async function doLogin() {
     function rowsHtml(list, openByDefault) {
       return list.map(a => {
         const r = a.report || {};
-        const name = `${a.sei||''}${a.mei||''}`;
+        const name = a.name || ((a.sei||'')+(a.mei||''));
         const date = fmtD(a.reportSubmittedAt);
         const approvedDate = fmtD(a.reportApprovedAt);
         const deadline = fmtLimit(a.activeAt, 8);
