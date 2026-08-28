@@ -2470,6 +2470,19 @@
   </div>
 </div>
 
+<!-- ログイン情報表示モーダル（テキストコピー用） -->
+<div id="login-info-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:4000;align-items:center;justify-content:center;">
+  <div style="background:#fff;width:90%;max-width:440px;border-radius:16px;padding:24px;">
+    <div id="login-info-title" style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;"></div>
+    <p style="font-size:12px;color:var(--text-mid);line-height:1.7;margin:0 0 10px;">本人にメールが届いていない場合は、この内容を別の方法（電話等）でお伝えください。</p>
+    <textarea id="login-info-text" readonly rows="6" onclick="this.select()" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:monospace;line-height:1.7;resize:vertical;margin-bottom:12px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeLoginInfoModal()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;cursor:pointer;font-family:inherit;">閉じる</button>
+      <button id="login-info-copy-btn" onclick="copyLoginInfo()" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 コピーする</button>
+    </div>
+  </div>
+</div>
+
 <!-- 管理者を追加するモーダル -->
 <div id="add-admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center;">
   <div style="background:#fff;width:90%;max-width:420px;border-radius:16px;padding:24px;">
@@ -3088,7 +3101,8 @@ async function doLogin() {
       closeEmailChangeConfirm();
       closeModal();
       window.loadData && window.loadData();
-      alert('メールアドレスを変更しました。\n\n新しいログイン情報\nURL：https://belageapp.github.io/academy/mypage_login.html\nメールアドレス：' + data.newEmail + '\n初期パスワード：' + data.tempPassword + '\n\n本人にメールが届いていない場合は、この内容を別の方法（電話等）でお伝えください。');
+      showLoginInfoModal('メールアドレスを変更しました',
+        `新しいログイン情報\nURL：https://belageapp.github.io/academy/mypage_login.html\nメールアドレス：${data.newEmail}\n初期パスワード：${data.tempPassword}`);
     } catch(e) {
       errEl.textContent = e.message;
       errEl.style.display = 'block';
@@ -3097,6 +3111,35 @@ async function doLogin() {
     }
   }
   window.executeEmailChange = executeEmailChange;
+
+  // ===== ログイン情報表示モーダル（テキストコピー用） =====
+  function showLoginInfoModal(title, text) {
+    document.getElementById('login-info-title').textContent = title;
+    document.getElementById('login-info-text').value = text;
+    const btn = document.getElementById('login-info-copy-btn');
+    btn.textContent = '📋 コピーする';
+    document.getElementById('login-info-modal').style.display = 'flex';
+  }
+  window.showLoginInfoModal = showLoginInfoModal;
+
+  function closeLoginInfoModal() {
+    document.getElementById('login-info-modal').style.display = 'none';
+  }
+  window.closeLoginInfoModal = closeLoginInfoModal;
+
+  async function copyLoginInfo() {
+    const ta = document.getElementById('login-info-text');
+    const btn = document.getElementById('login-info-copy-btn');
+    try {
+      await navigator.clipboard.writeText(ta.value);
+    } catch(e) {
+      ta.select();
+      document.execCommand('copy');
+    }
+    btn.textContent = '✓ コピーしました';
+    setTimeout(() => { btn.textContent = '📋 コピーする'; }, 2000);
+  }
+  window.copyLoginInfo = copyLoginInfo;
 
   // ===== ユーザー管理（オーナーのみ） =====
   async function loadAdminsList() {
@@ -3211,7 +3254,8 @@ async function doLogin() {
       closeAddAdminModal();
       loadAdminsList();
       if (data.isNewUser) {
-        alert('管理者を追加しました。\n\nログイン情報\nURL：https://belageapp.github.io/academy/admin.html\nメールアドレス：' + data.email + '\n初期パスワード：' + data.tempPassword + '\n\nこの内容を安全な方法（電話等）でお伝えください。');
+        showLoginInfoModal('管理者を追加しました',
+          `ログイン情報\nURL：https://belageapp.github.io/academy/admin.html\nメールアドレス：${data.email}\n初期パスワード：${data.tempPassword}`);
       } else {
         alert('既に存在するアカウントに管理者権限を付与しました（' + data.email + '）。パスワードは変更していません。');
       }
