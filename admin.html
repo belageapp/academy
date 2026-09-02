@@ -447,6 +447,14 @@
     margin-bottom: auto; text-align: justify;
   }
   .cert-body-text p { margin: 0 0 0.5em; text-indent: 1em; }
+  /* 正式修了証明書：文字を全体的に大きく、上・左右の余白を広めに */
+  .formal-cert.cert-paper { padding: 13% 14% 10%; }
+  .formal-cert .cert-docno { font-size: clamp(11px, 1.7vw, 14px); }
+  .formal-cert .cert-title { font-size: clamp(19px, 3.6vw, 31px); }
+  .formal-cert .cert-person-block { font-size: clamp(14px, 2.3vw, 19px); }
+  .formal-cert .cert-body-text { font-size: clamp(12px, 1.9vw, 17px); }
+  .formal-cert .cert-date-line { font-size: clamp(11px, 1.7vw, 14px); }
+  .formal-cert .cert-sign-block { font-size: clamp(11px, 1.7vw, 14px); }
   .cert-date-line {
     font-size: clamp(9px, 1.4vw, 12px);
     margin-bottom: 4%;
@@ -479,6 +487,7 @@
       font-family: 'Noto Sans JP', sans-serif; color: #000;
     }
     .bulk-a4-print-page:last-child { page-break-after: avoid; }
+    .bulk-a4-print-page.formal-cert { padding: 13% 14% 10%; }
 
     /* カード単票・一括: body に bulk-card-print-mode を付けて bulk-card-print-all だけ表示 */
     body.bulk-card-print-mode > * { display: none !important; }
@@ -5828,7 +5837,10 @@ async function doLogin() {
     document.getElementById('bulk-a4-modal').style.display = 'block';
   }
   function renderBulkA4Preview() {
-    document.getElementById('bulk-a4-paper').innerHTML = a4CertInnerHTML(bulkA4List[bulkA4Idx], certPrintMode === 'formal');
+    const isFormal = certPrintMode === 'formal';
+    const paperEl = document.getElementById('bulk-a4-paper');
+    paperEl.classList.toggle('formal-cert', isFormal);
+    paperEl.innerHTML = a4CertInnerHTML(bulkA4List[bulkA4Idx], isFormal);
     document.getElementById('bulk-a4-nav-info').textContent = `${bulkA4Idx+1} / ${bulkA4List.length}`;
     document.getElementById('bulk-a4-prev-btn').disabled = bulkA4Idx === 0;
     document.getElementById('bulk-a4-next-btn').disabled = bulkA4Idx === bulkA4List.length-1;
@@ -5841,7 +5853,7 @@ async function doLogin() {
     const isFormal = certPrintMode === 'formal';
     if (!isFormal) list.forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-a4-print-all');
-    c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d, isFormal)}</div>`).join('');
+    c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page${isFormal ? ' formal-cert' : ''}">${a4CertInnerHTML(d, isFormal)}</div>`).join('');
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
@@ -5894,7 +5906,7 @@ async function doLogin() {
       c.innerHTML = '';
     } else {
       const c = document.getElementById('bulk-a4-print-all');
-      c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(d, true)}</div>`;
+      c.innerHTML = `<div class="bulk-a4-print-page formal-cert">${a4CertInnerHTML(d, true)}</div>`;
       document.body.classList.add('bulk-a4-print-mode');
       window.print();
       document.body.classList.remove('bulk-a4-print-mode');
