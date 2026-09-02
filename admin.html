@@ -6467,7 +6467,15 @@ async function doLogin() {
   window.rejectReport = rejectReport;
   async function sendBothApprovedNotice(docId, email, name) {
     try {
-      const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      // この関数は3条件（OJT修了報告承認・修了レポート承認・OJT書類受領）が
+      // 揃った瞬間に呼ばれるため、「発行済みにする」を押す前でも正式修了日を記録する
+      try {
+        const snap = await getDoc(doc(window.__db, 'applications', docId));
+        if (snap.exists() && !snap.data().completedAt) {
+          await updateDoc(doc(window.__db, 'applications', docId), { completedAt: serverTimestamp() });
+        }
+      } catch(e) { console.warn('正式修了日の自動記録に失敗:', e); }
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
         title: '全ての課程が完了しました',
