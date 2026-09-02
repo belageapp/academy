@@ -1641,17 +1641,23 @@
                     <tr><td>③ OJT書類受領済み</td><td>このページの「📥 書類受領」ボタン</td></tr>
                   </table>
 
+                  <h4>一覧の「正式修了日」列について</h4>
+                  <ul>
+                    <li>正式修了日（<code>completedAt</code>）＝<strong>OJT修了報告承認・修了レポート承認・OJT書類受領のうち最後に完了した日</strong>（＝3条件がすべて揃い、この一覧に「発行可能」として現れた日）です。証明書の発行日（ボタンを押した日）とは別の日付です。</li>
+                    <li>3条件が揃った時点で、自動的にFirestoreへ記録されます（「発行済みにする」ボタンを押す前でも記録済みです）。ボタンを押す前でまだ記録されていない古いデータの場合は、同じ計算方法でその場で計算した日付を参考表示します。</li>
+                  </ul>
+
                   <h4>操作手順</h4>
                   <ul>
-                    <li><strong>📥 書類受領</strong>：施設から郵送されたOJT修了報告書類を受領したらクリック（<code>facilityReported = true</code>）。3条件が揃っていれば自動で両承認完了メールを送信</li>
-                    <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックすると証明書発行日（<code>certificateIssuedAt</code>＝ボタンを押した日）を記録し、ステータスが「修了」に変わります。あわせて正式修了日（<code>completedAt</code>）も自動計算されます</li>
+                    <li><strong>📥 書類受領</strong>：施設から郵送されたOJT修了報告書類を受領したらクリック（<code>facilityReported = true</code>）。3条件が揃っていれば自動で両承認完了メールを送信し、正式修了日も自動記録されます</li>
+                    <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックすると証明書発行日（<code>certificateIssuedAt</code>＝ボタンを押した日）を記録し、ステータスが「修了」に変わります</li>
                   </ul>
 
                   <h4>証明書の印刷</h4>
                   <ul>
                     <li>3条件が揃った受講生には、行に<strong>「🖨️ A4印刷」「🪪 カード印刷」</strong>ボタンが表示されます。クリックすると印刷プレビューが開きます（証明書発行済みかどうかに関わらず、いつでも印刷・再印刷できます）</li>
                     <li>複数人まとめて印刷したい場合は、行のチェックボックスで対象を選び、上部の<strong>「📄 通常版一括印刷」「🪪 携帯用一括印刷」</strong>ボタンを使います（仮修了証明書発行画面と同じ操作方法です）</li>
-                    <li>証明書に印字する日付は正式修了日（<strong>OJT修了報告承認・修了レポート承認・OJT書類受領のうち最後に完了した日</strong>＝この一覧に「発行可能」として現れた日）です。「発行済みにする」を押す前に印刷しても、押した後に印刷・再印刷しても、同じ日付が印字されます（先に印刷してから後で「発行済みにする」を押す運用でも問題ありません）</li>
+                    <li>証明書に印字される日付は、一覧の「正式修了日」列と同じ日付です。「発行済みにする」を押す前に印刷しても、押した後に印刷・再印刷しても、同じ日付が印字されます（先に印刷してから後で「発行済みにする」を押す運用でも問題ありません）</li>
                   </ul>
                   <div class="note">📌 正式修了証明書の文面には、仮修了証明書にある「OJT等の実施を要する」旨の一文は入りません（OJTが完了済みのため）。</div>
 
@@ -6146,7 +6152,7 @@ async function doLogin() {
       const showTest = document.getElementById('show-test-certificate')?.checked;
       window.__formalCertCache = {};
       let html = '<table><thead><tr>' +
-        '<th><input type="checkbox" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>ステータス</th><th>操作</th>' +
+        '<th><input type="checkbox" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>正式修了日</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
@@ -6154,6 +6160,8 @@ async function doLogin() {
         const r = a.ojtReport || {};
         const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
         const approvedDate = a.ojtPassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const completedDate = a.completedAt?.toDate?.()?.toLocaleDateString('ja-JP')
+          || computeFormalCompletionDate(a)?.toLocaleDateString('ja-JP') || '—';
         const isIssued = a.certificateIssued === true;
         const facilityDone = a.facilityReported === true;
         const facilityDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
@@ -6176,6 +6184,7 @@ async function doLogin() {
               ? '<span style="font-size:11px;color:#888;">—</span>'
               : `<button onclick="markOjtDocReceived('${d.id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">📥 書類受領</button>`)
           }</td>
+          <td>${completedDate}</td>
           <td>${isIssued
             ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行済み</span>'
             : canIssue
