@@ -5771,7 +5771,7 @@ async function doLogin() {
 
   function a4CertInnerHTML(d, isFormal) {
     return `
-      <img src="assets/logo.png" class="cert-logo" alt="">
+      ${isFormal ? '' : '<img src="assets/logo.png" class="cert-logo" alt="">'}
       <div class="cert-docno">第4007005197-${d.studentNo}号</div>
       <div class="cert-title">修　了　証　明　書</div>
       <div class="cert-person-block">
