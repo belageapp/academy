@@ -1644,14 +1644,14 @@
                   <h4>操作手順</h4>
                   <ul>
                     <li><strong>📥 書類受領</strong>：施設から郵送されたOJT修了報告書類を受領したらクリック（<code>facilityReported = true</code>）。3条件が揃っていれば自動で両承認完了メールを送信</li>
-                    <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックで証明書発行日（certificateIssuedAt）を記録し、ステータスが「修了」に変わります</li>
+                    <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックすると証明書発行日（<code>certificateIssuedAt</code>＝ボタンを押した日）を記録し、ステータスが「修了」に変わります。あわせて正式修了日（<code>completedAt</code>）も自動計算されます</li>
                   </ul>
 
                   <h4>証明書の印刷</h4>
                   <ul>
                     <li>3条件が揃った受講生には、行に<strong>「🖨️ A4印刷」「🪪 カード印刷」</strong>ボタンが表示されます。クリックすると印刷プレビューが開きます（証明書発行済みかどうかに関わらず、いつでも印刷・再印刷できます）</li>
                     <li>複数人まとめて印刷したい場合は、行のチェックボックスで対象を選び、上部の<strong>「📄 通常版一括印刷」「🪪 携帯用一括印刷」</strong>ボタンを使います（仮修了証明書発行画面と同じ操作方法です）</li>
-                    <li>証明書に印字する日付は<code>completedAt</code>（正式修了日）を使用します。まだ「発行済みにする」を押していない場合は、印刷した当日の日付が印字されます</li>
+                    <li>証明書に印字する日付は<code>completedAt</code>（正式修了日）です。これは<strong>OJT修了報告承認・修了レポート承認・OJT書類受領のうち最後に完了した日</strong>（＝この一覧に「発行可能」として現れた日）を、「発行済みにする」を押したタイミングで自動計算して記録します。証明書発行日（ボタンを押した日）とは異なる場合があります。まだ「発行済みにする」を押していない場合は、印刷した当日の日付が印字されます</li>
                   </ul>
                   <div class="note">📌 正式修了証明書の文面には、仮修了証明書にある「OJT等の実施を要する」旨の一文は入りません（OJTが完了済みのため）。</div>
 
@@ -6216,11 +6216,19 @@ async function doLogin() {
     if (!confirm(`${name} さんの正式修了証明書を発行済みにしますか？\nステータスが「修了」に変更されます。`)) return;
     try {
       const { doc, updateDoc, serverTimestamp, addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      // 正式修了日＝OJT修了報告承認・修了レポート承認・OJT書類受領のうち最後に完了した日
+      // （正式修了証明書発行一覧に「発行可能」として登場した日）。発行日（ボタンを押した日）とは別。
+      const cachedA = window.__formalCertCache && window.__formalCertCache[docId];
+      const toMillis = (v) => v?.toMillis?.() ?? (v ? new Date(v).getTime() : 0);
+      const conditionDates = [cachedA?.ojtPassedAt, cachedA?.reportApprovedAt, cachedA?.facilityReportedAt].filter(Boolean);
+      const completedAtDate = conditionDates.length
+        ? new Date(Math.max(...conditionDates.map(toMillis)))
+        : new Date();
       await updateDoc(doc(window.__db, 'applications', docId), {
         certificateIssued: true,
         certificateIssuedAt: serverTimestamp(),
         status: 'completed',
-        completedAt: serverTimestamp(),
+        completedAt: completedAtDate,
       });
       await addDoc(collection(window.__db, 'notices'), {
         applicationId: docId,
