@@ -1087,8 +1087,8 @@
                 <option value="pending" selected>未発送</option>
                 <option value="sent">発送済み</option>
               </select>
-              <button class="bulk-cert-btn a4"   onclick="window.openBulkA4Modal()">📄 通常版一括印刷</button>
-              <button class="bulk-cert-btn card" onclick="window.openBulkCardModal()">🪪 携帯用一括印刷</button>
+              <button class="bulk-cert-btn a4"   onclick="window.openBulkA4Modal('temp')">📄 通常版一括印刷</button>
+              <button class="bulk-cert-btn card" onclick="window.openBulkCardModal('temp')">🪪 携帯用一括印刷</button>
               <button class="refresh-btn" onclick="loadTempCertList()">🔄 更新</button>
             </div>
           </div>
@@ -1105,9 +1105,12 @@
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-certificate" onchange="loadCertificateList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
+              <button class="bulk-cert-btn a4"   onclick="window.openBulkA4Modal('formal')">📄 通常版一括印刷</button>
+              <button class="bulk-cert-btn card" onclick="window.openBulkCardModal('formal')">🪪 携帯用一括印刷</button>
               <button class="refresh-btn" onclick="loadCertificateList()">🔄 更新</button>
             </div>
           </div>
+          <div style="padding:12px 16px 0;font-size:12px;color:var(--text-mid);line-height:1.7;">OJT修了報告・修了レポート・OJT書類受領の3条件が揃った受講生のみ、チェックボックス・印刷ボタンが表示されます。</div>
           <div class="tbl-wrap"><div id="certificate-list" style="min-height:60px;">読み込み中...</div></div>
         </div>
       </div><!-- /section-certificate -->
@@ -1634,6 +1637,14 @@
                     <li><strong>📥 書類受領</strong>：施設から郵送されたOJT修了報告書類を受領したらクリック（<code>facilityReported = true</code>）。3条件が揃っていれば自動で両承認完了メールを送信</li>
                     <li><strong>証明書発行</strong>：3条件が揃った受講生に発行ボタンが表示されます。クリックで証明書発行日（certificateIssuedAt）を記録し、ステータスが「修了」に変わります</li>
                   </ul>
+
+                  <h4>証明書の印刷</h4>
+                  <ul>
+                    <li>3条件が揃った受講生には、行に<strong>「🖨️ A4印刷」「🪪 カード印刷」</strong>ボタンが表示されます。クリックすると印刷プレビューが開きます（証明書発行済みかどうかに関わらず、いつでも印刷・再印刷できます）</li>
+                    <li>複数人まとめて印刷したい場合は、行のチェックボックスで対象を選び、上部の<strong>「📄 通常版一括印刷」「🪪 携帯用一括印刷」</strong>ボタンを使います（仮修了証明書発行画面と同じ操作方法です）</li>
+                    <li>証明書の発行日は<code>certificateIssuedAt</code>（正式修了証明書の発行日）を使用します。まだ発行済みにしていない場合は空欄になります</li>
+                  </ul>
+                  <div class="note">📌 正式修了証明書の文面には、仮修了証明書にある「OJT等の実施を要する」旨の一文は入りません（OJTが完了済みのため）。</div>
 
                   <h4>送付先について</h4>
                   <ul>
@@ -5719,11 +5730,21 @@ async function doLogin() {
   let bulkA4List = [], bulkA4Idx = 0;
   let bulkCardPages = [], bulkCardPageIdx = 0;
 
-  function parseCertData(a) {
+  // isFormal=true: 正式修了証明書（OJT実施を要する旨の一文を除く／発行日はcertificateIssuedAt基準）
+  let certPrintMode = 'temp'; // 'temp' | 'formal'
+  function certCacheFor(mode) {
+    return (mode === 'formal' ? window.__formalCertCache : window.__tempCertCache) || {};
+  }
+  function certListElFor(mode) {
+    return mode === 'formal' ? 'certificate-list' : 'tempcert-list';
+  }
+
+  function parseCertData(a, isFormal) {
     const name = (a.sei||'')+(a.mei?'　'+a.mei:'')||a.name||'—';
     let issuedDateStr = '—';
-    if (a.test2PassedAt) {
-      const t = a.test2PassedAt.toDate ? a.test2PassedAt.toDate() : new Date(a.test2PassedAt);
+    const dateField = isFormal ? a.certificateIssuedAt : a.test2PassedAt;
+    if (dateField) {
+      const t = dateField.toDate ? dateField.toDate() : new Date(dateField);
       issuedDateStr = `${t.getFullYear()}年${t.getMonth()+1}月${t.getDate()}日`;
     }
     let birthdateStr = '—';
@@ -5735,17 +5756,20 @@ async function doLogin() {
     return { id: a.id, name, issuedDateStr, birthdateStr, studentNo: a.studentNo||'—' };
   }
 
-  function getSelectedCerts() {
-    return Array.from(document.querySelectorAll('.cert-select-cb:checked'))
-      .map(cb => { const a = window.__tempCertCache && window.__tempCertCache[cb.dataset.id]; return a ? parseCertData(a) : null; })
+  function getSelectedCerts(mode = 'temp') {
+    const containerId = certListElFor(mode);
+    const cache = certCacheFor(mode);
+    return Array.from(document.querySelectorAll('#'+containerId+' .cert-select-cb:checked'))
+      .map(cb => { const a = cache[cb.dataset.id]; return a ? parseCertData(a, mode === 'formal') : null; })
       .filter(Boolean);
   }
 
   function toggleAllCertSelect(cb) {
-    document.querySelectorAll('.cert-select-cb').forEach(c => c.checked = cb.checked);
+    const table = cb.closest('table');
+    (table || document).querySelectorAll('.cert-select-cb').forEach(c => c.checked = cb.checked);
   }
 
-  function a4CertInnerHTML(d) {
+  function a4CertInnerHTML(d, isFormal) {
     return `
       <img src="assets/logo.png" class="cert-logo" alt="">
       <div class="cert-docno">第4007005197-${d.studentNo}号</div>
@@ -5756,7 +5780,7 @@ async function doLogin() {
       </div>
       <div class="cert-body-text">
         <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
-        <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+        ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
       </div>
       <div class="cert-date-line">${d.issuedDateStr}</div>
       <div class="cert-sign-block">
@@ -5771,7 +5795,7 @@ async function doLogin() {
       </div>`;
   }
 
-  function cardInnerHTML(d) {
+  function cardInnerHTML(d, isFormal) {
     return `
       <img src="assets/seal.png" class="cert-card-seal" alt="印">
       <div class="cert-card-content">
@@ -5780,7 +5804,7 @@ async function doLogin() {
         <div class="cert-card-person"><div>${d.name}</div><div>${d.birthdateStr}</div></div>
         <div class="cert-card-body">
           <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
-          <p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>
+          ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
         </div>
         <div class="cert-card-date">${d.issuedDateStr}</div>
         <div class="cert-card-sign">
@@ -5790,20 +5814,21 @@ async function doLogin() {
       </div>`;
   }
 
-  function cardSheetHTML(slice, sheetClass='bulk-card-sheet') {
-    return `<div class="${sheetClass}">${slice.map((d,i)=>`<div class="bulk-card-item" style="top:${CARD_POS[i].top};left:${CARD_POS[i].left};">${cardInnerHTML(d)}</div>`).join('')}</div>`;
+  function cardSheetHTML(slice, sheetClass='bulk-card-sheet', isFormal) {
+    return `<div class="${sheetClass}">${slice.map((d,i)=>`<div class="bulk-card-item" style="top:${CARD_POS[i].top};left:${CARD_POS[i].left};">${cardInnerHTML(d, isFormal)}</div>`).join('')}</div>`;
   }
 
   // --- A4一括 ---
-  function openBulkA4Modal() {
-    const list = getSelectedCerts();
+  function openBulkA4Modal(mode = 'temp') {
+    certPrintMode = mode;
+    const list = getSelectedCerts(mode);
     if (!list.length) { alert('印刷する受講生にチェックを入れてください'); return; }
     bulkA4List = list; bulkA4Idx = 0;
     renderBulkA4Preview();
     document.getElementById('bulk-a4-modal').style.display = 'block';
   }
   function renderBulkA4Preview() {
-    document.getElementById('bulk-a4-paper').innerHTML = a4CertInnerHTML(bulkA4List[bulkA4Idx]);
+    document.getElementById('bulk-a4-paper').innerHTML = a4CertInnerHTML(bulkA4List[bulkA4Idx], certPrintMode === 'formal');
     document.getElementById('bulk-a4-nav-info').textContent = `${bulkA4Idx+1} / ${bulkA4List.length}`;
     document.getElementById('bulk-a4-prev-btn').disabled = bulkA4Idx === 0;
     document.getElementById('bulk-a4-next-btn').disabled = bulkA4Idx === bulkA4List.length-1;
@@ -5813,19 +5838,21 @@ async function doLogin() {
   function closeBulkA4Modal() { document.getElementById('bulk-a4-modal').style.display='none'; }
   function printBulkA4() {
     const list = [...bulkA4List];
-    list.forEach(d => saveCertSnapshot(d.id, d));
+    const isFormal = certPrintMode === 'formal';
+    if (!isFormal) list.forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-a4-print-all');
-    c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d)}</div>`).join('');
+    c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page">${a4CertInnerHTML(d, isFormal)}</div>`).join('');
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
     c.innerHTML = '';
-    list.forEach(d => captureAndUploadCertImage(d.id, d));
+    if (!isFormal) list.forEach(d => captureAndUploadCertImage(d.id, d));
   }
 
   // --- カード一括 ---
-  function openBulkCardModal() {
-    const list = getSelectedCerts();
+  function openBulkCardModal(mode = 'temp') {
+    certPrintMode = mode;
+    const list = getSelectedCerts(mode);
     if (!list.length) { alert('印刷する受講生にチェックを入れてください'); return; }
     bulkCardPages = [];
     for (let i=0; i<list.length; i+=10) bulkCardPages.push(list.slice(i,i+10));
@@ -5834,7 +5861,7 @@ async function doLogin() {
     document.getElementById('bulk-card-modal').style.display = 'block';
   }
   function renderBulkCardPreview() {
-    document.getElementById('bulk-card-preview').innerHTML = cardSheetHTML(bulkCardPages[bulkCardPageIdx]);
+    document.getElementById('bulk-card-preview').innerHTML = cardSheetHTML(bulkCardPages[bulkCardPageIdx], 'bulk-card-sheet', certPrintMode === 'formal');
     document.getElementById('bulk-card-nav-info').textContent = `ページ ${bulkCardPageIdx+1} / ${bulkCardPages.length}`;
     document.getElementById('bulk-card-prev-btn').disabled = bulkCardPageIdx === 0;
     document.getElementById('bulk-card-next-btn').disabled = bulkCardPageIdx === bulkCardPages.length-1;
@@ -5843,14 +5870,38 @@ async function doLogin() {
   function bulkCardNext() { if(bulkCardPageIdx<bulkCardPages.length-1){bulkCardPageIdx++;renderBulkCardPreview();} }
   function closeBulkCardModal() { document.getElementById('bulk-card-modal').style.display='none'; }
   function printBulkCard() {
-    bulkCardPages.flat().forEach(d => saveCertSnapshot(d.id, d));
+    const isFormal = certPrintMode === 'formal';
+    if (!isFormal) bulkCardPages.flat().forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-card-print-all');
-    c.innerHTML = bulkCardPages.map(pg=>cardSheetHTML(pg,'bulk-card-print-sheet')).join('');
+    c.innerHTML = bulkCardPages.map(pg=>cardSheetHTML(pg,'bulk-card-print-sheet', isFormal)).join('');
     document.body.classList.add('bulk-card-print-mode');
     window.print();
     document.body.classList.remove('bulk-card-print-mode');
     c.innerHTML = '';
   }
+
+  // --- 正式修了証明書：1人分だけ印刷 ---
+  function printSingleFormalCert(docId, format) {
+    const a = window.__formalCertCache && window.__formalCertCache[docId];
+    if (!a) return;
+    const d = parseCertData(a, true);
+    if (format === 'card') {
+      const c = document.getElementById('bulk-card-print-all');
+      c.innerHTML = cardSheetHTML([d], 'bulk-card-print-sheet', true);
+      document.body.classList.add('bulk-card-print-mode');
+      window.print();
+      document.body.classList.remove('bulk-card-print-mode');
+      c.innerHTML = '';
+    } else {
+      const c = document.getElementById('bulk-a4-print-all');
+      c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(d, true)}</div>`;
+      document.body.classList.add('bulk-a4-print-mode');
+      window.print();
+      document.body.classList.remove('bulk-a4-print-mode');
+      c.innerHTML = '';
+    }
+  }
+  window.printSingleFormalCert = printSingleFormalCert;
 
   let currentCertDocId = null, currentCertData = null;
 
@@ -6068,8 +6119,9 @@ async function doLogin() {
       ));
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
       const showTest = document.getElementById('show-test-certificate')?.checked;
+      window.__formalCertCache = {};
       let html = '<table><thead><tr>' +
-        '<th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>ステータス</th><th>操作</th>' +
+        '<th><input type="checkbox" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>ステータス</th><th>操作</th>' +
         '</tr></thead><tbody>';
       snap.docs.forEach(d => {
         const a = d.data();
@@ -6081,7 +6133,13 @@ async function doLogin() {
         const facilityDone = a.facilityReported === true;
         const facilityDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
         const canIssue = facilityDone && !isIssued;
+        const canPrint = facilityDone; // 3条件（OJT承認・レポート承認・書類受領）が揃っていれば印刷可能
+        if (canPrint) window.__formalCertCache[d.id] = a;
+        const printBtns = canPrint ? `
+            <button onclick="printSingleFormalCert('${d.id}','a4')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🖨️ A4印刷</button>
+            <button onclick="printSingleFormalCert('${d.id}','card')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🪪 カード印刷</button>` : '';
         html += `<tr${isIssued ? ' style="opacity:0.6;"' : ''}>
+          <td>${canPrint ? `<input type="checkbox" class="cert-select-cb" data-id="${d.id}">` : ''}</td>
           <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
           <td>${r.facility||'—'}</td>
           <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
@@ -6099,8 +6157,11 @@ async function doLogin() {
               ? '<span style="background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行可能</span>'
               : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">条件待ち</span>'
           }</td>
-          <td>
-            ${canIssue ? `<button onclick="issueCertificate('${d.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : isIssued ? '—' : '<span style="font-size:12px;color:#aaa;">書類受領後に発行可能</span>'}
+          <td style="white-space:nowrap;">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+              ${canIssue ? `<button onclick="issueCertificate('${d.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : (!isIssued ? '<span style="font-size:12px;color:#aaa;">書類受領後に発行可能</span>' : '')}
+              ${printBtns}
+            </div>
           </td>
         </tr>`;
       });
