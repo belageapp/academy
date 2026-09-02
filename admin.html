@@ -5798,6 +5798,7 @@ async function doLogin() {
   }
 
   function a4CertInnerHTML(d, isFormal) {
+    const dateLine = `<div class="cert-date-line">${d.issuedDateStr}</div>`;
     return `
       ${isFormal ? '' : '<img src="assets/logo.png" class="cert-logo" alt="">'}
       <div class="cert-docno">第4007005197-${d.studentNo}号</div>
@@ -5806,11 +5807,12 @@ async function doLogin() {
         <div class="cert-person-value-only">${d.name}</div>
         <div class="cert-person-value-only">${d.birthdateStr}</div>
       </div>
+      ${isFormal ? dateLine : ''}
       <div class="cert-body-text">
         <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
         ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
       </div>
-      <div class="cert-date-line">${d.issuedDateStr}</div>
+      ${isFormal ? '' : dateLine}
       <div class="cert-sign-block">
         <div class="cert-sign-spacer"></div>
         <div class="cert-sign-right">
@@ -5824,17 +5826,19 @@ async function doLogin() {
   }
 
   function cardInnerHTML(d, isFormal) {
+    const dateLine = `<div class="cert-card-date">${d.issuedDateStr}</div>`;
     return `
       <img src="assets/seal.png" class="cert-card-seal" alt="印">
       <div class="cert-card-content">
         <div class="cert-card-docno">第4007005197-${d.studentNo}号</div>
         <div class="cert-card-title">修　了　証　明　書（携帯用）</div>
         <div class="cert-card-person"><div>${d.name}</div><div>${d.birthdateStr}</div></div>
+        ${isFormal ? dateLine : ''}
         <div class="cert-card-body">
           <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
           ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
         </div>
-        <div class="cert-card-date">${d.issuedDateStr}</div>
+        ${isFormal ? '' : dateLine}
         <div class="cert-card-sign">
           <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
           <div>代表理事　長谷川　剛</div>
