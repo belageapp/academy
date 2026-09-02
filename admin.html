@@ -452,7 +452,7 @@
   .formal-cert .cert-docno { font-size: clamp(11px, 1.7vw, 14px); margin-bottom: 32%; }
   .formal-cert .cert-title { font-size: clamp(19px, 3.6vw, 31px); }
   .formal-cert .cert-person-block { font-size: clamp(14px, 2.3vw, 19px); }
-  .formal-cert .cert-body-text { font-size: clamp(12px, 1.9vw, 17px); }
+  .formal-cert .cert-body-text { font-size: clamp(12px, 1.9vw, 17px); margin-bottom: 10%; }
   .formal-cert .cert-date-line { font-size: clamp(11px, 1.7vw, 14px); }
   .formal-cert .cert-sign-block { font-size: clamp(11px, 1.7vw, 14px); }
   .cert-date-line {
@@ -5807,12 +5807,11 @@ async function doLogin() {
         <div class="cert-person-value-only">${d.name}</div>
         <div class="cert-person-value-only">${d.birthdateStr}</div>
       </div>
-      ${isFormal ? dateLine : ''}
       <div class="cert-body-text">
         <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
         ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
       </div>
-      ${isFormal ? '' : dateLine}
+      ${dateLine}
       <div class="cert-sign-block">
         <div class="cert-sign-spacer"></div>
         <div class="cert-sign-right">
@@ -5833,12 +5832,11 @@ async function doLogin() {
         <div class="cert-card-docno">第4007005197-${d.studentNo}号</div>
         <div class="cert-card-title">修　了　証　明　書（携帯用）</div>
         <div class="cert-card-person"><div>${d.name}</div><div>${d.birthdateStr}</div></div>
-        ${isFormal ? dateLine : ''}
         <div class="cert-card-body">
           <p>介護保険法施行令（平成１０年政令第４１２号）第３条第１項第１号ロに掲げる研修の介護職員初任者研修課程を修了したことを証明する。</p>
           ${isFormal ? '' : '<p>ただし、従事開始に際しては、雇用する事業所において、有資格者との同行訪問などを通じたＯＪＴ等の実施を要するものとする。</p>'}
         </div>
-        ${isFormal ? '' : dateLine}
+        ${dateLine}
         <div class="cert-card-sign">
           <div>特定非営利活動法人Social Care Good ホリスケアアカデミー</div>
           <div>代表理事　長谷川　剛</div>
