@@ -1044,6 +1044,11 @@
           <div class="thead">
             <div class="thead-title">📬 問い合わせ一覧</div>
             <div class="thead-acts">
+              <select id="inquiry-filter-sel" onchange="window.setInquiryFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="pending">未回答</option>
+                <option value="all">すべて</option>
+                <option value="answered">回答済みのみ</option>
+              </select>
               <button class="refresh-btn" onclick="loadInquiryList()">🔄 更新</button>
             </div>
           </div>
@@ -1428,6 +1433,11 @@
                   <ul>
                     <li>問い合わせ内容を確認し、返信テキストを入力して「返信する」をクリック</li>
                     <li>返信済みになると受講生のマイページにも表示されます</li>
+                  </ul>
+
+                  <h4>主な操作</h4>
+                  <ul>
+                    <li><strong>絞り込み</strong>：未回答（初期値）・すべて・回答済みのみで絞り込み可能。未回答・回答済みはグループ見出し（件数付き）で分かれて表示されます</li>
                   </ul>
                 </div>
               </div>
@@ -4333,7 +4343,6 @@ async function doLogin() {
     if (pendingCount > 0) {
       badge.textContent = pendingCount;
       badge.style.display = 'inline';
-      badge.style.background = '#F57C00';
     } else {
       badge.style.display = 'none';
     }
@@ -6730,19 +6739,28 @@ async function doLogin() {
   window.doneChange = doneChange;
   window.applyChange = applyChange;
 
-  async function loadInquiryList() {
+  let __inquiryCache = [];
+  let __inquiryFilter = 'pending';
+
+  function setInquiryFilter(f) {
+    __inquiryFilter = f;
+    const sel = document.getElementById('inquiry-filter-sel');
+    if (sel) sel.value = f;
+    renderInquiryList();
+  }
+  window.setInquiryFilter = setInquiryFilter;
+
+  function renderInquiryList() {
     const el = document.getElementById('inquiry-list');
-    el.innerHTML = '読み込み中...';
-    try {
-      const { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDocs(query(collection(window.__db, 'inquiries'), orderBy('createdAt', 'desc')));
-      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">問い合わせはまだありません。</p>'; return; }
-      let html = '';
-      snap.docs.forEach(d => {
-        const t = d.data();
-        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const isAnswered = t.status === 'answered';
-        html += `<div style="background:white;border:1px solid ${isAnswered ? '#eee' : '#FDE68A'};border-radius:10px;padding:16px;margin-bottom:16px;${isAnswered ? 'opacity:0.8;' : ''}">
+    const pending = __inquiryCache.filter(item => !item.isAnswered);
+    const answered = __inquiryCache.filter(item => item.isAnswered);
+
+    const showPending = __inquiryFilter === 'pending' || __inquiryFilter === 'all';
+    const showAnswered = __inquiryFilter === 'answered' || __inquiryFilter === 'all';
+
+    function cardHtml(item) {
+      const { d, t, date, isAnswered } = item;
+      return `<div style="background:white;border:1px solid ${isAnswered ? '#eee' : '#FDE68A'};border-radius:10px;padding:16px;margin-bottom:16px;${isAnswered ? 'opacity:0.8;' : ''}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <div>
               <span style="font-size:14px;font-weight:700;">${t.name||'—'}</span>
@@ -6764,11 +6782,38 @@ async function doLogin() {
             <button onclick="replyInquiry('${d.id}','${t.applicationId||''}','${t.email||''}','${t.name||''}','${t.subject||''}')" style="padding:8px 16px;background:var(--teal);color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;align-self:flex-end;">返信する</button>
           </div>` : ''}
         </div>`;
+    }
+
+    if (!__inquiryCache.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">問い合わせはまだありません。</p>'; return; }
+
+    let html = '';
+    if (showPending) {
+      html += `<div style="padding:8px 14px;background:#FFF8E1;color:#F57C00;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 未回答（${pending.length}件）</div>`;
+      html += pending.length ? pending.map(cardHtml).join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">未回答の問い合わせはありません。</p>';
+    }
+    if (showAnswered) {
+      html += `<div style="padding:8px 14px;background:#E8F5E9;color:#2E7D32;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 回答済み（${answered.length}件）</div>`;
+      html += answered.length ? answered.map(cardHtml).join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">回答済みの問い合わせはありません。</p>';
+    }
+    el.innerHTML = html || '<p style="color:var(--text-light);font-size:13px;">該当する問い合わせはありません。</p>';
+  }
+
+  async function loadInquiryList() {
+    const el = document.getElementById('inquiry-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'inquiries'), orderBy('createdAt', 'desc')));
+      __inquiryCache = snap.docs.map(d => {
+        const t = d.data();
+        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isAnswered = t.status === 'answered';
+        return { d, t, date, isAnswered };
       });
-      el.innerHTML = html;
+      renderInquiryList();
 
       // 未回答バッジ更新
-      const pendingCount = snap.docs.filter(d => d.data().status !== 'answered').length;
+      const pendingCount = __inquiryCache.filter(item => !item.isAnswered).length;
       const badge = document.getElementById('inquiry-badge');
       if (badge) {
         if (pendingCount > 0) { badge.style.display = 'inline'; badge.textContent = pendingCount; }
