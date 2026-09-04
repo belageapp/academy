@@ -1462,12 +1462,13 @@
                   <h4>主な操作</h4>
                   <ul>
                     <li><strong>🏢 施設登録ボタン</strong>：届出データをOJT施設管理マスターに自動プリフィルして登録できます。届出された施設名と似た名前の施設が既に登録済みの場合は、<strong>重複登録防止のため候補選択画面</strong>が表示されます。法人名・住所・電話・担当者情報を見比べて同じ施設であれば「この施設に紐付ける」を選んでください（新規作成されません）。別の施設なら「該当なし・新規登録する」から通常どおり新規登録できます</li>
-                    <li><strong>再届出を許可ボタン</strong>：施設が「未定」の受講生に表示されます。クリックすると受講生のマイページに「OJT施設変更届」が再表示され、正式な施設が決まった時点で届け出られるようになります。許可後は「再届出待ち」表示に変わります。</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
                     <li><strong>絞り込み</strong>：要対応（未対応・未定・連絡済み）・すべて・未定のみ・連絡済み・対応済みで絞り込み可能</li>
                   </ul>
                   <div class="note">📌 お申し込み時に「OJT施設なし」を選んだ方は、<strong>お支払い前の保留</strong>（申し込み管理のステータス「OJT施設待ち（お支払い前）」）になります。決済前のためこの届出一覧には出ません。<strong>申し込み管理</strong>で確認・電話フォローしてください。受講生がマイページでOJT施設を入力するとお支払いに進み、以降は通常どおりこの届出一覧で管理できます。</div>
                   <div class="note">📌 電話番号は「施設代表電話番号」（必須）と「担当者 直通電話番号」（任意）に分かれています。担当者は受講生ごとに異なる場合があるため、担当者情報は施設マスターではなく各受講生の届出データ側で個別に保持しています。</div>
+                  <div class="note">📌 OJT施設が受け入れ不可になった等の理由で施設を変更したい場合、受講生は事務局の許可を待たずに、マイページの届出書セクションから「OJT施設変更届」をいつでも自分で提出できます。提出されると連絡日・資料送付日の状態は自動的に未対応へリセットされ、この一覧に再度「未対応」として表示されます（届出一覧に「🔁再提出」のバッジが付きます）。</div>
+                  <div class="warn">⚠️ 「🏢 施設登録済み（情報を見る）」ボタンから開けるのは<strong>施設マスター</strong>（複数の受講生で共有される施設データベース）です。ここで情報を編集しても、その受講生自身の届出データ（この一覧に表示される内容）には反映されません。特定の受講生の届出内容そのものを事務局が代わりに修正したい場合は、申し込み管理の詳細画面にある「✏️ 編集」から行ってください。</div>
                 </div>
               </div>
 
@@ -3385,13 +3386,11 @@ async function doLogin() {
     const venueIcons  = { done:'✓', none:'–' };
     const venueLabels = { done:'完了', none:'未着手' };
     const venueIsMitei = a.practiceVenue?.name === '未定';
+    // OJT施設の変更届は受講生が事務局の許可なく自分でいつでも提出できるため、
+    // 「再届出を許可」操作は不要（施設未定の場合のみ状態を表示）
     const venueExtraBtn = venueIsMitei
       ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">🏥 施設未定</span>'
-      : a.practiceVenueReported === true && !a.venueResubmitAllowed
-        ? `<button onclick="resetVenueSubmission('${id}')" style="padding:3px 10px;font-size:11px;background:#fff;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#666;">再届出を許可</button>`
-        : a.venueResubmitAllowed
-          ? '<span style="font-size:11px;color:#F57C00;font-weight:600;">⏳ 再届出待ち</span>'
-          : '';
+      : '';
     confirmedHtml += `<div class="prog-item">
       <div class="prog-item-left">
         <div class="prog-dot ${venueState}">${venueIcons[venueState]}</div>
@@ -3475,43 +3474,6 @@ async function doLogin() {
   }
   window.toggleProgressField = toggleProgressField;
 
-  async function resetVenueSubmission(docId) {
-    if (!confirm('受講生のマイページの届出書セクションに「OJT施設変更届」が表示され、お知らせメールが送信されます。よろしいですか？')) return;
-    try {
-      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), { venueResubmitAllowed: true, venueIsResubmit: true });
-      const idx = all.findIndex(a => a.id === docId);
-      if (idx > -1) { all[idx].venueResubmitAllowed = true; all[idx].venueIsResubmit = true; }
-      const a = all.find(x => x.id === docId);
-      if (a) renderProgress(docId, a);
-
-      // マイページお知らせ + メール送信
-      const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', docId));
-      if (appSnap.exists()) {
-        const d = appSnap.data();
-        const title = 'OJT施設の再届出をお願いします';
-        const body  = 'スクールよりOJT施設情報の再提出依頼が届いています。マイページの「届出書」セクションにある「OJT施設変更届」からご提出ください。';
-        try {
-          await window.__addDoc(window.__col(window.__db, 'notices'), {
-            applicationId: docId,
-            title,
-            body,
-            target: 'specific',
-            emails: [d.email],
-            createdAt: window.__serverTs(),
-            createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
-          });
-        } catch(e) { console.warn('お知らせ登録失敗:', e); }
-        try {
-          await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendNoticeMail', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipients: [{ email: d.email, name: d.name || ((d.sei||'')+(d.mei||'')) }], title, body }),
-          });
-        } catch(e) { console.warn('メール送信失敗:', e); }
-      }
-    } catch(e) { alert('更新に失敗しました：' + e.message); }
-  }
-  window.resetVenueSubmission = resetVenueSubmission;
 
   // テキスト発注トグル
   async function toggleTextField(docId, current) {
