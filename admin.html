@@ -1056,6 +1056,14 @@
           <div class="thead">
             <div class="thead-title">📝 届出書一覧</div>
             <div class="thead-acts">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-change" onchange="loadChangeList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
+              <select id="change-filter-sel" onchange="window.setChangeFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="pending">未対応</option>
+                <option value="all">すべて</option>
+                <option value="done">対応済みのみ</option>
+              </select>
               <button class="refresh-btn" onclick="loadChangeList()">🔄 更新</button>
             </div>
           </div>
@@ -1431,13 +1439,20 @@
                   <span style="font-size:18px;color:#aaa;">▼</span>
                 </div>
                 <div class="guide-body">
-                  <p>受講生が提出した変更届（住所・氏名・OJT施設など）の一覧です。</p>
+                  <p>受講生が提出した変更届（住所・氏名など）・休講届・退講届の一覧です。カード上部の色付きラベルで種別（変更届／休講届／退講届）を判別できます。</p>
 
                   <h4>対応手順</h4>
                   <ul>
                     <li>届出内容を確認します</li>
-                    <li>申し込み管理の「✏️ 編集」から該当受講生の情報を更新してください</li>
-                    <li>対応完了後は届出書の「対応済み」ボタンをクリックしてステータスを更新します</li>
+                    <li>変更届で氏名・住所などが変わった場合は「📝 申込情報に反映」ボタンで申込データに自動反映できます（反映後は差分がカードに記録されます）</li>
+                    <li>反映不要な内容（休講届・退講届など）は申し込み管理の「✏️ 編集」から該当受講生の情報を更新してください</li>
+                    <li>対応完了後は届出書の「対応済みにする」ボタンをクリックしてステータスを更新します</li>
+                  </ul>
+
+                  <h4>主な操作</h4>
+                  <ul>
+                    <li><strong>絞り込み</strong>：未対応（初期値）・すべて・対応済みのみで絞り込み可能。未対応・対応済みはグループ見出し（件数付き）で分かれて表示されます</li>
+                    <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます。表示時はカード左端にオレンジのマーカーが付きます</li>
                   </ul>
                 </div>
               </div>
@@ -6483,57 +6498,70 @@ async function doLogin() {
     } catch(e) { console.warn('完了メール送信失敗:', e); }
   }
   window.sendBothApprovedNotice = sendBothApprovedNotice;
-  async function loadChangeList() {
+  let __changeCache = [];
+  let __changeFilter = 'pending';
+
+  function setChangeFilter(f) {
+    __changeFilter = f;
+    const sel = document.getElementById('change-filter-sel');
+    if (sel) sel.value = f;
+    renderChangeList();
+  }
+  window.setChangeFilter = setChangeFilter;
+
+  const __changeTypeStyle = {
+    '変更届': { bg: '#E3F2FD', color: '#1565C0' },
+    '休講届': { bg: '#FFF3E0', color: '#E65100' },
+    '退講届': { bg: '#FCE4EC', color: '#AD1457' },
+  };
+
+  function renderChangeList() {
     const el = document.getElementById('change-list');
-    el.innerHTML = '読み込み中...';
-    try {
-      const { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, serverTimestamp, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), orderBy('createdAt', 'desc')));
-      const docs = snap.docs;
-      if (!docs.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
+    const showTest = document.getElementById('show-test-change')?.checked;
+    const items = __changeCache.filter(item => showTest || !item.a.isTest);
+    const pending = items.filter(item => !item.isProcessed);
+    const done = items.filter(item => item.isProcessed);
 
-      let html = '';
-      for (const d of docs) {
-        const t = d.data();
-        const f = t.fields || {};
-        const appId = d.ref.parent.parent.id;
-        const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', appId));
-        const a = appSnap.data() || {};
-        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const isProcessed = t.status === 'done';
+    const showPending = __changeFilter === 'pending' || __changeFilter === 'all';
+    const showDone = __changeFilter === 'done' || __changeFilter === 'all';
 
-        let rowData = [];
-        if (t.type === '変更届') {
-          rowData = [
-            ['氏名', [f.sei, f.mei].filter(Boolean).join('　') || '—'],
-            ['氏名かな', [f.seiKana, f.meiKana].filter(Boolean).join('　') || '—'],
-            ['住所', f.zip ? `〒${f.zip} ${f.address||''}${f.address2 ? ' ' + f.address2 : ''}` : '—'],
-            ['郵送先住所', f.altZip ? `〒${f.altZip} ${f.altAddress||''}${f.altAddress2 ? ' ' + f.altAddress2 : ''}` : '—'],
-            ['電話番号', f.phone || '—'],
-            ['メールアドレス変更希望', f.email || '—'],
-          ];
-        } else if (t.type === '休講届') {
-          rowData = [
-            ['氏名', t.name || '—'],
-            ['住所', t.address || '—'],
-            ['電話番号', t.phone || '—'],
-            ['休講希望期間', (t.dateFrom || '—') + ' 〜 ' + (t.dateTo || '—')],
-            ['理由', t.reason || '—'],
-          ];
-        } else if (t.type === '退講届') {
-          rowData = [
-            ['氏名', t.name || '—'],
-            ['住所', t.address || '—'],
-            ['電話番号', t.phone || '—'],
-          ];
-        }
-        const rows = rowData.map(([k,v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="width:120px;color:#888;flex-shrink:0;">${k}</span><span style="color:#333;">${v}</span></div>`).join('');
+    function cardHtml(item) {
+      const { t, f, a, appId, todId, date, isProcessed, name } = item;
+      let rowData = [];
+      if (t.type === '変更届') {
+        rowData = [
+          ['氏名', [f.sei, f.mei].filter(Boolean).join('　') || '—'],
+          ['氏名かな', [f.seiKana, f.meiKana].filter(Boolean).join('　') || '—'],
+          ['住所', f.zip ? `〒${f.zip} ${f.address||''}${f.address2 ? ' ' + f.address2 : ''}` : '—'],
+          ['郵送先住所', f.altZip ? `〒${f.altZip} ${f.altAddress||''}${f.altAddress2 ? ' ' + f.altAddress2 : ''}` : '—'],
+          ['電話番号', f.phone || '—'],
+          ['メールアドレス変更希望', f.email || '—'],
+        ];
+      } else if (t.type === '休講届') {
+        rowData = [
+          ['氏名', t.name || '—'],
+          ['住所', t.address || '—'],
+          ['電話番号', t.phone || '—'],
+          ['休講希望期間', (t.dateFrom || '—') + ' 〜 ' + (t.dateTo || '—')],
+          ['理由', t.reason || '—'],
+        ];
+      } else if (t.type === '退講届') {
+        rowData = [
+          ['氏名', t.name || '—'],
+          ['住所', t.address || '—'],
+          ['電話番号', t.phone || '—'],
+        ];
+      }
+      const rows = rowData.map(([k,v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><span style="width:120px;color:#888;flex-shrink:0;">${k}</span><span style="color:#333;">${v}</span></div>`).join('');
+      const typeStyle = __changeTypeStyle[t.type] || { bg: '#EEE', color: '#555' };
 
-        html += `<div style="background:white;border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div>
-              <span style="font-size:14px;font-weight:700;">${a.sei||''}${a.mei||''}</span>
-              <span style="font-size:12px;color:#888;margin-left:8px;">${a.email||''}</span>
+      return `<div style="background:white;border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:16px;${item.a.isTest ? 'border-left:4px solid #FF9800;' : ''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="background:${typeStyle.bg};color:${typeStyle.color};padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">${t.type || '届出'}</span>
+              <span style="font-size:15px;font-weight:700;">${name || '（氏名不明）'}</span>
+              <span style="font-size:12px;color:#888;">${a.email||''}</span>
+              ${item.a.isTest ? '<span style="background:#FFF3E0;color:#E65100;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;">🧪テスト</span>' : ''}
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:11px;color:#888;">${date}</span>
@@ -6548,12 +6576,47 @@ async function doLogin() {
               ${(t.changeLog||[]).map(c => `<div>・${c.label}：<span style="color:#999;">${c.before||'（空）'}</span> → <strong>${c.after}</strong></div>`).join('') || '<div style="color:#888;">変更差分の記録なし</div>'}
             </div>` : ''}
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            ${t.type === '変更届' && !t.applied ? `<button onclick="applyChange('${appId}','${d.id}')" style="padding:6px 16px;background:#1A9AB0;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📝 申込情報に反映</button>` : ''}
-            ${!isProcessed ? `<button onclick="doneChange('${appId}','${d.id}','${a.email||''}','${a.sei||''}${a.mei||''}','${t.type||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
+            ${t.type === '変更届' && !t.applied ? `<button onclick="applyChange('${appId}','${todId}')" style="padding:6px 16px;background:#1A9AB0;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📝 申込情報に反映</button>` : ''}
+            ${!isProcessed ? `<button onclick="doneChange('${appId}','${todId}','${a.email||''}','${(name||'').replace(/'/g,"\\'")}','${t.type||''}')" style="padding:6px 16px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">対応済みにする</button>` : ''}
           </div>
         </div>`;
+    }
+
+    if (!items.length) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">届出はまだありません。</p>'; return; }
+
+    let html = '';
+    if (showPending) {
+      html += `<div style="padding:8px 14px;background:#FFF8E1;color:#F57C00;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 未対応（${pending.length}件）</div>`;
+      html += pending.length ? pending.map(cardHtml).join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">未対応の届出はありません。</p>';
+    }
+    if (showDone) {
+      html += `<div style="padding:8px 14px;background:#E8F5E9;color:#2E7D32;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 対応済み（${done.length}件）</div>`;
+      html += done.length ? done.map(cardHtml).join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">対応済みの届出はありません。</p>';
+    }
+    el.innerHTML = html || '<p style="color:var(--text-light);font-size:13px;">該当する届出はありません。</p>';
+  }
+
+  async function loadChangeList() {
+    const el = document.getElementById('change-list');
+    el.innerHTML = '読み込み中...';
+    try {
+      const { getDocs, query, orderBy, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), orderBy('createdAt', 'desc')));
+      const docs = snap.docs;
+
+      __changeCache = [];
+      for (const d of docs) {
+        const t = d.data();
+        const f = t.fields || {};
+        const appId = d.ref.parent.parent.id;
+        const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', appId));
+        const a = appSnap.data() || {};
+        const date = t.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+        const isProcessed = t.status === 'done';
+        const name = a.name || ((a.sei||'')+(a.mei||''));
+        __changeCache.push({ t, f, a, appId, todId: d.id, date, isProcessed, name });
       }
-      el.innerHTML = html;
+      renderChangeList();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
@@ -7075,10 +7138,11 @@ async function doLogin() {
 
       // 届出書：未対応
       try {
-        const snap = await getDocs(query(collectionGroup(window.__db, 'todoke'), where('status', '!=', 'done')));
-        const count = snap.size;
+        const snap = await getDocs(collectionGroup(window.__db, 'todoke'));
+        const count = snap.docs.filter(d => d.data().status !== 'done').length;
         const badge = document.getElementById('change-badge');
         if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+        else if (badge) badge.style.display = 'none';
       } catch(e) {}
 
       // OJT施設届出：対応待ち
