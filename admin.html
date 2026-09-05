@@ -5781,6 +5781,12 @@ async function doLogin() {
         collection(window.__db, 'applications'),
         where('test2Passed', '==', true)
       ));
+      const badge = document.getElementById('tempcert-badge');
+      if (badge) {
+        const badgeCount = snap.docs.filter(d => !d.data().isTest && d.data().tempCertIssued !== true).length;
+        if (badgeCount > 0) { badge.style.display = 'inline'; badge.textContent = badgeCount; }
+        else { badge.style.display = 'none'; }
+      }
       if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
       const showTest = document.getElementById('show-test-tempcert')?.checked;
       const pending = [], sent = [];
@@ -6462,6 +6468,13 @@ async function doLogin() {
     const rows = __reportCache.filter(a => showTest || !a.isTest);
     const pending  = rows.filter(a => a.reportApproved !== true);
     const approved = rows.filter(a => a.reportApproved === true);
+
+    const badge = document.getElementById('report-badge');
+    if (badge) {
+      const badgeCount = __reportCache.filter(a => !a.isTest && a.reportApproved !== true).length;
+      if (badgeCount > 0) { badge.style.display = 'inline'; badge.textContent = badgeCount; }
+      else { badge.style.display = 'none'; }
+    }
 
     const showPending  = __reportFilter === 'pending' || __reportFilter === 'all';
     const showApproved = __reportFilter === 'approved' || __reportFilter === 'all';
