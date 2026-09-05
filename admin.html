@@ -214,6 +214,17 @@
     }
     .refresh-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
 
+    .notice-filter-btn {
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 8px 16px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif; color: var(--text-mid);
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .notice-filter-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+    .notice-filter-btn.active { background: var(--teal); border-color: var(--teal); color: white; }
+    .notice-filter-btn.active:hover { color: white; }
+
     .export-btn {
       background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
       color: white; border: none; border-radius: 20px;
@@ -880,11 +891,11 @@
           <div class="thead">
             <div class="thead-title">投稿済みお知らせ一覧</div>
             <div class="thead-acts">
-              <select id="notice-filter-sel" onchange="window.setNoticeFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
-                <option value="all">すべて</option>
-                <option value="manual">👤 管理者投稿のみ</option>
-                <option value="auto">🤖 自動通知のみ</option>
-              </select>
+              <div style="display:flex;gap:6px;">
+                <button id="notice-filter-btn-manual" class="notice-filter-btn active" onclick="window.setNoticeFilter('manual')">👤 管理者投稿</button>
+                <button id="notice-filter-btn-all"    class="notice-filter-btn" onclick="window.setNoticeFilter('all')">すべて</button>
+                <button id="notice-filter-btn-auto"   class="notice-filter-btn" onclick="window.setNoticeFilter('auto')">🤖 自動通知</button>
+              </div>
               <button class="refresh-btn" onclick="loadNotices()">🔄 更新</button>
             </div>
           </div>
@@ -1390,7 +1401,7 @@
                   <ul>
                     <li>各お知らせに<strong>👤 管理者投稿</strong>（この画面から作成した独自の文面）／<strong>🤖 自動通知</strong>（承認・入金確認・問い合わせ回答など、システムの操作に連動して自動送信された定型メッセージ）のバッジが表示され、一目で見分けられます</li>
                     <li>管理者投稿には投稿者のメールアドレスも表示されます</li>
-                    <li><strong>絞り込み</strong>：すべて・管理者投稿のみ・自動通知のみで切り替え可能</li>
+                    <li><strong>絞り込み</strong>：「👤 管理者投稿」（初期値）・「すべて」・「🤖 自動通知」のボタンで切り替え可能</li>
                   </ul>
                 </div>
               </div>
@@ -4257,12 +4268,14 @@ async function doLogin() {
 
   // ===== お知らせ一覧読み込み =====
   let __noticesCache = [];
-  let __noticeFilter = 'all';
+  let __noticeFilter = 'manual';
 
   function setNoticeFilter(f) {
     __noticeFilter = f;
-    const sel = document.getElementById('notice-filter-sel');
-    if (sel) sel.value = f;
+    ['manual', 'all', 'auto'].forEach(v => {
+      const btn = document.getElementById('notice-filter-btn-' + v);
+      if (btn) btn.classList.toggle('active', v === f);
+    });
     renderNotices();
   }
   window.setNoticeFilter = setNoticeFilter;
