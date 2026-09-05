@@ -5599,7 +5599,7 @@ async function doLogin() {
         approved:      '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>',
       }[stage];
       const actionHtml = a.facilityReported !== true
-        ? `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`
+        ? `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:linear-gradient(135deg,#FFA451,#F2894A);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`
         : stage === 'reviewing'
           ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ 書類承認</button>`
           : '—';
@@ -6249,7 +6249,7 @@ async function doLogin() {
           ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✓ 受領済み</span><br><span style="font-size:11px;color:#888;">${facilityDate}</span>`
           : (isIssued
             ? '<span style="font-size:11px;color:#888;">—</span>'
-            : `<button onclick="markOjtDocReceived('${d_id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">📥 書類受領</button>`)
+            : `<button onclick="markOjtDocReceived('${d_id}','${a.email}','${name}')" style="padding:5px 10px;background:linear-gradient(135deg,#FFA451,#F2894A);color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">📥 書類受領</button>`)
         }</td>
         <td>${completedDate}</td>
         <td>${isIssued
