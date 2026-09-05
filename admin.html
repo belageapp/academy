@@ -916,7 +916,7 @@
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-textorder" onchange="loadTextOrderList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
-              <select id="to-filter-sel" onchange="window.setTextOrderFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E\") no-repeat right 10px center;">
+              <select id="to-filter-sel" onchange="window.setTextOrderFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
                 <option value="pending">発注待ち</option>
                 <option value="all">すべて</option>
                 <option value="done">発注済み</option>
@@ -948,11 +948,12 @@
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-documents" onchange="loadDocuments()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
-              <select id="doc-filter" onchange="loadDocuments()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+              <select id="doc-filter" onchange="loadDocuments()" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
                 <option value="pending">確認待ち</option>
                 <option value="all">すべて</option>
                 <option value="approved">承認済み</option>
               </select>
+              <button class="refresh-btn" onclick="loadDocuments()">🔄 更新</button>
             </div>
           </div>
           <div id="doc-list" style="padding:16px;">
@@ -1130,6 +1131,12 @@
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
                 <input type="checkbox" id="show-test-certificate" onchange="loadCertificateList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
+              <select id="certificate-filter-sel" onchange="window.setCertificateFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="issuable">発行可能</option>
+                <option value="all">すべて</option>
+                <option value="waiting">条件待ち</option>
+                <option value="issued">発行済み</option>
+              </select>
               <button class="bulk-cert-btn a4"   onclick="window.openBulkA4Modal('formal')">📄 通常版一括印刷</button>
               <button class="bulk-cert-btn card" onclick="window.openBulkCardModal('formal')">🪪 携帯用一括印刷</button>
               <button class="refresh-btn" onclick="loadCertificateList()">🔄 更新</button>
@@ -1703,6 +1710,7 @@
                   </ul>
                   <h4>操作</h4>
                   <ul>
+                    <li><strong>絞り込み</strong>：発行可能（初期値）・すべて・条件待ち・発行済みで絞り込み可能。それぞれグループ見出し（件数付き）で分かれて表示されます</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
                   </ul>
                   <div class="warn">⚠️ 証明書発行後はステータスが「修了」に変わります。誤発行に注意してください。</div>
@@ -6182,6 +6190,101 @@ async function doLogin() {
   window.loadTempCertList = loadTempCertList;
   window.markTempCertSent = markTempCertSent;
 
+  let __certificateCache = [];
+  let __certificateFilter = 'issuable';
+
+  function setCertificateFilter(f) {
+    __certificateFilter = f;
+    const sel = document.getElementById('certificate-filter-sel');
+    if (sel) sel.value = f;
+    renderCertificateList();
+  }
+  window.setCertificateFilter = setCertificateFilter;
+
+  function renderCertificateList() {
+    const el = document.getElementById('certificate-list');
+    const showTest = document.getElementById('show-test-certificate')?.checked;
+    const rows = __certificateCache.filter(a => showTest || !a.isTest);
+
+    window.__formalCertCache = {};
+    const waiting  = rows.filter(a => a.facilityReported !== true);
+    const issuable = rows.filter(a => a.facilityReported === true && a.certificateIssued !== true);
+    const issued   = rows.filter(a => a.certificateIssued === true);
+
+    const badge = document.getElementById('certificate-badge');
+    if (badge) {
+      const badgeCount = __certificateCache.filter(a => !a.isTest && a.facilityReported === true && a.certificateIssued !== true).length;
+      if (badgeCount > 0) { badge.style.display = 'inline'; badge.textContent = badgeCount; }
+      else { badge.style.display = 'none'; }
+    }
+
+    const showWaiting  = __certificateFilter === 'waiting'  || __certificateFilter === 'all';
+    const showIssuable = __certificateFilter === 'issuable' || __certificateFilter === 'all';
+    const showIssued   = __certificateFilter === 'issued'   || __certificateFilter === 'all';
+
+    function rowHtml(a) {
+      const d_id = a.__id;
+      const r = a.ojtReport || {};
+      const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
+      const approvedDate = a.ojtPassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const completedDate = a.completedAt?.toDate?.()?.toLocaleDateString('ja-JP')
+        || computeFormalCompletionDate(a)?.toLocaleDateString('ja-JP') || '—';
+      const isIssued = a.certificateIssued === true;
+      const facilityDone = a.facilityReported === true;
+      const facilityDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+      const canIssue = facilityDone && !isIssued;
+      const canPrint = facilityDone; // 3条件（OJT承認・レポート承認・書類受領）が揃っていれば印刷可能
+      if (canPrint) window.__formalCertCache[d_id] = a;
+      const printBtns = canPrint ? `
+          <button onclick="printSingleFormalCert('${d_id}','a4')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🖨️ A4印刷</button>
+          <button onclick="printSingleFormalCert('${d_id}','card')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🪪 カード印刷</button>` : '';
+      return `<tr${isIssued ? ' style="opacity:0.6;"' : ''}>
+        <td>${canPrint ? `<input type="checkbox" class="cert-select-cb" data-id="${d_id}">` : ''}</td>
+        <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
+        <td>${r.facility||'—'}</td>
+        <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
+        <td>${a.certDeliveryAddress||'—'}</td>
+        <td>${approvedDate}</td>
+        <td>${facilityDone
+          ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✓ 受領済み</span><br><span style="font-size:11px;color:#888;">${facilityDate}</span>`
+          : (isIssued
+            ? '<span style="font-size:11px;color:#888;">—</span>'
+            : `<button onclick="markOjtDocReceived('${d_id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">📥 書類受領</button>`)
+        }</td>
+        <td>${completedDate}</td>
+        <td>${isIssued
+          ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行済み</span>'
+          : canIssue
+            ? '<span style="background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行可能</span>'
+            : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">条件待ち</span>'
+        }</td>
+        <td style="white-space:nowrap;">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+            ${canIssue ? `<button onclick="issueCertificate('${d_id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : (!isIssued ? '<span style="font-size:12px;color:#aaa;">書類受領後に発行可能</span>' : '')}
+            ${printBtns}
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    let body = '';
+    if (showIssuable && issuable.length) body += `<tr><td colspan="10" style="padding:8px 14px;background:#E3F2FD;font-size:12px;font-weight:700;color:#1565C0;">▼ 発行可能 (${issuable.length}件)</td></tr>` + issuable.map(rowHtml).join('');
+    if (showWaiting  && waiting.length)  body += `<tr><td colspan="10" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 条件待ち (${waiting.length}件)</td></tr>` + waiting.map(rowHtml).join('');
+    if (showIssued   && issued.length)   body += `<tr><td colspan="10" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発行済み (${issued.length}件)</td></tr>` + issued.map(rowHtml).join('');
+
+    if (!body) {
+      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">' +
+        (__certificateFilter === 'issuable' ? '発行可能な対象者はいません。' :
+         __certificateFilter === 'waiting'  ? '条件待ちの対象者はいません。' :
+         __certificateFilter === 'issued'   ? '発行済みの対象者はいません。' : '対象者はいません。') + '</p>';
+      return;
+    }
+    el.innerHTML = '<table><thead><tr>' +
+      '<th><input type="checkbox" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>正式修了日</th><th>ステータス</th><th>操作</th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
+  }
+  window.renderCertificateList = renderCertificateList;
+
   async function loadCertificateList() {
     const el = document.getElementById('certificate-list');
     el.innerHTML = '読み込み中...';
@@ -6193,59 +6296,8 @@ async function doLogin() {
         where('reportApproved', '==', true),
         orderBy('ojtPassedAt', 'desc')
       ));
-      if (snap.empty) { el.innerHTML = '<p style="color:var(--text-light);font-size:13px;">対象者はいません。</p>'; return; }
-      const showTest = document.getElementById('show-test-certificate')?.checked;
-      window.__formalCertCache = {};
-      let html = '<table><thead><tr>' +
-        '<th><input type="checkbox" onchange="window.toggleAllCertSelect(this)"></th><th>受講生</th><th>OJT施設名</th><th>OJT期間</th><th>送付先</th><th>承認日</th><th>OJT報告書類</th><th>正式修了日</th><th>ステータス</th><th>操作</th>' +
-        '</tr></thead><tbody>';
-      snap.docs.forEach(d => {
-        const a = d.data();
-        if (!showTest && a.isTest) return;
-        const r = a.ojtReport || {};
-        const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
-        const approvedDate = a.ojtPassedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const completedDate = a.completedAt?.toDate?.()?.toLocaleDateString('ja-JP')
-          || computeFormalCompletionDate(a)?.toLocaleDateString('ja-JP') || '—';
-        const isIssued = a.certificateIssued === true;
-        const facilityDone = a.facilityReported === true;
-        const facilityDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
-        const canIssue = facilityDone && !isIssued;
-        const canPrint = facilityDone; // 3条件（OJT承認・レポート承認・書類受領）が揃っていれば印刷可能
-        if (canPrint) window.__formalCertCache[d.id] = a;
-        const printBtns = canPrint ? `
-            <button onclick="printSingleFormalCert('${d.id}','a4')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🖨️ A4印刷</button>
-            <button onclick="printSingleFormalCert('${d.id}','card')" style="padding:5px 10px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🪪 カード印刷</button>` : '';
-        html += `<tr${isIssued ? ' style="opacity:0.6;"' : ''}>
-          <td>${canPrint ? `<input type="checkbox" class="cert-select-cb" data-id="${d.id}">` : ''}</td>
-          <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
-          <td>${r.facility||'—'}</td>
-          <td>${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}</td>
-          <td>${a.certDeliveryAddress||'—'}</td>
-          <td>${approvedDate}</td>
-          <td>${facilityDone
-            ? `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✓ 受領済み</span><br><span style="font-size:11px;color:#888;">${facilityDate}</span>`
-            : (isIssued
-              ? '<span style="font-size:11px;color:#888;">—</span>'
-              : `<button onclick="markOjtDocReceived('${d.id}','${a.email}','${name}')" style="padding:5px 10px;background:#E8701A;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">📥 書類受領</button>`)
-          }</td>
-          <td>${completedDate}</td>
-          <td>${isIssued
-            ? '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行済み</span>'
-            : canIssue
-              ? '<span style="background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">発行可能</span>'
-              : '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">条件待ち</span>'
-          }</td>
-          <td style="white-space:nowrap;">
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
-              ${canIssue ? `<button onclick="issueCertificate('${d.id}','${a.email}','${name}')" style="padding:6px 14px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📜 発行済みにする</button>` : (!isIssued ? '<span style="font-size:12px;color:#aaa;">書類受領後に発行可能</span>' : '')}
-              ${printBtns}
-            </div>
-          </td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      __certificateCache = snap.docs.map(d => ({ __id: d.id, ...d.data() }));
+      renderCertificateList();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
