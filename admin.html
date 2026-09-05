@@ -913,7 +913,10 @@
           <div class="thead">
             <div class="thead-title">📦 テキスト発注一覧</div>
             <div class="thead-acts">
-              <select id="to-filter" onchange="loadTextOrderList()" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E\") no-repeat right 10px center;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;border:1.5px dashed #F06292;border-radius:20px;padding:6px 12px;">
+                <input type="checkbox" id="show-test-textorder" onchange="loadTextOrderList()" style="cursor:pointer;">🧪 テストデータを表示
+              </label>
+              <select id="to-filter-sel" onchange="window.setTextOrderFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E\") no-repeat right 10px center;">
                 <option value="pending">発注待ち</option>
                 <option value="all">すべて</option>
                 <option value="done">発注済み</option>
@@ -1387,6 +1390,12 @@
                     <li>「未発注」の受講生一覧を確認し、発注処理を行います</li>
                     <li>発注後に「発注済み」ボタンをクリックしてステータスを更新します</li>
                   </ul>
+
+                  <h4>主な操作</h4>
+                  <ul>
+                    <li><strong>絞り込み</strong>：発注待ち（初期値）・すべて・発注済みで絞り込み可能。発注待ち・発注済みはグループ見出し（件数付き）で分かれて表示されます</li>
+                    <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
+                  </ul>
                   <div class="note">📌 テキストの要・不要はStripe決済フローで確定されます。発注状況はここで管理してください。</div>
                 </div>
               </div>
@@ -1409,7 +1418,7 @@
 
                   <h4>操作</h4>
                   <ul>
-                    <li><strong>絞り込み</strong>：確認待ち・すべて・承認済みで切り替え可能</li>
+                    <li><strong>絞り込み</strong>：確認待ち・すべて・承認済みで切り替え可能。確認待ち・承認済みはグループ見出し（件数付き）で分かれて表示されます</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
                   </ul>
 
@@ -3534,75 +3543,56 @@ async function doLogin() {
   window.toggleTextField = toggleTextField;
 
   // テキスト発注一覧
-  async function loadTextOrderList() {
+  let __textOrderCache = [];
+  let __textOrderFilter = 'pending';
+
+  function setTextOrderFilter(f) {
+    __textOrderFilter = f;
+    const sel = document.getElementById('to-filter-sel');
+    if (sel) sel.value = f;
+    renderTextOrderList();
+  }
+  window.setTextOrderFilter = setTextOrderFilter;
+
+  function renderTextOrderList() {
     const el = document.getElementById('textorder-list');
-    el.innerHTML = '<div style="color:var(--text-light);font-size:13px;">読み込み中...</div>';
-    const filter = document.getElementById('to-filter')?.value || 'pending';
-    try {
-      const { collection, getDocs, query, orderBy, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      // テキスト購入者のみ取得
-      const snap = await getDocs(query(collection(window.__db, 'applications'), orderBy('createdAt', 'desc')));
-      const allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const showTest = document.getElementById('show-test-textorder')?.checked;
+    const textBuyers = __textOrderCache.filter(a => showTest || !a.isTest);
 
-      // テキスト購入者のみフィルタ
-      const textBuyers = allDocs.filter(a => {
-        const tb = a.textbook || '';
-        return tb === 'purchase' || tb === '購入（6,600円）';
-      });
+    const pending = textBuyers.filter(a => !a.textOrdered);
+    const done    = textBuyers.filter(a => a.textOrdered);
 
-      // 統計更新
-      const pendingCount = textBuyers.filter(a => !a.textOrdered).length;
-      const doneCount    = textBuyers.filter(a => a.textOrdered).length;
-      const el_pending = document.getElementById('to-st-pending');
-      const el_done    = document.getElementById('to-st-done');
-      const el_total   = document.getElementById('to-st-total');
-      if (el_pending) el_pending.textContent = pendingCount;
-      if (el_done)    el_done.textContent    = doneCount;
-      if (el_total)   el_total.textContent   = textBuyers.length;
+    const el_pending = document.getElementById('to-st-pending');
+    const el_done    = document.getElementById('to-st-done');
+    const el_total   = document.getElementById('to-st-total');
+    if (el_pending) el_pending.textContent = pending.length;
+    if (el_done)    el_done.textContent    = done.length;
+    if (el_total)   el_total.textContent   = textBuyers.length;
 
-      // バッジ更新
-      const badge = document.getElementById('textorder-badge');
-      if (badge) {
-        if (pendingCount > 0) { badge.style.display = 'inline'; badge.textContent = pendingCount; }
-        else { badge.style.display = 'none'; }
-      }
+    const badge = document.getElementById('textorder-badge');
+    if (badge) {
+      if (pending.length > 0) { badge.style.display = 'inline'; badge.textContent = pending.length; }
+      else { badge.style.display = 'none'; }
+    }
 
-      // フィルタ適用
-      const filtered = filter === 'pending' ? textBuyers.filter(a => !a.textOrdered)
-        : filter === 'done' ? textBuyers.filter(a => a.textOrdered)
-        : textBuyers;
+    const showPending = __textOrderFilter === 'pending' || __textOrderFilter === 'all';
+    const showDone    = __textOrderFilter === 'done'    || __textOrderFilter === 'all';
 
-      if (!filtered.length) {
-        el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:8px 0;">該当する申込者はいません。</p>';
-        return;
-      }
+    function rowHtml(a) {
+      const date = a.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const isDone = a.textOrdered === true;
+      const orderedDate = a.textOrderedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
 
-      let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-      html += '<thead><tr style="background:var(--teal-pale);">' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">申込日</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">受講番号</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">お名前</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">電話番号</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発送先住所</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発注状況</th>' +
-        '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">操作</th>' +
-        '</tr></thead><tbody>';
+      // 発送先住所：別途住所があればそちらを優先
+      const hasAlt = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
+      const deliveryAddr = hasAlt
+        ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}<br><span style="font-size:11px;color:var(--teal-dark);font-weight:700;">※別途発送先</span>`
+        : `${a.zip ? '〒'+a.zip+' ' : ''}${a.address||'—'}`;
 
-      filtered.forEach(a => {
-        const date = a.createdAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
-        const isDone = a.textOrdered === true;
-        const orderedDate = a.textOrderedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
-
-        // 発送先住所：別途住所があればそちらを優先
-        const hasAlt = a.altAddress && a.altAddress.trim() !== '' && a.altAddress !== '〒　';
-        const deliveryAddr = hasAlt
-          ? `${a.altZip ? '〒'+a.altZip+' ' : ''}${a.altAddress}${a.altAddress2 ? ' '+a.altAddress2 : ''}<br><span style="font-size:11px;color:var(--teal-dark);font-weight:700;">※別途発送先</span>`
-          : `${a.zip ? '〒'+a.zip+' ' : ''}${a.address||'—'}`;
-
-        html += `<tr style="border-bottom:1px solid var(--border);${isDone ? 'opacity:0.7;' : ''}">
+      return `<tr style="border-bottom:1px solid var(--border);${isDone ? 'opacity:0.7;' : ''}">
           <td style="padding:10px 14px;">${date}</td>
           <td style="padding:10px 14px;font-weight:700;color:var(--teal-dark);">${a.studentNo||'—'}</td>
-          <td style="padding:10px 14px;font-weight:700;">${(a.sei||a.mei) ? (a.sei||'')+(a.mei||'') : (a.name||'—')}<br><span style="font-size:11px;color:#888;font-weight:400;">${(a.seiFuri||a.meiFuri) ? (a.seiFuri||'')+(a.meiFuri||'') : (a.kana||'')}</span></td>
+          <td style="padding:10px 14px;font-weight:700;">${a.name || ((a.sei||'')+(a.mei||'')) || '—'}<br><span style="font-size:11px;color:#888;font-weight:400;">${(a.seiFuri||a.meiFuri) ? (a.seiFuri||'')+(a.meiFuri||'') : (a.kana||'')}</span></td>
           <td style="padding:10px 14px;">${a.phone||'—'}</td>
           <td style="padding:10px 14px;">${deliveryAddr}</td>
           <td style="padding:10px 14px;">
@@ -3616,9 +3606,42 @@ async function doLogin() {
             </button>
           </td>
         </tr>`;
+    }
+
+    let body = '';
+    if (showPending) body += `<tr><td colspan="7" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 発注待ち (${pending.length}件)</td></tr>` + (pending.length ? pending.map(rowHtml).join('') : '');
+    if (showDone)    body += `<tr><td colspan="7" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 発注済み (${done.length}件)</td></tr>` + (done.length ? done.map(rowHtml).join('') : '');
+
+    if (!textBuyers.length) {
+      el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:8px 0;">該当する申込者はいません。</p>';
+      return;
+    }
+
+    el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+      '<thead><tr style="background:var(--teal-pale);">' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">申込日</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">受講番号</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">お名前</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">電話番号</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発送先住所</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">発注状況</th>' +
+      '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-mid);border-bottom:2px solid var(--teal-light);">操作</th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
+  }
+  window.renderTextOrderList = renderTextOrderList;
+
+  async function loadTextOrderList() {
+    const el = document.getElementById('textorder-list');
+    el.innerHTML = '<div style="color:var(--text-light);font-size:13px;">読み込み中...</div>';
+    try {
+      const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(window.__db, 'applications'), orderBy('createdAt', 'desc')));
+      const allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      __textOrderCache = allDocs.filter(a => {
+        const tb = a.textbook || '';
+        return tb === 'purchase' || tb === '購入（6,600円）';
       });
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      renderTextOrderList();
     } catch(e) {
       el.innerHTML = '<p style="color:red;">読み込みエラー：' + e.message + '</p>';
     }
@@ -4270,29 +4293,8 @@ async function doLogin() {
     const snap = await window.__getDocs(q);
     const showTest = document.getElementById('show-test-documents')?.checked;
 
-    const docs = snap.docs;
-    let pendingCount = 0;
-    let approvedCount = 0;
-    let html = '';
-
-    docs.forEach(d => {
-      const data = d.data();
-      if (!showTest && data.isTest) return;
-      const docStatus = data.documentStatus || {};
-      const photoPending = docStatus.photo === 'pending';
-      const photoApproved = docStatus.photo === 'approved';
-      const idPending = docStatus.idDocument === 'pending';
-      const idApproved = docStatus.idDocument === 'approved';
-
-      if (photoPending || idPending) pendingCount++;
-      if (photoApproved && idApproved) approvedCount++;
-
-      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl;
-      if (!hasDocs) return;
-      if (filter === 'pending' && !photoPending && !idPending) return;
-      if (filter === 'approved' && !photoApproved && !idApproved) return;
-
-      html += `
+    function cardHtml(d, data, docStatus, photoPending, photoApproved, idPending, idApproved) {
+      return `
         <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
             <div>
@@ -4335,6 +4337,32 @@ async function doLogin() {
               </div>` : '<div></div>'}
           </div>
         </div>`;
+    }
+
+    let pendingCount = 0;
+    let approvedCount = 0;
+    const pendingItems = [];
+    const approvedItems = [];
+
+    snap.docs.forEach(d => {
+      const data = d.data();
+      if (!showTest && data.isTest) return;
+      const docStatus = data.documentStatus || {};
+      const photoPending = docStatus.photo === 'pending';
+      const photoApproved = docStatus.photo === 'approved';
+      const idPending = docStatus.idDocument === 'pending';
+      const idApproved = docStatus.idDocument === 'approved';
+
+      if (photoPending || idPending) pendingCount++;
+      if (photoApproved && idApproved) approvedCount++;
+
+      const hasDocs = docStatus.photoUrl || docStatus.idDocumentUrl;
+      if (!hasDocs) return;
+
+      const isPending = photoPending || idPending;
+      const html = cardHtml(d, data, docStatus, photoPending, photoApproved, idPending, idApproved);
+      if (isPending) pendingItems.push(html);
+      else approvedItems.push(html);
     });
 
     document.getElementById('doc-st-pending').textContent = pendingCount;
@@ -4345,6 +4373,18 @@ async function doLogin() {
       badge.style.display = 'inline';
     } else {
       badge.style.display = 'none';
+    }
+
+    const showPending  = filter === 'pending'  || filter === 'all';
+    const showApproved = filter === 'approved' || filter === 'all';
+    let html = '';
+    if (showPending) {
+      html += `<div style="padding:8px 14px;background:#FFF8E1;color:#F57C00;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 確認待ち（${pendingItems.length}件）</div>`;
+      html += pendingItems.length ? pendingItems.join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">確認待ちの書類はありません。</p>';
+    }
+    if (showApproved) {
+      html += `<div style="padding:8px 14px;background:#E8F5E9;color:#2E7D32;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;">▼ 承認済み（${approvedItems.length}件）</div>`;
+      html += approvedItems.length ? approvedItems.join('') : '<p style="color:var(--text-light);font-size:13px;margin-bottom:16px;">承認済みの書類はありません。</p>';
     }
     listEl.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;padding:20px;text-align:center;">該当する書類はありません</div>';
   }
