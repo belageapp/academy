@@ -880,6 +880,11 @@
           <div class="thead">
             <div class="thead-title">投稿済みお知らせ一覧</div>
             <div class="thead-acts">
+              <select id="notice-filter-sel" onchange="window.setNoticeFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
+                <option value="all">すべて</option>
+                <option value="manual">👤 管理者投稿のみ</option>
+                <option value="auto">🤖 自動通知のみ</option>
+              </select>
               <button class="refresh-btn" onclick="loadNotices()">🔄 更新</button>
             </div>
           </div>
@@ -1380,6 +1385,13 @@
                     <li>送信済みのお知らせは一覧で確認できます</li>
                   </ul>
                   <div class="note">📌 受講確定時・受講中変更時には自動でお知らせが送信されます。手動での重複送信にご注意ください。</div>
+
+                  <h4>投稿済みお知らせ一覧の見方</h4>
+                  <ul>
+                    <li>各お知らせに<strong>👤 管理者投稿</strong>（この画面から作成した独自の文面）／<strong>🤖 自動通知</strong>（承認・入金確認・問い合わせ回答など、システムの操作に連動して自動送信された定型メッセージ）のバッジが表示され、一目で見分けられます</li>
+                    <li>管理者投稿には投稿者のメールアドレスも表示されます</li>
+                    <li><strong>絞り込み</strong>：すべて・管理者投稿のみ・自動通知のみで切り替え可能</li>
+                  </ul>
                 </div>
               </div>
 
@@ -3748,6 +3760,7 @@ async function doLogin() {
               emails: [appData.email],
               createdAt: window.__serverTs(),
               createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+              source: 'auto',
             });
           } catch(e) { console.warn('お知らせ送信失敗:', e); }
           try {
@@ -3789,6 +3802,7 @@ async function doLogin() {
             emails: [appData.email],
             createdAt: window.__serverTs(),
             createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+            source: 'auto',
           });
         } catch(e) { console.warn('お知らせ送信失敗:', e); }
         try {
@@ -4124,6 +4138,7 @@ async function doLogin() {
         fileUrl, fileName,
         createdAt: window.__serverTs(),
         createdBy: window.__auth.currentUser.email,
+        source: 'manual',
       });
 
       // メール通知送信
@@ -4241,37 +4256,77 @@ async function doLogin() {
   window.postNotice = postNotice;
 
   // ===== お知らせ一覧読み込み =====
+  let __noticesCache = [];
+  let __noticeFilter = 'all';
+
+  function setNoticeFilter(f) {
+    __noticeFilter = f;
+    const sel = document.getElementById('notice-filter-sel');
+    if (sel) sel.value = f;
+    renderNotices();
+  }
+  window.setNoticeFilter = setNoticeFilter;
+
+  // postNotice()（新規お知らせ投稿フォーム）で作成されたものだけが source:'manual' を持つ。
+  // 本機能追加前の古い手動投稿にはsourceが無いため、postNoticeが必ず付与するapplicationIds
+  // フィールドの有無で後方互換的に判定する（システム側の自動通知はこのフィールドを持たない）。
+  function isManualNotice(n) {
+    if (n.source === 'manual') return true;
+    if (n.source === 'auto') return false;
+    return n.applicationIds !== undefined;
+  }
+
+  function renderNotices() {
+    const list = document.getElementById('notices-list');
+    const rows = __noticesCache.filter(({ n }) => {
+      if (__noticeFilter === 'manual') return isManualNotice(n);
+      if (__noticeFilter === 'auto') return !isManualNotice(n);
+      return true;
+    });
+
+    if (!rows.length) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-light);">${__noticesCache.length ? '該当するお知らせはありません' : '投稿済みのお知らせはありません'}</div>`;
+      return;
+    }
+
+    list.innerHTML = rows.map(({ id, n }) => {
+      const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '—';
+      const targetLabel = n.target === 'all' ? '全受講生'
+        : (n.emails && n.emails.length > 0
+            ? n.emails.map(e => { const a = all.find(x => x.email === e); return a ? `${a.name}（${a.studentNo || '—'}）` : e; }).join('、')
+            : '特定受講生');
+      const manual = isManualNotice(n);
+      const sourceBadge = manual
+        ? '<span style="background:#E0F7FB;color:#1A9AB0;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700;">👤 管理者投稿</span>'
+        : '<span style="background:#F3F4F6;color:#6B7280;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700;">🤖 自動通知</span>';
+      return `
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              ${sourceBadge}
+              <span style="font-size:11px;color:var(--text-light);">${dt}　対象：${targetLabel}${manual && n.createdBy ? '　投稿者：' + n.createdBy : ''}</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${n.title}</div>
+            <div style="font-size:13px;color:var(--text-mid);line-height:1.7;">${n.body}</div>
+            ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);display:inline-block;margin-top:6px;">📎 ${n.fileName}</a>` : ''}
+          </div>
+          <button onclick="deleteNotice('${id}', '${n.fileUrl}')"
+            style="background:none;border:1.5px solid #FCA5A5;color:#991B1B;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;">
+            削除
+          </button>
+        </div>`;
+    }).join('');
+  }
+  window.renderNotices = renderNotices;
+
   async function loadNotices() {
     const list = document.getElementById('notices-list');
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light);">読み込み中…</div>';
     try {
       const q    = window.__query(window.__col(window.__db, 'notices'), window.__orderBy('createdAt', 'desc'));
       const snap = await window.__getDocs(q);
-      if (snap.empty) {
-        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light);">投稿済みのお知らせはありません</div>';
-        return;
-      }
-      list.innerHTML = snap.docs.map(d => {
-        const n = d.data();
-        const dt = n.createdAt?.toDate?.() ? n.createdAt.toDate().toLocaleDateString('ja-JP') : '—';
-        const targetLabel = n.target === 'all' ? '全受講生'
-          : (n.emails && n.emails.length > 0
-              ? n.emails.map(e => { const a = all.find(x => x.email === e); return a ? `${a.name}（${a.studentNo || '—'}）` : e; }).join('、')
-              : '特定受講生');
-        return `
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;">
-            <div style="flex:1;">
-              <div style="font-size:11px;color:var(--text-light);margin-bottom:3px;">${dt}　対象：${targetLabel}</div>
-              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${n.title}</div>
-              <div style="font-size:13px;color:var(--text-mid);line-height:1.7;">${n.body}</div>
-              ${n.fileUrl ? `<a href="${n.fileUrl}" target="_blank" style="font-size:12px;color:var(--teal-dark);display:inline-block;margin-top:6px;">📎 ${n.fileName}</a>` : ''}
-            </div>
-            <button onclick="deleteNotice('${d.id}', '${n.fileUrl}')"
-              style="background:none;border:1.5px solid #FCA5A5;color:#991B1B;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;">
-              削除
-            </button>
-          </div>`;
-      }).join('');
+      __noticesCache = snap.docs.map(d => ({ id: d.id, n: d.data() }));
+      renderNotices();
     } catch(e) {
       list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);">読み込みエラー：${e.message}</div>`;
     }
@@ -4408,6 +4463,7 @@ async function doLogin() {
       emails: [appData.email],
       createdAt: window.__serverTs(),
       createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+      source: 'auto',
     });
   }
 
@@ -5674,6 +5730,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendOjtApprovedMail', {
         method: 'POST',
@@ -5772,6 +5829,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendTempCertSentMail', {
         method: 'POST',
@@ -6347,6 +6405,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
         method: 'POST',
@@ -6478,6 +6537,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendReportApprovedMail', {
         method: 'POST',
@@ -6513,6 +6573,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       alert('差し戻しました');
       loadReportList();
@@ -6590,6 +6651,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendCertificateIssuedMail', {
         method: 'POST',
@@ -6757,6 +6819,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       alert('対応済みにしました');
       loadChangeList();
@@ -7026,6 +7089,7 @@ async function doLogin() {
         emails: [email],
         createdAt: serverTimestamp(),
         createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
       });
       await fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendInquiryReplyMail', {
         method: 'POST',
