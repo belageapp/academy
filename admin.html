@@ -5644,6 +5644,13 @@ async function doLogin() {
     const groups = { reportWaiting: [], docWaiting: [], reviewing: [], approved: [] };
     __ojtCache.forEach(a => groups[ojtStage(a)].push(a));
 
+    const badge = document.getElementById('ojt-badge');
+    if (badge) {
+      const badgeCount = __ojtCache.filter(a => !a.isTest && a.ojtReported === true && a.ojtPassed !== true).length;
+      if (badgeCount > 0) { badge.style.display = 'inline'; badge.textContent = badgeCount; }
+      else { badge.style.display = 'none'; }
+    }
+
     const showReportWaiting = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'reportWaiting';
     const showDocWaiting    = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'docWaiting';
     const showReviewing     = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'reviewing';
