@@ -1369,6 +1369,7 @@
                     <li><strong>フィルター</strong>：ステータス・キーワード・日付範囲・支払い方法で絞り込み。絞り込んだ状態でCSV出力されます。</li>
                     <li><strong>詳細ボタン</strong>：受講生の全情報・進捗チェックリスト・やりとり履歴を確認できる詳細画面を表示。</li>
                     <li><strong>✏️ 編集（管理者）</strong>：氏名・ふりがな・電話・住所・別途郵送先・OJT施設情報・管理者メモを直接編集できます。管理者メモは受講生には表示されません。</li>
+                    <li><strong>氏名・ふりがな欄は姓・名の2つに分かれています</strong>。住所など他の項目だけ直したい場合でも、姓・名の欄には現在の氏名が自動で入った状態で開きます（意図せず空欄で保存されることを防ぐためです）。保存すると姓＋全角スペース＋名の形で結合されます。</li>
                     <li><strong>振込入金確認ボタン</strong>：「入金待ち（振込）」の受講生に表示。クリックで受講確定に変更し入金確認メールを送信。</li>
                     <li><strong>CSV出力</strong>：現在の絞り込み結果を26列のCSVで出力（Excel対応・BOM付きUTF-8）。</li>
                     <li><strong>👁 受講生画面ボタン</strong>：詳細画面右上のボタンをクリックすると、その受講生のマイページをそのまま確認できます。ログイン不要。受講ステータス・書類提出フォーム・テキスト・OJT届出・修了証の表示状態を受講生目線で確認するときに使用します。</li>
@@ -5103,13 +5104,26 @@ async function doLogin() {
   }
   window.closeImageModal = closeImageModal;
   // ===== 受講生情報 管理者編集 =====
+  // 申込フォームはsei/mei（分割姓名）を保存せず、結合済みのname/kana（全角スペース区切り、
+  // 単一名の場合はmei相当のみ）しか持たない。sei/meiが無ければnameを分割して補う。
+  // フォールバック無しで空欄のまま編集画面を開くと、その場で気づかず保存した際に
+  // 氏名が空／ブラウザのオートフィル値で上書きされてしまう事故につながる（要注意）。
+  function splitNameForEdit(nameVal, seiVal, meiVal) {
+    if (seiVal || meiVal) return { sei: seiVal || '', mei: meiVal || '' };
+    const parts = (nameVal || '').split(/[\s　]+/).filter(Boolean);
+    if (parts.length >= 2) return { sei: parts[0], mei: parts.slice(1).join('　') };
+    return { sei: '', mei: nameVal || '' };
+  }
+
   function openAdminEditModal() {
     if (!curId) return;
     const a = all.find(x => x.id === curId);
     if (!a) return;
     const set = (id, val) => { const el = document.getElementById('aedit-'+id); if (el) el.value = val || ''; };
-    set('sei', a.sei); set('mei', a.mei);
-    set('seiFuri', a.seiFuri); set('meiFuri', a.meiFuri);
+    const nm = splitNameForEdit(a.name, a.sei, a.mei);
+    const kn = splitNameForEdit(a.kana, a.seiFuri, a.meiFuri);
+    set('sei', nm.sei); set('mei', nm.mei);
+    set('seiFuri', kn.sei); set('meiFuri', kn.mei);
     set('phone', a.phone);
     set('zip', a.zip); set('address', a.address);
     set('altZip', a.altZip); set('altAddress', a.altAddress);
@@ -5136,10 +5150,15 @@ async function doLogin() {
     errEl.textContent = '';
     const sei = get('sei'), mei = get('mei');
     const seiFuri = get('seiFuri'), meiFuri = get('meiFuri');
+    if (!sei && !mei) {
+      errEl.textContent = '氏名が空です。保存を中止しました。';
+      return;
+    }
+    // 申込フォームと同じ結合ルール：姓・名がともにあれば全角スペース区切り、単一名の場合はそのまま
     const updateData = {
       sei, mei, seiFuri, meiFuri,
-      name: sei + mei,
-      kana: seiFuri + meiFuri,
+      name: (sei && mei) ? sei + '　' + mei : (sei || mei),
+      kana: (seiFuri && meiFuri) ? seiFuri + '　' + meiFuri : (seiFuri || meiFuri),
       phone: get('phone'),
       zip: get('zip'), address: get('address'),
       altZip: get('altZip'), altAddress: get('altAddress'),
@@ -5159,7 +5178,7 @@ async function doLogin() {
       await updateDoc(doc(window.__db, 'applications', curId), { ...updateData, adminEditedAt: serverTimestamp() });
       const a = all.find(x => x.id === curId);
       if (a) {
-        Object.assign(a, { sei, mei, seiFuri, meiFuri, name: sei+mei, kana: seiFuri+meiFuri,
+        Object.assign(a, { sei, mei, seiFuri, meiFuri, name: updateData.name, kana: updateData.kana,
           phone: get('phone'), zip: get('zip'), address: get('address'),
           altZip: get('altZip'), altAddress: get('altAddress'),
           adminMemo: get('adminMemo') });
@@ -8156,39 +8175,39 @@ async function doLogin() {
         <!-- 基本情報 -->
         <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);">基本情報</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">姓</label><input id="aedit-sei" type="text" placeholder="山田" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">名</label><input id="aedit-mei" type="text" placeholder="太郎" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">姓</label><input id="aedit-sei" type="text" autocomplete="off" placeholder="山田" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">名</label><input id="aedit-mei" type="text" autocomplete="off" placeholder="太郎" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">せい（ふりがな）</label><input id="aedit-seiFuri" type="text" placeholder="やまだ" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">めい（ふりがな）</label><input id="aedit-meiFuri" type="text" placeholder="たろう" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">せい（ふりがな）</label><input id="aedit-seiFuri" type="text" autocomplete="off" placeholder="やまだ" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">めい（ふりがな）</label><input id="aedit-meiFuri" type="text" autocomplete="off" placeholder="たろう" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="aedit-phone" type="tel" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">電話番号</label><input id="aedit-phone" type="tel" autocomplete="off" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-zip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-address" type="text" placeholder="都道府県市区町村..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-zip" type="text" autocomplete="off" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-address" type="text" autocomplete="off" placeholder="都道府県市区町村..." style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
         <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先〒</label><input id="aedit-altZip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先住所</label><input id="aedit-altAddress" type="text" placeholder="証明書の別途送付先（なければ空欄）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先〒</label><input id="aedit-altZip" type="text" autocomplete="off" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">別途郵送先住所</label><input id="aedit-altAddress" type="text" autocomplete="off" placeholder="証明書の別途送付先（なければ空欄）" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
 
         <!-- OJT施設情報 -->
         <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">OJT施設情報（届出データ）</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">法人名</label><input id="aedit-venueCorp" type="text" placeholder="社会福祉法人◯◯" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名</label><input id="aedit-venueName" type="text" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">法人名</label><input id="aedit-venueCorp" type="text" autocomplete="off" placeholder="社会福祉法人◯◯" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設名</label><input id="aedit-venueName" type="text" autocomplete="off" placeholder="◯◯介護施設" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
         <div style="display:grid;grid-template-columns:130px 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-venueZip" type="text" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-venueAddress" type="text" placeholder="施設の住所" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">郵便番号</label><input id="aedit-venueZip" type="text" autocomplete="off" placeholder="000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">住所</label><input id="aedit-venueAddress" type="text" autocomplete="off" placeholder="施設の住所" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設電話番号</label><input id="aedit-venuePhone" type="text" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">施設電話番号</label><input id="aedit-venuePhone" type="text" autocomplete="off" placeholder="000-0000-0000" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者部署</label><input id="aedit-venueDept" type="text" placeholder="介護部" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
-          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者氏名</label><input id="aedit-venueContact" type="text" placeholder="担当者名" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者部署</label><input id="aedit-venueDept" type="text" autocomplete="off" placeholder="介護部" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+          <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者氏名</label><input id="aedit-venueContact" type="text" autocomplete="off" placeholder="担当者名" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
         </div>
-        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者メール</label><input id="aedit-venueEmail" type="email" placeholder="contact@facility.example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:4px;">担当者メール</label><input id="aedit-venueEmail" type="email" autocomplete="off" placeholder="contact@facility.example.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"></div>
 
         <!-- 管理者メモ -->
         <div style="font-size:12px;font-weight:700;color:var(--text-mid);padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px;">管理者メモ</div>
