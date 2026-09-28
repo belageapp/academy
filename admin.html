@@ -4827,7 +4827,12 @@ async function doLogin() {
             ${docStatus.idDocumentUrl ? `
               <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
                 <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🪪 本人確認書類${docStatus.idDocumentType ? `（${docStatus.idDocumentType}）` : ''}</div>
+                <div style="font-size:11px;color:var(--text-light);margin-bottom:4px;">表面</div>
                 <img src="${docStatus.idDocumentUrl}" onclick="openImageModal('${docStatus.idDocumentUrl}')" style="width:100%;max-height:200px;object-fit:contain;border-radius:6px;margin-bottom:8px;cursor:zoom-in;background:#f5f5f5;">
+                ${docStatus.idDocumentBackUrl ? `
+                <div style="font-size:11px;color:var(--text-light);margin-bottom:4px;">裏面</div>
+                <img src="${docStatus.idDocumentBackUrl}" onclick="openImageModal('${docStatus.idDocumentBackUrl}')" style="width:100%;max-height:200px;object-fit:contain;border-radius:6px;margin-bottom:8px;cursor:zoom-in;background:#f5f5f5;">
+                ` : ''}
                 <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">
                   ステータス：<span style="color:${idApproved ? 'var(--teal)' : 'var(--yellow-warn)'};">${idApproved ? '✅ 承認済み' : '🔄 確認待ち'}</span>
                 </div>
