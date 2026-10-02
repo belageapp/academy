@@ -3233,7 +3233,8 @@
 
     const hasTextbook = data.textbook === 'purchase' || data.textbook === '購入（6,600円）';
     const amount = hasTextbook ? 39600 : 33000;
-    const issuedAt = new Date();
+    // 領収書の日付＝入金を確認した日（受領日）。発行ボタンを押した日ではない。
+    const receiptDate = data.confirmedAt?.toDate?.() || data.activeAt?.toDate?.() || data.createdAt?.toDate?.() || new Date();
 
     try {
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -3251,7 +3252,7 @@
 
     const sealUrl = await loadSealDataUrl();
     const area = document.getElementById('receipt-print-area');
-    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt, sealUrl })}</div>`;
+    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt: receiptDate, sealUrl })}</div>`;
 
     // 画像のデコード完了を待ってから印刷する（data URLでもデコードは非同期のため、
     // 待たずにprint()すると印影が真っ白＝枠線だけになることがある）
