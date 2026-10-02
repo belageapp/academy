@@ -992,11 +992,10 @@
       <span class="toggle-arrow" id="arrow-doc-body">›</span>
     </button>
     <div class="toggle-body" id="doc-body">
-      <p style="font-size:12px;color:var(--text-mid);margin:4px 0 14px;">宛名は変更できます。</p>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:12px;color:var(--text-mid);display:block;margin-bottom:5px;">宛名（デフォルト：お名前）</label>
-        <input type="text" id="doc-name" placeholder="例）山田太郎　または　○○株式会社"
-          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:16px;outline:none;">
+      <div style="margin-bottom:14px;padding:10px 14px;background:var(--bg);border-radius:8px;">
+        <div style="font-size:12px;color:var(--text-mid);margin-bottom:2px;">宛名</div>
+        <div id="doc-name" style="font-size:16px;font-weight:700;color:var(--text);">—</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">領収書は受講者ご本人のお名前で発行されます。お振込も受講者ご本人のお名前でお願いします。</div>
       </div>
       <div class="doc-grid" style="grid-template-columns: 1fr;">
         <button class="doc-btn" onclick="generateDoc('領収書')"><span class="doc-icon">🧾</span><span class="doc-label">領収書</span><span class="doc-sub">PDF発行</span></button>
@@ -1549,7 +1548,7 @@
     const nameEl = document.getElementById('course-name');
     if (nameEl) nameEl.textContent = 'お名前：' + name;
     if (document.getElementById('header-name-pc')) document.getElementById('header-name-pc').textContent = name + ' さん';
-    document.getElementById('doc-name').value = name;
+    document.getElementById('doc-name').textContent = name;
 
     let __isFirstSnapshot = true;
     let __prevData = null;
@@ -1565,7 +1564,7 @@
           const headerName = document.getElementById('header-name-pc');
           if (headerName) headerName.textContent = studentName + ' さん';
           const docName = document.getElementById('doc-name');
-          if (docName) docName.value = studentName;
+          if (docName) docName.textContent = studentName;
         }
       }
       const prevData = __prevData || {};
@@ -3209,7 +3208,7 @@
   }
 
   async function generateDoc(type) {
-    const name = document.getElementById('doc-name').value || 'お客様';
+    const name = document.getElementById('doc-name').textContent.trim() || 'お客様';
 
     // 見積書・請求書は未実装のため従来どおり「準備中」
     if (type !== '領収書') {
@@ -3224,7 +3223,7 @@
       const issuedAt = data.receiptIssuedAt?.toDate?.();
       alert(
         '領収書は既に発行済みです' + (issuedAt ? '（' + issuedAt.toLocaleDateString('ja-JP') + '発行）' : '') + '。\n'
-        + '再発行はできません。事業所名義など別の宛名で領収書が必要な場合は「ご質問・お問い合わせ」よりご連絡ください。'
+        + '再発行はできません。発行し直しが必要な場合は「ご質問・お問い合わせ」よりご連絡ください。'
       );
       return;
     }
@@ -4233,7 +4232,7 @@
         <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:4px 4px 4px 0;color:#888;">番号</td><td style="padding:4px;color:#333;font-weight:700;">46370121</td></tr>
         <tr><td style="padding:4px 4px 4px 0;color:#888;">口座名義</td><td style="padding:4px;color:#333;font-weight:700;">ホリスケアアカデミー</td></tr>
       </table>
-      <p style="font-size:11px;color:#aaa;margin-top:12px;line-height:1.7;">※お振込の際はお名前をフルネームでご入力ください。<br>※振込手数料はご負担をお願いいたします。<br>※入金確認後、受講確定メールをお送りします。</p>
+      <p style="font-size:11px;color:#aaa;margin-top:12px;line-height:1.7;">※お振込名義は<strong>受講者ご本人のお名前（フルネーム）</strong>でお願いいたします。領収書は受講者氏名でのみ発行いたします。<br>※振込手数料はご負担をお願いいたします。<br>※入金確認後、受講確定メールをお送りします。</p>
       <button onclick="document.getElementById('bank-modal').style.display='none'" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:14px;color:var(--text-mid);cursor:pointer;font-family:'Noto Sans JP',sans-serif;">閉じる</button>
     </div>
   </div>

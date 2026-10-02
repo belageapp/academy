@@ -515,7 +515,27 @@
       width: 210mm; min-height: 297mm; box-sizing: border-box;
       padding: 15mm 18mm; font-family: 'Noto Sans JP', sans-serif; color: #000;
     }
+
+    /* 領収書印刷: body に receipt-print-mode を付けて receipt-print-area だけ表示（mypage_course_shonin.htmlと同じ方式） */
+    body.receipt-print-mode > * { display: none !important; }
+    body.receipt-print-mode > #receipt-print-area { display: block !important; }
+    .receipt-print-page {
+      width: 210mm; min-height: 297mm; box-sizing: border-box;
+      padding: 30mm 22mm; font-family: 'Noto Sans JP', sans-serif; color: #000;
+    }
   }
+  .receipt-date { text-align: right; font-size: 13px; margin-bottom: 32px; }
+  .receipt-title { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 0.3em; margin-bottom: 36px; }
+  .receipt-no { font-size: 11px; margin-bottom: 8px; }
+  .receipt-name { font-size: 18px; font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 30px; display: inline-block; min-width: 320px; }
+  .receipt-lead { font-size: 13px; margin-bottom: 20px; }
+  .receipt-amount { font-size: 32px; font-weight: 700; text-align: center; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 14px 0; margin-bottom: 24px; }
+  .receipt-detail { font-size: 13px; line-height: 2; margin-bottom: 60px; }
+  .receipt-issuer { display: flex; align-items: flex-end; margin-top: 40px; font-size: 12px; }
+  .receipt-issuer-spacer { flex: 1; }
+  .receipt-issuer-right { position: relative; display: inline-block; }
+  .receipt-issuer-org { line-height: 2; position: relative; z-index: 2; }
+  .receipt-seal { position: absolute; right: -10px; bottom: 0; width: 70px; height: 70px; object-fit: contain; z-index: 1; }
 
   /* 一括印刷 UI */
   .cert-select-cb { width: 16px; height: 16px; cursor: pointer; }
@@ -1885,28 +1905,39 @@
                   <span style="font-size:18px;color:#aaa;">▼</span>
                 </div>
                 <div class="guide-body">
-                  <p>受講生がマイページの「書類発行」セクションから自分で領収書PDFを発行できる機能です（2026-10-02 実装）。管理画面から管理者が代わりに発行する機能ではありません。</p>
+                  <p>受講生がマイページの「書類発行」セクションから自分で領収書PDFを発行できる機能です（2026-10-02 実装）。受講生が自分で発行できない場合は、申し込み詳細画面の「🧾 領収書」セクションから<strong>管理者が代わりに発行</strong>することもできます（2026-10-02 追加）。</p>
+
+                  <h4>宛名は受講者氏名のみ（固定）</h4>
+                  <ul>
+                    <li>宛名は<strong>常に受講者本人の氏名</strong>で発行されます。会社名・事業所名など別の宛名には変更できません</li>
+                    <li>これに合わせて、銀行振込のご案内（マイページ・確認メール）にも「お振込名義は受講者ご本人のお名前で」という注意書きを追記済みです</li>
+                  </ul>
 
                   <h4>受講生側の動き</h4>
                   <ul>
                     <li>受講確定（<code>status: confirmed/active/completed</code>）後にボタンが有効になります。入金待ちの間は押せません</li>
-                    <li>宛名はデフォルトで受講生氏名が入りますが、本人が自由に書き換えられます（会社名・事業所名なども可）</li>
                     <li>金額はテキスト代購入の有無で自動算出（33,000円／39,600円、税込）。オンライン決済のため収入印紙は不要で、PDF発行のみで完結します</li>
                     <li>領収書の<strong>日付は入金確認日（<code>confirmedAt</code>）</strong>です。発行ボタンを押した日ではありません</li>
                     <li>印影は正式修了証明書と同じ画像（<code>assets/seal.png</code>）を使用しています</li>
                   </ul>
 
+                  <h4>管理画面から確認・印刷・代行発行する</h4>
+                  <ul>
+                    <li>申し込み詳細を開くと「🧾 領収書」セクションがあります（受講確定後のみ表示）</li>
+                    <li><strong>発行済みの場合</strong>：発行日・宛名・金額が表示され、「🖨 確認・印刷」で<strong>発行時に記録された内容のまま</strong>再印刷できます（現在のデータで再計算はしません）</li>
+                    <li><strong>未発行の場合</strong>：「🧾 代わりに発行する」ボタンで、受講生に代わって管理者が発行できます。宛名は受講者氏名固定、金額は現在のデータから自動算出されます</li>
+                  </ul>
+
                   <h4>1回のみ発行の制限</h4>
                   <ul>
-                    <li>発行すると <code>applications/{docId}</code> に <code>receiptIssued: true</code> と <code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code> が記録されます</li>
-                    <li>一度発行するとボタンは「発行済み」表示になり、受講生は再度発行できません</li>
-                    <li>事業所名義など、別の宛名でもう1通必要という問い合わせが来た場合は、システムでは対応できないため、都度こちらで個別に作成してお渡しする運用です</li>
+                    <li>発行すると <code>applications/{docId}</code> に <code>receiptIssued: true</code> と <code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code> が記録されます（管理者が代行発行した場合は <code>receiptIssuedByAdmin: true</code> も記録）</li>
+                    <li>一度発行する（受講生本人・管理者代行のどちらでも）と「発行済み」扱いになり、<strong>マイページ・管理画面のどちらからも再発行はできません</strong>。1回の制限は両方で共有されています</li>
                   </ul>
 
                   <h4>テスト発行後の取り消し方</h4>
                   <ul>
-                    <li>テストで発行してしまった場合、管理画面に取り消しボタンはまだありません</li>
-                    <li>Firestore Databaseの <code>applications</code> コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code> の4フィールドを削除すると「未発行」の状態に戻ります</li>
+                    <li>管理画面に取り消しボタンはまだありません</li>
+                    <li>Firestore Databaseの <code>applications</code> コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code>・<code>receiptIssuedByAdmin</code> のフィールドを削除すると「未発行」の状態に戻ります</li>
                   </ul>
                   <div class="note">📌 運用ルールの出典・経緯は「オンライン初任者研修」Google Driveフォルダ内の <code>領収書発行ルール.md</code> を参照してください。</div>
                 </div>
@@ -2173,9 +2204,31 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    マイページの領収書発行は1回のみで、本人が宛名を変更すれば会社名・事業所名でも発行できます。まだ未発行であれば、受講生自身にマイページから宛名を変更して発行してもらうよう案内してください。<br>
-                    <strong>既に1回発行済みで、別名義がもう1通必要な場合はシステムでは発行できません。</strong>これまで通り個別に作成してお渡しする対応になります。
+                    領収書の宛名は<strong>受講者本人の氏名のみ</strong>で、会社名・事業所名での発行はできません（2026-10-02以降の運用）。お振込名義も受講者ご本人のお名前でお願いしているため、基本的にはこのご要望自体が起こらない想定です。会社名での領収書が必要な場合は、その旨をご説明のうえ個別にご相談ください。
                     <div class="note">📌 詳しいルールは「🧾 領収書発行」ガイドを参照してください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生が自分で領収書を発行できないと言っている</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み詳細画面の<strong>「🧾 領収書」セクション</strong>から、管理者が代わりに発行できます（受講確定後のみ表示）。「🧾 代わりに発行する」ボタンを押すとその場でPDFが印刷できます。宛名は受講者氏名で固定されます。
+                    <div class="note">📌 代行発行も1回のみの制限を消費します。発行後は受講生自身もマイページから発行できなくなります。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">発行済みの領収書をもう一度確認・印刷したい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    申し込み詳細画面の「🧾 領収書」セクションに「🖨 確認・印刷」ボタンがあります。発行時に記録された内容（宛名・金額）のままいつでも再印刷できます。
                   </div>
                 </div>
 
@@ -2186,7 +2239,7 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    管理画面に取り消しボタンはまだありません。Firestore Databaseの<code>applications</code>コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code>の4フィールドを削除してください。これで「未発行」の状態に戻り、受講生は再度マイページから発行できるようになります。
+                    管理画面に取り消しボタンはまだありません。Firestore Databaseの<code>applications</code>コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code>・<code>receiptIssuedByAdmin</code>のフィールドを削除してください。これで「未発行」の状態に戻り、受講生自身・管理画面のどちらからも再度発行できるようになります。
                   </div>
                 </div>
 
@@ -2603,21 +2656,32 @@
                 <div class="qa-a">
                   マイページの<strong>「書類発行」セクション</strong>から、受講生ご本人が領収書PDFを発行できます（お支払い完了後のみ）。基本的にはこちらを案内してください。
                   <ul>
-                    <li>宛名はデフォルトで受講生氏名ですが、発行前であれば会社名・事業所名などに変更できます</li>
+                    <li>宛名は<strong>受講者ご本人の氏名で固定</strong>です。会社名・事業所名には変更できません</li>
                     <li>収入印紙は不要なので、画面の内容をそのまま印刷・保存すればご利用いただけます</li>
                   </ul>
-                  <div class="note" style="margin-top:10px;">📌 領収書は<strong>1回しか発行できません。</strong>発行前に宛名が正しいか確認してもらってから発行するよう伝えてください。</div>
+                  <div class="note" style="margin-top:10px;">📌 領収書は<strong>1回しか発行できません。</strong></div>
                 </div>
               </div>
 
               <div class="qa-item">
                 <div class="qa-q" onclick="qaToggle(this)">
                   <span class="qa-q-label">Q</span>
-                  <span class="qa-q-text">領収書を発行済みだが、別の宛名でもう1通ほしいと言われた</span>
+                  <span class="qa-q-text">受講生が自分で領収書を発行できないと言っている</span>
                   <span class="qa-q-arrow">▼</span>
                 </div>
                 <div class="qa-a">
-                  マイページからの再発行はできません（1回のみの制限）。事業所名義などで別途もう1通必要な場合は、これまで通り事務局側で個別に作成してお渡しする対応になります。
+                  管理者であれば、申し込み管理で該当受講生の詳細画面を開き、<strong>「🧾 領収書」セクション</strong>から代わりに発行できます（受講確定後のみ）。
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">領収書の宛名を会社名・事業所名にしてほしいと言われた</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  領収書は受講者ご本人の氏名でのみ発行されます。お振込も受講者ご本人のお名前でお願いしているため、通常はこのご要望自体が発生しない想定です。それでも会社名での領収書が必要な場合は、個別にご相談いただくようお伝えください。
                 </div>
               </div>
 
@@ -2718,6 +2782,12 @@
                 ✅ 振込入金を確認した → 受講確定にする
               </button>
             </div>
+      </div>
+
+      <!-- 領収書 -->
+      <div id="receipt-section" class="modal-sec" style="display:none;">
+        <div class="modal-sec-hd">🧾 領収書</div>
+        <div id="receipt-section-body"></div>
       </div>
 
       <!-- やりとり履歴（問い合わせ＋こちらからのお知らせ） -->
@@ -2880,6 +2950,7 @@
 <div id="bulk-a4-print-all" style="display:none;"></div>
 <div id="bulk-card-print-all" style="display:none;"></div>
 <div id="report-print-area" style="display:none;"></div>
+<div id="receipt-print-area" style="display:none;"></div>
 
 <!-- 発行履歴スナップショットモーダル -->
 <div id="snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11000;align-items:center;justify-content:center;overflow:auto;">
@@ -3266,6 +3337,9 @@ async function doLogin() {
   // 進捗チェックリスト表示
   renderProgress(id, a);
 
+  // 領収書セクション表示
+  renderReceiptSection(id, a);
+
   // お問い合わせ履歴を読み込み
   loadModalInquiries(id, a.email);
 
@@ -3280,6 +3354,148 @@ async function doLogin() {
   document.getElementById('modal').classList.add('open');
   }
   window.openModal = openModal;
+
+  // ===== 領収書（確認・印刷・代行発行） =====
+  // 発行ロジック・PDF化方式はmypage_course_shonin.htmlの領収書機能と同じ
+
+  function toReiwaDateStr(date) {
+    const y = date.getFullYear() - 2018;
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `令和${y}年${m}月${d}日`;
+  }
+
+  function receiptInnerHTML(d) {
+    const taxIncluded = Math.round(d.amount * 10 / 110);
+    return `
+      <div class="receipt-date">${toReiwaDateStr(d.issuedAt)}</div>
+      <div class="receipt-title">領　収　書</div>
+      <div class="receipt-no">受講番号：${d.studentNo || '—'}</div>
+      <div class="receipt-name">${d.name}　様</div>
+      <div class="receipt-lead">下記の通り、領収いたしました。</div>
+      <div class="receipt-amount">￥${d.amount.toLocaleString()}－</div>
+      <div class="receipt-detail">
+        （但し、下記講座料金として）<br>
+        介護職員初任者研修講座${d.hasTextbook ? '（テキスト代含む）' : ''}<br>
+        消費税10%対象　${d.amount.toLocaleString()}円（内税　${taxIncluded.toLocaleString()}円）
+      </div>
+      <div class="receipt-issuer">
+        <div class="receipt-issuer-spacer"></div>
+        <div class="receipt-issuer-right">
+          <div class="receipt-issuer-org">
+            <div>特定非営利活動法人Social Care Good</div>
+            <div>ホリスケアアカデミー</div>
+            <div>広島市中区大手町3丁目1-7-302号</div>
+            <div>082-545-2402</div>
+            <div>代表理事　長谷川　剛</div>
+            <div>登録番号：T4240005003202</div>
+          </div>
+          <img src="${d.sealUrl}" class="receipt-seal" alt="印">
+        </div>
+      </div>`;
+  }
+
+  async function loadSealDataUrl() {
+    try {
+      const blob = await fetch('assets/seal.png').then(r => r.blob());
+      return await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn('印影の読み込みに失敗:', e);
+      return 'assets/seal.png';
+    }
+  }
+
+  async function printReceiptCommon(d) {
+    const sealUrl = await loadSealDataUrl();
+    const area = document.getElementById('receipt-print-area');
+    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ ...d, sealUrl })}</div>`;
+    const sealImg = area.querySelector('.receipt-seal');
+    if (sealImg) { try { await sealImg.decode(); } catch (e) { /* noop */ } }
+    document.body.classList.add('receipt-print-mode');
+    window.print();
+    document.body.classList.remove('receipt-print-mode');
+  }
+
+  function renderReceiptSection(id, a) {
+    const section = document.getElementById('receipt-section');
+    const body = document.getElementById('receipt-section-body');
+    if (!section || !body) return;
+    const isConfirmed = ['confirmed', 'active', 'completed'].includes(a.status || 'pending');
+    if (!isConfirmed) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
+
+    if (a.receiptIssued) {
+      const issuedAt = a.receiptIssuedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      const issuedName = a.receiptIssuedName || name;
+      const issuedAmount = a.receiptIssuedAmount != null ? a.receiptIssuedAmount.toLocaleString() + '円' : '—';
+      body.innerHTML = `
+        <p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 10px;">発行済み（${issuedAt}）<br>宛名：${issuedName}　／　金額：${issuedAmount}</p>
+        <button onclick="printStoredReceipt('${id}')" style="padding:9px 16px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨 確認・印刷</button>
+      `;
+    } else {
+      body.innerHTML = `
+        <p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 10px;">未発行です。通常は受講生がマイページから発行しますが、受講生が自分で発行できない場合は、代わりにこちらから発行できます。</p>
+        <button onclick="issueReceiptAsAdmin('${id}')" style="padding:9px 16px;background:var(--teal);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🧾 代わりに発行する</button>
+        <div style="margin-top:10px;background:#FFFDE7;border-left:3px solid #F9A825;border-radius:6px;padding:8px 12px;font-size:12px;">📌 宛名は受講者氏名（${name}）で発行されます。発行できるのは1回のみで、発行するとマイページからの発行もできなくなります。</div>
+      `;
+    }
+  }
+  window.renderReceiptSection = renderReceiptSection;
+
+  async function printStoredReceipt(id) {
+    const a = all.find(x => x.id === id);
+    if (!a || !a.receiptIssued) return;
+    const hasTextbook = a.receiptIssuedAmount === 39600;
+    const receiptDate = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.() || a.receiptIssuedAt?.toDate?.() || new Date();
+    await printReceiptCommon({
+      name: a.receiptIssuedName || ((a.sei || '') + (a.mei ? '　' + a.mei : '')) || a.name || '—',
+      amount: a.receiptIssuedAmount != null ? a.receiptIssuedAmount : (hasTextbook ? 39600 : 33000),
+      hasTextbook,
+      studentNo: a.studentNo,
+      issuedAt: receiptDate,
+    });
+  }
+  window.printStoredReceipt = printStoredReceipt;
+
+  async function issueReceiptAsAdmin(id) {
+    const a = all.find(x => x.id === id);
+    if (!a) return;
+    if (a.receiptIssued) { alert('既に発行済みです。'); return; }
+    const name = (a.sei || '') + (a.mei ? '　' + a.mei : '') || a.name || '—';
+    if (!confirm(`${name} さんの領収書を、受講者本人に代わってこちらから発行します。\n宛名は受講者氏名（${name}）になります。発行できるのは1回のみです。よろしいですか？`)) return;
+
+    const hasTextbook = a.textbook === 'purchase' || a.textbook === '購入（6,600円）';
+    const amount = hasTextbook ? 39600 : 33000;
+
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', id), {
+        receiptIssued: true,
+        receiptIssuedAt: serverTimestamp(),
+        receiptIssuedName: name,
+        receiptIssuedAmount: amount,
+        receiptIssuedByAdmin: true,
+      });
+      a.receiptIssued = true;
+      a.receiptIssuedName = name;
+      a.receiptIssuedAmount = amount;
+    } catch (e) {
+      alert('領収書の発行記録に失敗しました：' + e.message);
+      return;
+    }
+
+    const receiptDate = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.() || new Date();
+    await printReceiptCommon({ name, amount, hasTextbook, studentNo: a.studentNo, issuedAt: receiptDate });
+    renderReceiptSection(id, a);
+  }
+  window.issueReceiptAsAdmin = issueReceiptAsAdmin;
 
   // ===== 申込削除（危険な操作） =====
   function openDeleteConfirm() {
