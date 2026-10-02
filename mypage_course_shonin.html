@@ -223,8 +223,11 @@
     .receipt-lead { font-size: 13px; margin-bottom: 20px; }
     .receipt-amount { font-size: 32px; font-weight: 700; text-align: center; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 14px 0; margin-bottom: 24px; }
     .receipt-detail { font-size: 13px; line-height: 2; margin-bottom: 60px; }
-    .receipt-issuer { position: relative; margin-top: 40px; font-size: 12px; line-height: 2; }
-    .receipt-seal { position: absolute; right: 10px; bottom: 0; width: 70px; height: 70px; object-fit: contain; }
+    .receipt-issuer { display: flex; align-items: flex-end; margin-top: 40px; font-size: 12px; }
+    .receipt-issuer-spacer { flex: 1; }
+    .receipt-issuer-right { position: relative; display: inline-block; }
+    .receipt-issuer-org { line-height: 2; position: relative; z-index: 2; }
+    .receipt-seal { position: absolute; right: -10px; bottom: 0; width: 70px; height: 70px; object-fit: contain; z-index: 1; }
 
     /* クイズモーダル */
     .modal-overlay {
@@ -3173,13 +3176,18 @@
         消費税10%対象　${d.amount.toLocaleString()}円（内税　${taxIncluded.toLocaleString()}円）
       </div>
       <div class="receipt-issuer">
-        <div>特定非営利活動法人Social Care Good</div>
-        <div>ホリスケアアカデミー</div>
-        <div>広島市中区大手町3丁目1-7-302号</div>
-        <div>082-545-2402</div>
-        <div>代表理事　長谷川　剛</div>
-        <div>登録番号：T4240005003202</div>
-        <img src="assets/seal.png" class="receipt-seal" alt="印">
+        <div class="receipt-issuer-spacer"></div>
+        <div class="receipt-issuer-right">
+          <div class="receipt-issuer-org">
+            <div>特定非営利活動法人Social Care Good</div>
+            <div>ホリスケアアカデミー</div>
+            <div>広島市中区大手町3丁目1-7-302号</div>
+            <div>082-545-2402</div>
+            <div>代表理事　長谷川　剛</div>
+            <div>登録番号：T4240005003202</div>
+          </div>
+          <img src="assets/seal.png" class="receipt-seal" alt="印">
+        </div>
       </div>`;
   }
 
