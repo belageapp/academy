@@ -1713,6 +1713,7 @@
                     <li><strong>📥 書類受付</strong>：OJT施設から郵送された書類を受け取ったら押します（<code>facilityReported = true</code>）。受講生のオンライン報告より書類が先に届いた場合でも、その時点で押せます</li>
                     <li><strong>✓ 書類承認</strong>：受講生の報告内容と施設の書類を確認し、OKであれば押します（<code>ojtPassed = true</code>）。修了レポートも承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信され、正式修了日（3条件のうち最後に完了した日）も自動記録</strong>されます</li>
                     <li><strong>📋 施設とのやりとり</strong>：施設名の下に表示されます。施設が登録済みなら施設の詳細画面の「やりとり履歴」タブを直接開いて記録できます。未登録の場合は「🏢 施設登録」ボタンが表示されます</li>
+                    <li><strong>✗ 修了報告を差し戻す</strong>（2026-10-02 追加）：受講生のオンライン報告の内容に問題がある場合（提供資料と異なる手順で実施した等）、承認前であればこのボタンで<code>ojtReported</code>を解除できます。差し戻し理由を入力すると受講生にお知らせが届き、マイページの「報告する」ボタンが再表示されて再提出できるようになります。<strong>承認済み（ojtPassed=true）になった後は表示されません。</strong></li>
                   </ul>
 
                   <h4>操作</h4>
@@ -2184,6 +2185,19 @@
                   </div>
                   <div class="qa-a">
                     管理画面に取り消しボタンはまだありません。Firestore Databaseの<code>applications</code>コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code>の4フィールドを削除してください。これで「未発行」の状態に戻り、受講生は再度マイページから発行できるようになります。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">OJT修了報告の内容が提供資料と違っていた。報告を取り消して再提出させたい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    「OJT修了報告」一覧で該当の受講生の行にある<strong>「✗ 修了報告を差し戻す」ボタン</strong>（<strong>✓ 書類承認</strong>を押す前、未承認の間だけ表示されます）を押し、差し戻し理由を入力してください。<code>ojtReported</code>が解除され、受講生のマイページに「報告する」ボタンが再表示されて、オンラインでの再提出ができるようになります。
+                    <div class="note" style="margin-top:8px;">📌 施設から郵送される書類の受領状況（<code>facilityReported</code>）には影響しません。オンライン報告の内容だけをやり直してもらいたい場合に使ってください。</div>
+                    <div class="warn" style="margin-top:8px;">⚠️ すでに「✓ 書類承認」まで完了している場合はボタンが表示されません。承認後の取り消しが必要な場合は開発担当（Claude／システム管理者）にご相談ください。</div>
                   </div>
                 </div>
 
@@ -6230,9 +6244,13 @@ async function doLogin() {
         : stage === 'reviewing'
           ? `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ 書類承認</button>`
           : '—';
+      // 学生のオンライン報告に問題がある場合、承認前なら差し戻して再提出させられる
+      const rejectReportBtn = (a.ojtReported === true && a.ojtPassed !== true)
+        ? `<br><button onclick="rejectOjtReport('${a.__id}','${a.email}','${name}')" style="margin-top:4px;padding:4px 10px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">✗ 修了報告を差し戻す</button>`
+        : '';
       return `<tr>
         <td>${statusBadge}</td>
-        <td><button onclick="openDetail('${a.__id}')" class="detail-btn" style="margin-bottom:4px;">詳細</button><br>${actionHtml}</td>
+        <td><button onclick="openDetail('${a.__id}')" class="detail-btn" style="margin-bottom:4px;">詳細</button><br>${actionHtml}${rejectReportBtn}</td>
         <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
         <td>${facilityName}${facilityLogBtn}</td>
         <td>${period}</td>
@@ -6320,8 +6338,38 @@ async function doLogin() {
     }
   }
 
+  // 学生が提出したOJT修了報告の内容に問題がある場合（提供資料と異なる手順で実施した等）に
+  // ojtReportedを解除し、マイページの「報告する」ボタンを再び表示させて再提出させる
+  async function rejectOjtReport(docId, email, name) {
+    const reason = prompt('差し戻し理由を入力してください：');
+    if (!reason) return;
+    try {
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', docId), {
+        ojtReported: false,
+        ojtReportedAt: null,
+        ojtReport: null,
+      });
+      await addDoc(collection(window.__db, 'notices'), {
+        applicationId: docId,
+        title: 'OJT修了報告が差し戻されました',
+        body: `OJT修了報告を確認しましたが、以下の理由により差し戻しとなりました。\n\n【差し戻し理由】\n${reason}\n\nご確認の上、再度ご提出ください。`,
+        target: 'specific',
+        emails: [email],
+        createdAt: serverTimestamp(),
+        createdBy: window.__auth.currentUser?.email || 'info@holiscare.or.jp',
+        source: 'auto',
+      });
+      alert('差し戻しました。マイページの「報告する」ボタンが再表示され、受講生は再提出できます。');
+      loadOjtList();
+    } catch(e) {
+      alert('エラー：' + e.message);
+    }
+  }
+
   window.loadOjtList = loadOjtList;
   window.approveOjt = approveOjt;
+  window.rejectOjtReport = rejectOjtReport;
 
   async function loadTempCertList() {
     const el = document.getElementById('tempcert-list');
