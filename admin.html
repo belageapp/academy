@@ -1299,6 +1299,7 @@
               <button onclick="guideJump('g-certificate')"   class="gjump">📜 正式修了証明書発行</button>
               <button onclick="guideJump('g-autonotice')"    class="gjump">⏰ 自動通知設定</button>
               <button onclick="guideJump('g-sales')"         class="gjump">💴 決済・売上</button>
+              <button onclick="guideJump('g-receipt')"       class="gjump">🧾 領収書発行</button>
               <button onclick="guideJump('g-users')"         class="gjump">👥 ユーザー管理</button>
             </div>
 
@@ -1875,6 +1876,39 @@
                 </div>
               </div>
 
+              <div class="guide-section" id="g-receipt">
+                <div class="guide-header" onclick="guideToggle(this)">
+                  <span class="guide-title">🧾 領収書発行</span>
+                  <span style="font-size:18px;color:#aaa;">▼</span>
+                </div>
+                <div class="guide-body">
+                  <p>受講生がマイページの「書類発行」セクションから自分で領収書PDFを発行できる機能です（2026-10-02 実装）。管理画面から管理者が代わりに発行する機能ではありません。</p>
+
+                  <h4>受講生側の動き</h4>
+                  <ul>
+                    <li>受講確定（<code>status: confirmed/active/completed</code>）後にボタンが有効になります。入金待ちの間は押せません</li>
+                    <li>宛名はデフォルトで受講生氏名が入りますが、本人が自由に書き換えられます（会社名・事業所名なども可）</li>
+                    <li>金額はテキスト代購入の有無で自動算出（33,000円／39,600円、税込）。オンライン決済のため収入印紙は不要で、PDF発行のみで完結します</li>
+                    <li>領収書の<strong>日付は入金確認日（<code>confirmedAt</code>）</strong>です。発行ボタンを押した日ではありません</li>
+                    <li>印影は正式修了証明書と同じ画像（<code>assets/seal.png</code>）を使用しています</li>
+                  </ul>
+
+                  <h4>1回のみ発行の制限</h4>
+                  <ul>
+                    <li>発行すると <code>applications/{docId}</code> に <code>receiptIssued: true</code> と <code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code> が記録されます</li>
+                    <li>一度発行するとボタンは「発行済み」表示になり、受講生は再度発行できません</li>
+                    <li>事業所名義など、別の宛名でもう1通必要という問い合わせが来た場合は、システムでは対応できないため、都度こちらで個別に作成してお渡しする運用です</li>
+                  </ul>
+
+                  <h4>テスト発行後の取り消し方</h4>
+                  <ul>
+                    <li>テストで発行してしまった場合、管理画面に取り消しボタンはまだありません</li>
+                    <li>Firestore Databaseの <code>applications</code> コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code> の4フィールドを削除すると「未発行」の状態に戻ります</li>
+                  </ul>
+                  <div class="note">📌 運用ルールの出典・経緯は「オンライン初任者研修」Google Driveフォルダ内の <code>領収書発行ルール.md</code> を参照してください。</div>
+                </div>
+              </div>
+
               <div class="guide-section" id="g-users">
                 <div class="guide-header" onclick="guideToggle(this)">
                   <span class="guide-title">👥 ユーザー管理</span>
@@ -2126,6 +2160,30 @@
                     決済・売上の決済一覧にある「返金処理」ボタンを押すと、返金額と理由の入力を経てFirestoreに返金記録が保存されます。月次売上の返金額に反映されます。<br>
                     <div class="warn" style="margin-top:8px;">⚠️ <strong>実際のお金の返金（振込）はこのボタンでは行われません。</strong>Stripe管理画面での対応を別途行ってください。</div>
                     誤って処理した場合は「返金取り消し」ボタンで記録を元に戻せます。
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">受講生から事業所名義の領収書がほしいと言われた</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    マイページの領収書発行は1回のみで、本人が宛名を変更すれば会社名・事業所名でも発行できます。まだ未発行であれば、受講生自身にマイページから宛名を変更して発行してもらうよう案内してください。<br>
+                    <strong>既に1回発行済みで、別名義がもう1通必要な場合はシステムでは発行できません。</strong>これまで通り個別に作成してお渡しする対応になります。
+                    <div class="note">📌 詳しいルールは「🧾 領収書発行」ガイドを参照してください。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">テストで領収書を発行してしまった（未発行に戻したい）</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    管理画面に取り消しボタンはまだありません。Firestore Databaseの<code>applications</code>コレクションで該当ドキュメントを開き、<code>receiptIssued</code>・<code>receiptIssuedAt</code>・<code>receiptIssuedName</code>・<code>receiptIssuedAmount</code>の4フィールドを削除してください。これで「未発行」の状態に戻り、受講生は再度マイページから発行できるようになります。
                   </div>
                 </div>
 
@@ -2515,6 +2573,35 @@
                     <li><strong>退講</strong>：ステータスを「退講」に変更</li>
                   </ul>
                   返金が発生する場合は別途Stripe管理画面での対応が必要です。
+                </div>
+              </div>
+
+              <div class="sg-cat">🧾 領収書</div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">領収書がほしいと言われた</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページの<strong>「書類発行」セクション</strong>から、受講生ご本人が領収書PDFを発行できます（お支払い完了後のみ）。基本的にはこちらを案内してください。
+                  <ul>
+                    <li>宛名はデフォルトで受講生氏名ですが、発行前であれば会社名・事業所名などに変更できます</li>
+                    <li>収入印紙は不要なので、画面の内容をそのまま印刷・保存すればご利用いただけます</li>
+                  </ul>
+                  <div class="note" style="margin-top:10px;">📌 領収書は<strong>1回しか発行できません。</strong>発行前に宛名が正しいか確認してもらってから発行するよう伝えてください。</div>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">領収書を発行済みだが、別の宛名でもう1通ほしいと言われた</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページからの再発行はできません（1回のみの制限）。事業所名義などで別途もう1通必要な場合は、これまで通り事務局側で個別に作成してお渡しする対応になります。
                 </div>
               </div>
 
