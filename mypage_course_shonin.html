@@ -3186,9 +3186,26 @@
             <div>代表理事　長谷川　剛</div>
             <div>登録番号：T4240005003202</div>
           </div>
-          <img src="assets/seal.png" class="receipt-seal" alt="印">
+          <img src="${d.sealUrl}" class="receipt-seal" alt="印">
         </div>
       </div>`;
+  }
+
+  // 印影をdata URL化して返す（マイページ初回表示時はassets/seal.pngが未キャッシュのため、
+  // <img src="assets/seal.png">のまま挿入すると読み込みが間に合わず印刷に反映されないことがある）
+  async function loadSealDataUrl() {
+    try {
+      const blob = await fetch('assets/seal.png').then(r => r.blob());
+      return await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn('印影の読み込みに失敗:', e);
+      return 'assets/seal.png'; // フォールバック
+    }
   }
 
   async function generateDoc(type) {
@@ -3232,8 +3249,9 @@
       return;
     }
 
+    const sealUrl = await loadSealDataUrl();
     const area = document.getElementById('receipt-print-area');
-    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt })}</div>`;
+    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt, sealUrl })}</div>`;
     document.body.classList.add('receipt-print-mode');
     window.print();
     document.body.classList.remove('receipt-print-mode');
