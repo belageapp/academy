@@ -3252,6 +3252,14 @@
     const sealUrl = await loadSealDataUrl();
     const area = document.getElementById('receipt-print-area');
     area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt, sealUrl })}</div>`;
+
+    // 画像のデコード完了を待ってから印刷する（data URLでもデコードは非同期のため、
+    // 待たずにprint()すると印影が真っ白＝枠線だけになることがある）
+    const sealImg = area.querySelector('.receipt-seal');
+    if (sealImg) {
+      try { await sealImg.decode(); } catch (e) { /* デコード失敗時はそのまま印刷を続行 */ }
+    }
+
     document.body.classList.add('receipt-print-mode');
     window.print();
     document.body.classList.remove('receipt-print-mode');
