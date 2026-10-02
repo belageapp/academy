@@ -205,6 +205,27 @@
     .doc-label { font-size: 13px; font-weight: 700; color: var(--text); }
     .doc-sub { font-size: 10px; color: var(--text-light); }
 
+    /* 領収書印刷 */
+    @page { margin: 0; size: A4 portrait; }
+    @media print {
+      html, body { margin: 0; padding: 0; }
+      body.receipt-print-mode > * { display: none !important; }
+      body.receipt-print-mode > #receipt-print-area { display: block !important; }
+      .receipt-print-page {
+        width: 210mm; min-height: 297mm; box-sizing: border-box;
+        padding: 30mm 22mm; font-family: 'Noto Sans JP', sans-serif; color: #000;
+      }
+    }
+    .receipt-date { text-align: right; font-size: 13px; margin-bottom: 32px; }
+    .receipt-title { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 0.3em; margin-bottom: 36px; }
+    .receipt-no { font-size: 11px; margin-bottom: 8px; }
+    .receipt-name { font-size: 18px; font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 30px; display: inline-block; min-width: 320px; }
+    .receipt-lead { font-size: 13px; margin-bottom: 20px; }
+    .receipt-amount { font-size: 32px; font-weight: 700; text-align: center; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 14px 0; margin-bottom: 24px; }
+    .receipt-detail { font-size: 13px; line-height: 2; margin-bottom: 60px; }
+    .receipt-issuer { position: relative; margin-top: 40px; font-size: 12px; line-height: 2; }
+    .receipt-seal { position: absolute; right: 10px; bottom: 0; width: 70px; height: 70px; object-fit: contain; }
+
     /* クイズモーダル */
     .modal-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -574,6 +595,8 @@
   </style>
 </head>
 <body>
+
+<div id="receipt-print-area" style="display:none;"></div>
 
 <header class="header">
   <div class="header-left">
@@ -957,7 +980,7 @@
   </div>
 
   <!-- ⑦ 書類発行 -->
-  <div class="toggle-section" style="display:none;">
+  <div class="toggle-section">
     <button class="toggle-header" onclick="toggleSection('doc-body')">
       <span class="toggle-header-left">
         <span class="toggle-icon-wrap">📄</span>
@@ -972,11 +995,10 @@
         <input type="text" id="doc-name" placeholder="例）山田太郎　または　○○株式会社"
           style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:16px;outline:none;">
       </div>
-      <div class="doc-grid">
-        <button class="doc-btn" onclick="generateDoc('見積書')"><span class="doc-icon">📋</span><span class="doc-label">見積書</span><span class="doc-sub">PDF発行</span></button>
-        <button class="doc-btn" onclick="generateDoc('請求書')"><span class="doc-icon">📑</span><span class="doc-label">請求書</span><span class="doc-sub">PDF発行</span></button>
+      <div class="doc-grid" style="grid-template-columns: 1fr;">
         <button class="doc-btn" onclick="generateDoc('領収書')"><span class="doc-icon">🧾</span><span class="doc-label">領収書</span><span class="doc-sub">PDF発行</span></button>
       </div>
+      <!-- 見積書・請求書は未実装のため非表示（実装後にdoc-gridへ戻す） -->
     </div>
   </div>
 
@@ -1705,10 +1727,16 @@
 
       document.querySelectorAll('.doc-btn').forEach(btn => {
         const isReceipt = btn.getAttribute('onclick')?.includes('領収書');
-        if (isReceipt && !isConfirmed) {
+        if (!isReceipt) return;
+        if (!isConfirmed) {
           btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
           const sub = btn.querySelector('.doc-sub');
           if (sub) sub.textContent = (isAwaitingPayment || status === 'pending') ? '決済完了後' : '受講確定後';
+        } else if (data.receiptIssued) {
+          // 領収書は1回のみ発行可能。発行済みなら再発行できないよう表示のみに切り替える
+          btn.style.opacity = '0.6'; btn.style.pointerEvents = 'none';
+          const sub = btn.querySelector('.doc-sub');
+          if (sub) sub.textContent = '発行済み';
         }
       });
 
@@ -3122,9 +3150,85 @@
     }
   };
 
-  function generateDoc(type) {
+  // 領収書：令和表記の日付文字列
+  function toReiwaDateStr(date) {
+    const y = date.getFullYear() - 2018;
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `令和${y}年${m}月${d}日`;
+  }
+
+  function receiptInnerHTML(d) {
+    const taxIncluded = Math.round(d.amount * 10 / 110);
+    return `
+      <div class="receipt-date">${toReiwaDateStr(d.issuedAt)}</div>
+      <div class="receipt-title">領　収　書</div>
+      <div class="receipt-no">受講番号：${d.studentNo || '—'}</div>
+      <div class="receipt-name">${d.name}　様</div>
+      <div class="receipt-lead">下記の通り、領収いたしました。</div>
+      <div class="receipt-amount">￥${d.amount.toLocaleString()}－</div>
+      <div class="receipt-detail">
+        （但し、下記講座料金として）<br>
+        介護職員初任者研修講座${d.hasTextbook ? '（テキスト代含む）' : ''}<br>
+        消費税10%対象　${d.amount.toLocaleString()}円（内税　${taxIncluded.toLocaleString()}円）
+      </div>
+      <div class="receipt-issuer">
+        <div>特定非営利活動法人Social Care Good</div>
+        <div>ホリスケアアカデミー</div>
+        <div>広島市中区大手町3丁目1-7-302号</div>
+        <div>082-545-2402</div>
+        <div>代表理事　長谷川　剛</div>
+        <div>登録番号：T4240005003202</div>
+        <img src="assets/seal.png" class="receipt-seal" alt="印">
+      </div>`;
+  }
+
+  async function generateDoc(type) {
     const name = document.getElementById('doc-name').value || 'お客様';
-    alert(type + 'の発行機能は準備中です。\n宛名：' + name);
+
+    // 見積書・請求書は未実装のため従来どおり「準備中」
+    if (type !== '領収書') {
+      alert(type + 'の発行機能は準備中です。\n宛名：' + name);
+      return;
+    }
+
+    const data = window.__appData || {};
+
+    // 領収書は1回のみ発行可能（オンライン初任者の運用ルール）
+    if (data.receiptIssued) {
+      const issuedAt = data.receiptIssuedAt?.toDate?.();
+      alert(
+        '領収書は既に発行済みです' + (issuedAt ? '（' + issuedAt.toLocaleDateString('ja-JP') + '発行）' : '') + '。\n'
+        + '再発行はできません。事業所名義など別の宛名で領収書が必要な場合は「ご質問・お問い合わせ」よりご連絡ください。'
+      );
+      return;
+    }
+
+    if (!confirm('領収書を発行します。発行できるのは1回のみです。よろしいですか？')) return;
+
+    const hasTextbook = data.textbook === 'purchase' || data.textbook === '購入（6,600円）';
+    const amount = hasTextbook ? 39600 : 33000;
+    const issuedAt = new Date();
+
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await updateDoc(doc(window.__db, 'applications', window.__docId), {
+        receiptIssued: true,
+        receiptIssuedAt: serverTimestamp(),
+        receiptIssuedName: name,
+        receiptIssuedAmount: amount,
+      });
+      data.receiptIssued = true; // ローカルキャッシュも更新
+    } catch (e) {
+      alert('領収書の発行記録に失敗しました：' + e.message);
+      return;
+    }
+
+    const area = document.getElementById('receipt-print-area');
+    area.innerHTML = `<div class="receipt-print-page">${receiptInnerHTML({ name, amount, hasTextbook, studentNo: data.studentNo, issuedAt })}</div>`;
+    document.body.classList.add('receipt-print-mode');
+    window.print();
+    document.body.classList.remove('receipt-print-mode');
   }
   window.generateDoc = generateDoc;
 
