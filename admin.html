@@ -1037,7 +1037,8 @@
                 <option value="all">すべて</option>
                 <option value="mitei">未定のみ</option>
                 <option value="awaiting">連絡済み（資料送付待ち）</option>
-                <option value="done">対応済み</option>
+                <option value="done">対応済み（修了書類待ち）</option>
+                <option value="completed">修了書類確認済</option>
               </select>
               <button class="refresh-btn" onclick="loadVenueList()">🔄 更新</button>
             </div>
@@ -1601,21 +1602,23 @@
                   <span style="font-size:18px;color:#aaa;">▼</span>
                 </div>
                 <div class="guide-body">
-                  <p>受講生がOJT実施施設として届け出た施設情報の管理です。施設への資料送付フローを管理します。</p>
+                  <p>受講生がOJT実施施設として届け出た施設情報の管理です。施設への連絡・資料送付から、施設からの修了書類（チェック表など）の返送確認までを管理します。</p>
 
                   <h4>ステータスの流れ</h4>
                   <table>
                     <tr><th>ステータス</th><th>意味</th><th>次の操作</th></tr>
                     <tr><td><span class="tag tag-orange">未対応</span></td><td>届出を受け付けたが未連絡</td><td>「連絡済みにする」→ 連絡済みへ</td></tr>
                     <tr><td><span class="tag tag-blue">連絡済み</span></td><td>施設への連絡済み・資料送付待ち</td><td>「資料送付済み」→ 対応済みへ</td></tr>
-                    <tr><td><span class="tag tag-green">対応済み</span></td><td>資料の送付が完了</td><td>—</td></tr>
+                    <tr><td><span class="tag tag-t">対応済み</span></td><td>資料の送付が完了。施設からの修了書類（チェック表など）の返送待ち</td><td>書類が届いたら「📥 書類受付」→ 修了書類確認済へ</td></tr>
+                    <tr><td><span class="tag tag-green">修了書類確認済</span></td><td>施設から修了書類が返送され、受領済み（<code>facilityReported = true</code>）</td><td>—（OJT修了報告一覧で「✓ 書類承認」へ）</td></tr>
                   </table>
+                  <div class="note">📌 「📥 書類受付」は<strong>OJT修了報告一覧の「📥 書類受付」とまったく同じ操作</strong>です（同じ<code>facilityReported</code>を立てます）。どちらの一覧から押しても、両方の一覧と正式修了証明書発行の一覧に反映されます。2026-10-08 追加。</div>
 
                   <h4>主な操作</h4>
                   <ul>
                     <li><strong>🏢 施設登録ボタン</strong>：届出データをOJT施設管理マスターに自動プリフィルして登録できます。届出された施設名と似た名前の施設が既に登録済みの場合は、<strong>重複登録防止のため候補選択画面</strong>が表示されます。法人名・住所・電話・担当者情報を見比べて同じ施設であれば「この施設に紐付ける」を選んでください（新規作成されません）。別の施設なら「該当なし・新規登録する」から通常どおり新規登録できます</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
-                    <li><strong>絞り込み</strong>：要対応（未対応・未定・連絡済み）・すべて・未定のみ・連絡済み・対応済みで絞り込み可能</li>
+                    <li><strong>絞り込み</strong>：要対応（未対応・未定・連絡済み）・すべて・未定のみ・連絡済み・対応済み（修了書類待ち）・修了書類確認済で絞り込み可能</li>
                   </ul>
                   <div class="note">📌 お申し込み時に「OJT施設なし」を選んだ方は、<strong>お支払い前の保留</strong>（申し込み管理のステータス「OJT施設待ち（お支払い前）」）になります。決済前のためこの届出一覧には出ません。<strong>申し込み管理</strong>で確認・電話フォローしてください。受講生がマイページでOJT施設を入力するとお支払いに進み、以降は通常どおりこの届出一覧で管理できます。</div>
                   <div class="note">📌 電話番号は「施設代表電話番号」（必須）と「担当者 直通電話番号」（任意）に分かれています。担当者は受講生ごとに異なる場合があるため、担当者情報は施設マスターではなく各受講生の届出データ側で個別に保持しています。</div>
@@ -1732,7 +1735,7 @@
 
                   <h4>主な操作</h4>
                   <ul>
-                    <li><strong>📥 書類受付</strong>：OJT施設から郵送された書類を受け取ったら押します（<code>facilityReported = true</code>）。受講生のオンライン報告より書類が先に届いた場合でも、その時点で押せます</li>
+                    <li><strong>📥 書類受付</strong>：OJT施設から郵送された書類を受け取ったら押します（<code>facilityReported = true</code>）。受講生のオンライン報告より書類が先に届いた場合でも、その時点で押せます。同じボタンはOJT施設届出一覧の「対応済み」の行にもあり、どちらから押しても同じです</li>
                     <li><strong>✓ 書類承認</strong>：受講生の報告内容と施設の書類を確認し、OKであれば押します（<code>ojtPassed = true</code>）。修了レポートも承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信され、正式修了日（3条件のうち最後に完了した日）も自動記録</strong>されます</li>
                     <li><strong>📋 施設とのやりとり</strong>：施設名の下に表示されます。施設が登録済みなら施設の詳細画面の「やりとり履歴」タブを直接開いて記録できます。未登録の場合は「🏢 施設登録」ボタンが表示されます</li>
                     <li><strong>✗ 修了報告を差し戻す</strong>（2026-10-02 追加）：受講生のオンライン報告の内容に問題がある場合（提供資料と異なる手順で実施した等）、承認前であればこのボタンで<code>ojtReported</code>を解除できます。差し戻し理由を入力すると受講生にお知らせが届き、マイページの「報告する」ボタンが再表示されて再提出できるようになります。<strong>承認済み（ojtPassed=true）になった後は表示されません。</strong></li>
@@ -2064,13 +2067,14 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    OJT施設届出は3段階で管理しています。
+                    OJT施設届出は4段階で管理しています。
                     <ul>
                       <li><strong>未対応</strong>：受講生から届出が来たが、まだスクール側が確認していない状態</li>
                       <li><strong>連絡済み</strong>：施設へ連絡済み・資料（合意書・レターなど）の送付待ち</li>
-                      <li><strong>対応済み</strong>：資料の送付が完了した状態</li>
+                      <li><strong>対応済み</strong>：資料の送付が完了し、施設からの修了書類（チェック表など）の返送を待っている状態</li>
+                      <li><strong>修了書類確認済</strong>：施設から修了書類が返送され、受領した状態（OJT修了報告一覧の「📥 書類受付」と同じ記録）</li>
                     </ul>
-                    「連絡済みにする」→「資料送付済み」の順にボタンをクリックして進めてください。
+                    「連絡済みにする」→「資料送付済み」→「📥 書類受付」の順にボタンをクリックして進めてください。
                   </div>
                 </div>
 
@@ -6123,34 +6127,41 @@ async function doLogin() {
     const el = document.getElementById('venue-list');
     if (!__venueCache) return;
 
-    // グループ分類：未対応 / 未定 / 資料送付待ち / 対応済み
-    const mitei = [], pending = [], awaiting = [], done = [];
+    // グループ分類：未対応 / 未定 / 資料送付待ち / 対応済み（修了書類待ち） / 修了書類確認済
+    // 「修了書類確認済」は OJT修了報告一覧の「📥 書類受付」と同じ facilityReported を見る（別フラグは持たない）
+    const mitei = [], pending = [], awaiting = [], done = [], completed = [];
     __venueCache.forEach(r => {
       if (r.practiceVenue?.name === '未定') mitei.push(r);
+      else if (r.facilityReported === true) completed.push(r); // 連絡日・送付日の記録漏れがあっても、書類受領済みなら実態を優先
       else if (r.venueChecked && r.materialsSent) done.push(r);
       else if (r.venueChecked) awaiting.push(r);
       else pending.push(r);
     });
 
-    const showPending  = __venueFilter === 'pending' || __venueFilter === 'all';
-    const showMitei    = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'mitei';
-    const showAwaiting = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'awaiting';
-    const showDone     = __venueFilter === 'done'    || __venueFilter === 'all';
+    const showPending   = __venueFilter === 'pending' || __venueFilter === 'all';
+    const showMitei     = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'mitei';
+    const showAwaiting  = __venueFilter === 'pending' || __venueFilter === 'all' || __venueFilter === 'awaiting';
+    const showDone      = __venueFilter === 'done'    || __venueFilter === 'all';
+    const showCompleted = __venueFilter === 'completed' || __venueFilter === 'all';
 
     function rowHtml(r) {
       const v = r.practiceVenue || {};
       const date      = r.practiceVenueReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const checkedAt = r.venueCheckedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
       const sentAt    = r.materialsSentAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
+      const docsAt    = r.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '';
       const nm        = r.name || ((r.sei||'')+(r.mei||''));
       const fullName  = nm || '—';
       const resubmitBadge = r.venueIsResubmit ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">再提出</span>' : '';
       const pendingBadge  = v.name === '未定' ? '<span style="background:#FF7043;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:4px;">未定</span>' : '';
       const name      = `<strong>${fullName}</strong>${resubmitBadge}${pendingBadge}<br><span style="font-size:11px;color:#888;">${r.studentNo || ''}</span><br><span style="font-size:11px;color:#888;">${r.email || ''}</span>`;
       let statusBadge, actionBtn;
-      if (r.venueChecked && r.materialsSent) {
-        statusBadge = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>`;
+      if (r.facilityReported === true) {
+        statusBadge = `<span style="background:#E8F5E9;color:#2E7D32;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📥 修了書類確認済</span>`;
         actionBtn = '';
+      } else if (r.venueChecked && r.materialsSent) {
+        statusBadge = `<span style="background:var(--teal-light);color:var(--teal-dark);padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">✅ 対応済み</span>`;
+        actionBtn = `<button onclick="markOjtDocReceived('${r.__id}','${r.email||''}','${nm}')" style="padding:5px 12px;background:linear-gradient(135deg,#FFA451,#F2894A);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`;
       } else if (r.venueChecked) {
         statusBadge = `<span style="background:#E8F0FE;color:#1A56DB;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">📞 連絡済み</span>`;
         actionBtn = `<button onclick="markMaterialsSent('${r.__id}','${nm}')" style="padding:5px 12px;background:linear-gradient(135deg,#FFA451,#F2894A);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">資料送付済み</button>`;
@@ -6178,24 +6189,27 @@ async function doLogin() {
         <td>${date}</td>
         <td style="font-size:12px;">${checkedAt || '—'}</td>
         <td style="font-size:12px;">${sentAt || '—'}</td>
+        <td style="font-size:12px;">${docsAt || '—'}</td>
       </tr>`;
     }
 
     let body = '';
-    if (showPending && pending.length) body += `<tr><td colspan="11" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
-    if (showMitei   && mitei.length)   body += `<tr><td colspan="11" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
-    if (showAwaiting && awaiting.length) body += `<tr><td colspan="11" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 連絡済み・資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
-    if (showDone    && done.length)    body += `<tr><td colspan="11" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 対応済み (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
+    if (showPending && pending.length) body += `<tr><td colspan="12" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 未対応 (${pending.length}件)</td></tr>` + pending.map(rowHtml).join('');
+    if (showMitei   && mitei.length)   body += `<tr><td colspan="12" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ 未定 (${mitei.length}件)</td></tr>` + mitei.map(rowHtml).join('');
+    if (showAwaiting && awaiting.length) body += `<tr><td colspan="12" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ 連絡済み・資料送付待ち (${awaiting.length}件)</td></tr>` + awaiting.map(rowHtml).join('');
+    if (showDone    && done.length)    body += `<tr><td colspan="12" style="padding:8px 14px;background:var(--teal-light);font-size:12px;font-weight:700;color:var(--teal-dark);">▼ 対応済み・修了書類待ち (${done.length}件)</td></tr>` + done.map(rowHtml).join('');
+    if (showCompleted && completed.length) body += `<tr><td colspan="12" style="padding:8px 14px;background:#F4F6F8;font-size:12px;color:#888;">▼ 修了書類確認済 (${completed.length}件)</td></tr>` + completed.map(rowHtml).join('');
     if (!body) {
       el.innerHTML = '<p style="color:var(--text-light);font-size:13px;padding:16px;">' +
-        (__venueFilter === 'pending' ? '要対応の届出はありません。' :
-         __venueFilter === 'mitei'   ? '未定の届出はありません。' :
-         __venueFilter === 'awaiting'? '連絡済みの届出はありません。' :
-         __venueFilter === 'done'    ? '対応済みの届出はありません。' : '届出はまだありません。') + '</p>';
+        (__venueFilter === 'pending'  ? '要対応の届出はありません。' :
+         __venueFilter === 'mitei'    ? '未定の届出はありません。' :
+         __venueFilter === 'awaiting' ? '連絡済みの届出はありません。' :
+         __venueFilter === 'done'     ? '対応済み（修了書類待ち）の届出はありません。' :
+         __venueFilter === 'completed'? '修了書類確認済の届出はありません。' : '届出はまだありません。') + '</p>';
       return;
     }
     el.innerHTML = '<table><thead><tr>' +
-      '<th>ステータス</th><th>操作</th><th>氏名</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>連絡日</th><th>資料送付日</th>' +
+      '<th>ステータス</th><th>操作</th><th>氏名</th><th>施設名</th><th>住所</th><th>電話番号</th><th>担当者</th><th>届出理由</th><th>届出日</th><th>連絡日</th><th>資料送付日</th><th>書類受領日</th>' +
       '</tr></thead><tbody>' + body + '</tbody></table>';
   }
 
@@ -7223,6 +7237,7 @@ async function doLogin() {
       }
       if (document.getElementById('ojt-list')) loadOjtList();
       if (document.getElementById('certificate-list')) loadCertificateList();
+      if (__venueCache) loadVenueList(); // OJT施設届出一覧からも押せるため、開いていれば再読込
     } catch(e) {
       alert('エラー：' + e.message);
     }
