@@ -1095,9 +1095,8 @@
                 <input type="checkbox" id="show-test-ojt" onchange="loadOjtList()" style="cursor:pointer;">🧪 テストデータを表示
               </label>
               <select id="ojt-filter-sel" onchange="window.setOjtFilter(this.value)" style="border:1.5px solid var(--border);border-radius:20px;padding:8px 28px 8px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background:white url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A7A85'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;">
-                <option value="active">要対応（報告待ち・書類待ち・確認中）</option>
+                <option value="active">要対応（書類待ち・確認中）</option>
                 <option value="all">すべて</option>
-                <option value="reportWaiting">OJT修了報告待ちのみ</option>
                 <option value="docWaiting">OJT書類待ちのみ</option>
                 <option value="reviewing">受付済み・確認中のみ</option>
                 <option value="approved">承認済みのみ</option>
@@ -1720,30 +1719,30 @@
                   <span style="font-size:18px;color:#aaa;">▼</span>
                 </div>
                 <div class="guide-body">
-                  <p>受講生が提出したOJT修了報告を管理します。<strong>施設から書類が届き、受講生の報告とあわせて内容に問題がなければ「✓ 書類承認」を押すだけで完了</strong>します（書類の受付日も同時に記録されます）。「📥 書類受付」は、届いた事実だけ先に記録して内容確認を後回しにしたいときに使う補助的なボタンです。バッジは対応が必要な件数（OJT修了報告待ち・OJT書類待ち・受付済み確認中の合計、承認済みは含まない）を示します。</p>
+                  <p>受講生が提出したOJT修了報告を管理します。<strong>施設から書類が届き、受講生の報告とあわせて内容に問題がなければ「✓ 書類承認」を押すだけで完了</strong>します（書類の受付日も同時に記録されます）。「📥 書類受付」は、届いた事実だけ先に記録して内容確認を後回しにしたいときに使う補助的なボタンです。バッジは対応が必要な件数（OJT書類待ち・受付済み確認中の合計、承認済みは含まない）を示します。</p>
+                  <div class="note">📌 2026-10-09 から、受講生がマイページから出す報告の有無は<strong>段階として分けなくなりました</strong>（以前の「OJT修了報告待ち」は廃止）。施設に資料を送ったあとは、受講生の報告があってもなくても「OJT書類待ち」です。受講生の報告の有無はステータスの下に「受講生報告：済／未」として表示します。</div>
 
                   <div class="note">📌 受講生がオンラインで入力するのは<strong>OJT施設名・OJT期間（開始日〜終了日）・備考</strong>の3項目のみです。実施した手順の詳細を記述する欄はないため、<strong>提供した資料・手順書の通りに実施されたかどうかは、この報告内容だけでは判断できません。</strong>備考欄の記載や、施設からの書類・電話でのやり取りなどで初めて判明することがあります（2026-10-02、大佐古恵美さんのケースで判明）。内容に疑義がある場合は、承認前であれば下記の「✗ 修了報告を差し戻す」で再提出させてください。</div>
 
                   <h4>ステータスの流れ</h4>
                   <table>
                     <tr><th>ステータス</th><th>意味</th><th>次の操作</th></tr>
-                    <tr><td><span class="tag tag-orange">OJT修了報告待ち</span></td><td>OJT施設への届出（連絡・資料送付）は完了しているが、受講生のオンライン報告がまだ届いていない（施設からの書類だけ先に届くこともある）</td><td>書類が届いたら「📥 書類受付」</td></tr>
-                    <tr><td><span class="tag tag-blue">OJT書類待ち</span></td><td>受講生の報告は届いたが、OJT施設からの書類がまだ</td><td>書類が届いて内容OKなら<strong>「✓ 書類承認」</strong>（受付も同時に記録）。届いた事実だけ先に残すなら「📥 書類受付」</td></tr>
-                    <tr><td><span class="tag tag-orange">受付済み・確認中</span></td><td>受講生の報告・施設の書類ともに揃った</td><td>内容を確認し「✓ 書類承認」</td></tr>
+                    <tr><td><span class="tag tag-blue">OJT書類待ち</span></td><td>OJT施設への資料送付は完了し、施設からの修了書類（チェック表など）の返送待ち。受講生のマイページからの報告が済んでいるかどうかは問わない（「受講生報告：済／未」で表示）</td><td>書類が届いて内容OKなら<strong>「✓ 書類承認」</strong>（受付も同時に記録）。届いた事実だけ先に残すなら「📥 書類受付」</td></tr>
+                    <tr><td><span class="tag tag-orange">受付済み・確認中</span></td><td>施設の書類は受付済みで、承認がまだ</td><td>内容を確認し「✓ 書類承認」</td></tr>
                     <tr><td><span class="tag tag-green">承認済み</span></td><td>OJT修了を承認済み（<code>ojtPassed = true</code>）</td><td>—</td></tr>
                   </table>
 
                   <h4>主な操作</h4>
                   <ul>
-                    <li><strong>✓ 書類承認</strong>：受講生の報告内容と施設の書類を確認し、OKであれば押します（<code>ojtPassed = true</code>）。<strong>施設書類が未受付のときは受付（<code>facilityReported = true</code>・受付日）も同時に記録される</strong>ので、通常はこのボタン1回で済みます（2026-10-08〜）。修了レポートも承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信され、正式修了日（3条件のうち最後に完了した日）も自動記録</strong>されます</li>
-                    <li><strong>📥 書類受付</strong>：OJT施設から郵送された書類を受け取った事実だけを先に記録するボタンです（<code>facilityReported = true</code>）。受講生のオンライン報告がまだ届いていない（書類が先に届いた）場合や、内容確認を後日にしたい場合に使います。同じボタンはOJT施設届出一覧の「対応済み」の行にもあり、どちらから押しても同じです</li>
+                    <li><strong>✓ 書類承認</strong>：施設の書類（と、届いていれば受講生の報告内容）を確認し、OKであれば押します（<code>ojtPassed = true</code>）。受講生のマイページからの報告がまだでも、施設の書類で確認できていれば承認できます（確認ダイアログにその旨が出ます。承認後は受講生側の「報告する」ボタンは消えます）。<strong>施設書類が未受付のときは受付（<code>facilityReported = true</code>・受付日）も同時に記録される</strong>ので、通常はこのボタン1回で済みます（2026-10-08〜）。修了レポートも承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信され、正式修了日（3条件のうち最後に完了した日）も自動記録</strong>されます</li>
+                    <li><strong>📥 書類受付</strong>：OJT施設から郵送された書類を受け取った事実だけを先に記録するボタンです（<code>facilityReported = true</code>）。内容確認を後日にしたい場合に使います。同じボタンはOJT施設届出一覧の「対応済み」の行にもあり、どちらから押しても同じです</li>
                     <li><strong>📋 施設とのやりとり</strong>：施設名の下に表示されます。施設が登録済みなら施設の詳細画面の「やりとり履歴」タブを直接開いて記録できます。未登録の場合は「🏢 施設登録」ボタンが表示されます</li>
                     <li><strong>✗ 修了報告を差し戻す</strong>（2026-10-02 追加）：受講生のオンライン報告の内容に問題がある場合（提供資料と異なる手順で実施した等）、承認前であればこのボタンで<code>ojtReported</code>を解除できます。差し戻し理由を入力すると受講生にお知らせが届き、マイページの「報告する」ボタンが再表示されて再提出できるようになります。<strong>承認済み（ojtPassed=true）になった後は表示されません。</strong></li>
                   </ul>
 
                   <h4>操作</h4>
                   <ul>
-                    <li><strong>絞り込み</strong>：要対応（OJT修了報告待ち・OJT書類待ち・確認中）・すべて・OJT修了報告待ちのみ・OJT書類待ちのみ・受付済み確認中のみ・承認済みのみで絞り込み可能</li>
+                    <li><strong>絞り込み</strong>：要対応（OJT書類待ち・確認中）・すべて・OJT書類待ちのみ・受付済み確認中のみ・承認済みのみで絞り込み可能</li>
                     <li><strong>テストデータ表示トグル</strong>：テストデータ（isTest=true）の表示/非表示を切り替えます</li>
                   </ul>
 
@@ -2087,10 +2086,10 @@
                   <div class="qa-a">
                     <strong>施設から一式が届き、受講生の報告とあわせて内容に問題がなければ「✓ 書類承認」だけ押してください。</strong>書類の受付（受付日）も同時に記録されるので、「📥 書類受付」を先に押す必要はありません（2026-10-08 から）。
                     <ul>
-                      <li><strong>📥 書類受付</strong>＝「施設から書類が届いた」という事実と日付の記録。受講生の報告がまだ届いていないのに書類だけ先に来た場合や、届いたことだけ記録して内容確認を後日にしたい場合に使います</li>
+                      <li><strong>📥 書類受付</strong>＝「施設から書類が届いた」という事実と日付の記録。届いたことだけ記録して内容確認を後日にしたい場合に使います</li>
                       <li><strong>✓ 書類承認</strong>＝「内容を確認してOJT修了と認めた」という判断。修了レポート承認と揃うと、両承認完了メールの送信と正式修了日の記録が自動で行われます</li>
                     </ul>
-                    受講生がマイページでOJT修了を報告すると、管理者が何もしなくても自動で「OJT書類待ち」になります。この段階で押すものはなく、施設からの書類を待つだけです。
+                    施設に資料を送ると、受講生がマイページで報告したかどうかにかかわらず「OJT書類待ち」に並びます（受講生の報告の有無は「受講生報告：済／未」で表示）。この段階で押すものはなく、施設からの書類を待つだけです。
                   </div>
                 </div>
 
@@ -6441,30 +6440,29 @@ async function doLogin() {
   }
   window.setOjtFilter = setOjtFilter;
 
-  // ojtReported（学生のオンライン報告）・facilityReported（施設書類の受領）・ojtPassed（承認）
-  // は互いに独立して立ちうる（施設書類が学生報告より先に届くこともある）ため、3フラグからステータスを算出する
+  // ステータスは facilityReported（施設書類の受領）と ojtPassed（承認）の2フラグで決める。
+  // 受講生のオンライン報告（ojtReported）は段階の条件にせず、行内に「受講生報告：済／未」として表示するだけ。
+  // 現場では「資料送付後は施設からの書類を待つ」一段階として運用しているため（2026-10-09 荘川さん）
   function ojtStage(a) {
     if (a.ojtPassed === true) return 'approved';
-    if (a.ojtReported === true && a.facilityReported === true) return 'reviewing';
-    if (a.ojtReported !== true) return 'reportWaiting'; // 学生の修了報告待ち（施設書類は先に届いている場合もある）
-    return 'docWaiting'; // 修了報告は届いたが施設書類がまだ
+    if (a.facilityReported === true) return 'reviewing'; // 施設書類は届いた。内容を確認して承認へ
+    return 'docWaiting'; // 資料送付済み。施設からの書類待ち（受講生の報告の有無は問わない）
   }
 
   function renderOjtTable() {
     const el = document.getElementById('ojt-list');
     if (!__ojtCache) return;
 
-    const groups = { reportWaiting: [], docWaiting: [], reviewing: [], approved: [] };
+    const groups = { docWaiting: [], reviewing: [], approved: [] };
     __ojtCache.forEach(a => groups[ojtStage(a)].push(a));
 
     const badge = document.getElementById('ojt-badge');
     if (badge) {
-      const badgeCount = __ojtCache.filter(a => !a.isTest && a.ojtReported === true && a.ojtPassed !== true).length;
+      const badgeCount = __ojtCache.filter(a => !a.isTest && a.ojtPassed !== true).length; // 未承認の全件（書類待ち＋確認中）
       if (badgeCount > 0) { badge.style.display = 'inline'; badge.textContent = badgeCount; }
       else { badge.style.display = 'none'; }
     }
 
-    const showReportWaiting = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'reportWaiting';
     const showDocWaiting    = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'docWaiting';
     const showReviewing     = __ojtFilter === 'active' || __ojtFilter === 'all' || __ojtFilter === 'reviewing';
     const showApproved      = __ojtFilter === 'approved' || __ojtFilter === 'all';
@@ -6472,17 +6470,20 @@ async function doLogin() {
     function rowHtml(a, stage) {
       const r = a.ojtReport || {};
       const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
-      const hasReport = stage !== 'reportWaiting';
+      const hasReport = a.ojtReported === true;
       const facilityName = hasReport ? (r.facility || '—') : (a.practiceVenue?.name || '—');
       const period = hasReport ? `${r.dateFrom||'—'} 〜 ${r.dateTo||'—'}` : '—';
       const note = hasReport ? (r.note || '—') : '—';
       const reportedDate = a.ojtReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
       const receivedDate = a.facilityReportedAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—';
+      // 受講生のオンライン報告の有無（段階ではなく情報として表示）
+      const studentReportTag = hasReport
+        ? '<br><span style="display:inline-block;margin-top:4px;font-size:11px;color:#2E7D32;">受講生報告：済</span>'
+        : '<br><span style="display:inline-block;margin-top:4px;font-size:11px;color:#999;">受講生報告：未</span>';
       const facilityLogBtn = a.linkedFacilityId
         ? `<br><button onclick="openFacilityDetailModal('${a.linkedFacilityId}','log')" style="margin-top:4px;padding:4px 10px;background:#fff;color:#5C6BC0;border:1.5px solid #9FA8DA;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 施設とのやりとり</button>`
         : `<br><button onclick="openFacilityRegFromVenue('${a.__id}')" style="margin-top:4px;padding:4px 10px;background:var(--teal-dark);color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🏢 施設登録</button>`;
       const statusBadge = {
-        reportWaiting: '<span style="background:#FBE9E7;color:#E64A19;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">OJT修了報告待ち</span>',
         docWaiting:    '<span style="background:#E8F0FE;color:#1A56DB;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">OJT書類待ち</span>',
         reviewing:     '<span style="background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">受付済み・確認中</span>',
         approved:      '<span style="background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">承認済み</span>',
@@ -6491,19 +6492,17 @@ async function doLogin() {
       // 「📥 書類受付」は、届いた事実だけ先に記録して内容確認を後回しにしたい場合に使う
       const receiveBtn = `<button onclick="markOjtDocReceived('${a.__id}','${a.email}','${name}')" style="padding:5px 10px;background:linear-gradient(135deg,#FFA451,#F2894A);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 書類受付</button>`;
       const approveBtn = `<button onclick="approveOjt('${a.__id}','${a.email}','${name}')" style="padding:5px 12px;background:#4CAF50;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✓ 書類承認</button>`;
-      const actionHtml = stage === 'reportWaiting'
-        ? receiveBtn
-        : stage === 'docWaiting'
-          ? approveBtn + '<br>' + receiveBtn.replace('style="padding:5px 10px;', 'style="margin-top:4px;padding:4px 10px;')
-          : stage === 'reviewing'
-            ? approveBtn
-            : '—';
+      const actionHtml = stage === 'docWaiting'
+        ? approveBtn + '<br>' + receiveBtn.replace('style="padding:5px 10px;', 'style="margin-top:4px;padding:4px 10px;')
+        : stage === 'reviewing'
+          ? approveBtn
+          : '—';
       // 学生のオンライン報告に問題がある場合、承認前なら差し戻して再提出させられる
       const rejectReportBtn = (a.ojtReported === true && a.ojtPassed !== true)
         ? `<br><button onclick="rejectOjtReport('${a.__id}','${a.email}','${name}')" style="margin-top:4px;padding:4px 10px;background:#fff;color:#e53935;border:1.5px solid #e53935;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">✗ 修了報告を差し戻す</button>`
         : '';
       return `<tr>
-        <td>${statusBadge}</td>
+        <td>${statusBadge}${studentReportTag}</td>
         <td><button onclick="openDetail('${a.__id}')" class="detail-btn" style="margin-bottom:4px;">詳細</button><br>${actionHtml}${rejectReportBtn}</td>
         <td><strong>${name}</strong><br><span style="font-size:11px;color:#888;">${a.email||''}</span></td>
         <td>${facilityName}${facilityLogBtn}</td>
@@ -6515,7 +6514,6 @@ async function doLogin() {
     }
 
     let body = '';
-    if (showReportWaiting && groups.reportWaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FBE9E7;font-size:12px;font-weight:700;color:#E64A19;">▼ OJT修了報告待ち (${groups.reportWaiting.length}件)</td></tr>` + groups.reportWaiting.map(a => rowHtml(a,'reportWaiting')).join('');
     if (showDocWaiting && groups.docWaiting.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F0FE;font-size:12px;font-weight:700;color:#1A56DB;">▼ OJT書類待ち (${groups.docWaiting.length}件)</td></tr>` + groups.docWaiting.map(a => rowHtml(a,'docWaiting')).join('');
     if (showReviewing && groups.reviewing.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#FFF8E1;font-size:12px;font-weight:700;color:#F57C00;">▼ 受付済み・確認中 (${groups.reviewing.length}件)</td></tr>` + groups.reviewing.map(a => rowHtml(a,'reviewing')).join('');
     if (showApproved && groups.approved.length) body += `<tr><td colspan="8" style="padding:8px 14px;background:#E8F5E9;font-size:12px;font-weight:700;color:#2E7D32;">▼ 承認済み (${groups.approved.length}件)</td></tr>` + groups.approved.map(a => rowHtml(a,'approved')).join('');
@@ -6562,9 +6560,10 @@ async function doLogin() {
     // 現場では「施設から一式が届いた＝内容確認して承認」が一度に行われるため、2回押させない（2026-10-08 荘川さん）
     const before = (await window.__getDoc(window.__doc(window.__db, 'applications', docId))).data() || {};
     const alsoReceive = before.facilityReported !== true;
-    const msg = alsoReceive
-      ? `${name} さんのOJT修了を承認しますか？\n（施設からの書類の受付も同時に記録します）`
-      : `${name} さんのOJT修了を承認しますか？`;
+    const noStudentReport = before.ojtReported !== true;
+    let msg = `${name} さんのOJT修了を承認しますか？`;
+    if (alsoReceive) msg += '\n（施設からの書類の受付も同時に記録します）';
+    if (noStudentReport) msg += '\n※受講生のマイページからの報告はまだ届いていません。施設の書類で確認済みであればそのまま承認できます';
     if (!confirm(msg)) return;
     try {
       const { doc, updateDoc, serverTimestamp, addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
