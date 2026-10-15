@@ -1922,7 +1922,7 @@
                   <ul>
                     <li>受講確定（<code>status: confirmed/active/completed</code>）後にボタンが有効になります。入金待ちの間は押せません</li>
                     <li>金額はテキスト代購入の有無で自動算出（33,000円／39,600円、税込）。オンライン決済のため収入印紙は不要で、PDF発行のみで完結します</li>
-                    <li>領収書の<strong>日付は入金確認日（<code>confirmedAt</code>）</strong>です。発行ボタンを押した日ではありません</li>
+                    <li>領収書の<strong>日付は入金日</strong>です。発行ボタンを押した日ではありません（2026-10-15 変更）。振込は管理者が「振込入金を確認した」のときに入力した着金日（<code>confirmedAt</code>）、カード決済は Stripe の決済完了日（<code>paidAt</code>）を使います。入金日は申し込み詳細の<strong>「💴 入金日」セクション</strong>で確認でき、振込の場合はそこで修正できます</li>
                     <li>印影は正式修了証明書と同じ画像（<code>assets/seal.png</code>）を使用しています</li>
                   </ul>
 
@@ -1931,6 +1931,7 @@
                     <li>申し込み詳細を開くと「🧾 領収書」セクションがあります（受講確定後のみ表示）</li>
                     <li><strong>発行済みの場合</strong>：発行日・宛名・金額が表示され、「🖨 確認・印刷」で<strong>発行時に記録された内容のまま</strong>再印刷できます（現在のデータで再計算はしません）</li>
                     <li><strong>未発行の場合</strong>：「🧾 代わりに発行する」ボタンで、受講生に代わって管理者が発行できます。宛名は受講者氏名固定、金額は現在のデータから自動算出されます</li>
+                    <li><strong>入金日が未記録の場合</strong>：「🧾 領収書」セクションに赤い警告が出ます。そのまま発行すると日付が受講開始日または申込日で代用されるので、振込の受講生は先に「💴 入金日」で着金日を入力してください（2026-10-15 より前に入金確認した振込の受講生は、ボタンを押した日が入金日として記録されています。通帳と違う場合も同じ欄で直せます）</li>
                   </ul>
 
                   <h4>1回のみ発行の制限</h4>
@@ -2003,7 +2004,7 @@
                     <span class="qa-q-arrow">▼</span>
                   </div>
                   <div class="qa-a">
-                    振込入金は自動検知されません。申し込み管理で該当受講生を開き、<strong>「振込入金確認」ボタン</strong>を手動でクリックしてください。ボタンをクリックすると受講確定に変わり、受講生に入金確認メールが送信されます。
+                    振込入金は自動検知されません。申し込み管理で該当受講生を開き、ボタンの上の<strong>「入金日」欄</strong>に通帳・明細で確認した着金日を入れてから（最初は今日の日付が入っています）、<strong>「振込入金を確認した」ボタン</strong>をクリックしてください。受講確定に変わり、受講生に入金確認メールが送信されます。入力した入金日は領収書の日付になります。
                   </div>
                 </div>
 
@@ -2258,6 +2259,18 @@
                 <div class="qa-item">
                   <div class="qa-q" onclick="qaToggle(this)">
                     <span class="qa-q-label">Q</span>
+                    <span class="qa-q-text">領収書の日付が申込日になっている／入金日を直したい</span>
+                    <span class="qa-q-arrow">▼</span>
+                  </div>
+                  <div class="qa-a">
+                    領収書の日付は<strong>入金日</strong>です（振込＝入金確認のときに入力した着金日、カード＝Stripe の決済完了日。2026-10-15 変更）。申し込み詳細の<strong>「💴 入金日」セクション</strong>で現在の入金日を確認できます。振込の受講生は同じ欄で日付を直して「入金日を保存」を押すと、領収書の日付と売上一覧の入金日が変わります。カード決済の入金日は Stripe から自動で記録されるため手で直す欄はありません。
+                    <div class="note">📌 入金日が「記録されていません」と出る場合、そのまま発行すると受講開始日または申込日で代用されます。振込なら先に入金日を入力してください。発行済みの領収書は「🖨 確認・印刷」で印刷し直すと直した日付で出ます。</div>
+                  </div>
+                </div>
+
+                <div class="qa-item">
+                  <div class="qa-q" onclick="qaToggle(this)">
+                    <span class="qa-q-label">Q</span>
                     <span class="qa-q-text">テストで領収書を発行してしまった（未発行に戻したい）</span>
                     <span class="qa-q-arrow">▼</span>
                   </div>
@@ -2388,7 +2401,7 @@
                   <span class="qa-q-arrow">▼</span>
                 </div>
                 <div class="qa-a">
-                  振込入金の確認はスクール側の手動操作です。申し込み管理で該当受講生を確認し、入金が確認できれば<strong>「振込入金確認」ボタン</strong>をクリックして受講確定に変更してください。受講生に確認メールが自動送信されます。
+                  振込入金の確認はスクール側の手動操作です。申し込み管理で該当受講生を確認し、入金が確認できれば<strong>「入金日」欄に着金日を入れて「振込入金を確認した」ボタン</strong>をクリックして受講確定に変更してください。受講生に確認メールが自動送信されます。入金日は領収書の日付になります。
                   <div class="qa-a note">📌 振込の場合、銀行の反映に数日かかる場合があります。入金日から数日経っても確認できない場合は振込明細をご確認いただくよう案内してください。</div>
                 </div>
               </div>
@@ -2801,10 +2814,19 @@
             <div id="m-status-note" style="display:none;font-size:11px;color:#E65100;margin-top:4px;">※ テストデータ以外は手動変更できるステータスを制限しています</div>
             <button class="save-btn" onclick="saveStatus()">保存する</button>
             <div id="bank-confirm-area" style="display:none; margin-top:12px;">
+              <label style="display:block;font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:4px;">入金日（通帳・明細で着金を確認した日）</label>
+              <input type="date" id="bank-confirm-date" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:8px;">
               <button onclick="confirmBankPayment()" style="width:100%; padding:12px; background:#4CAF72; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">
                 ✅ 振込入金を確認した → 受講確定にする
               </button>
+              <div style="font-size:11px;color:#888;margin-top:4px;">入金日は領収書の日付になります。あとから「💴 入金日」セクションで直せます。</div>
             </div>
+      </div>
+
+      <!-- 入金日 -->
+      <div id="payment-date-section" class="modal-sec" style="display:none;">
+        <div class="modal-sec-hd">💴 入金日</div>
+        <div id="payment-date-section-body"></div>
       </div>
 
       <!-- 領収書 -->
@@ -3356,11 +3378,13 @@ async function doLogin() {
   // 銀行振込かつpending/未対応の場合のみ入金確認ボタンを表示
   const isBankPending = a.payment === '銀行振込' && (a.status === 'pending' || a.status === '未対応' || !a.status);
   document.getElementById('bank-confirm-area').style.display = isBankPending ? 'block' : 'none';
+  if (isBankPending) { const di = document.getElementById('bank-confirm-date'); if (di) di.value = toDateInputValue(new Date()); }
 
   // 進捗チェックリスト表示
   renderProgress(id, a);
 
-  // 領収書セクション表示
+  // 入金日・領収書セクション表示
+  renderPaymentDateSection(id, a);
   renderReceiptSection(id, a);
 
   // お問い合わせ履歴を読み込み
@@ -3444,6 +3468,66 @@ async function doLogin() {
     document.body.classList.remove('receipt-print-mode');
   }
 
+  // ===== 入金日（領収書の日付）=====
+  // 振込：管理者が「振込入金を確認した」で入力した入金日（confirmedAt、あとから「💴 入金日」で修正可）
+  // カード：Stripe の決済完了日（paidAt、stripeWebhook が記録）
+  window.getPaymentDate = (a) => a?.confirmedAt?.toDate?.() || a?.paidAt?.toDate?.() || null;
+  // 領収書に印字する日付。入金日が未記録の古いデータだけ、受講開始日→申込日で代用する
+  window.receiptDateOf = (a) => getPaymentDate(a) || a.activeAt?.toDate?.() || a.createdAt?.toDate?.() || new Date();
+  window.toDateInputValue = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // <input type="date"> の値を正午のローカル日時にする（タイムゾーンで日付がずれないように）
+  window.fromDateInputValue = (v) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2]-1, +m[3], 12, 0, 0) : null; };
+
+  function renderPaymentDateSection(id, a) {
+    const section = document.getElementById('payment-date-section');
+    const body = document.getElementById('payment-date-section-body');
+    if (!section || !body) return;
+    const paid = !['pending','awaiting_payment','ojt_hold','cancelled','withdrawn','未対応'].includes(a.status || 'pending');
+    if (!paid) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    const pd = getPaymentDate(a);
+    const isBank = a.payment === '銀行振込';
+    const method = a.payment || '支払方法不明';
+    let html = '';
+    if (pd) {
+      html += `<p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 6px;"><strong style="font-size:15px;color:var(--text);">${pd.toLocaleDateString('ja-JP')}</strong>　${method}${isBank ? '（入金確認時に入力した着金日）' : (a.paidAt ? '（決済完了日）' : '')}<br><span style="font-size:11px;color:#888;">領収書の日付と売上一覧の「入金日」に使われます。</span></p>`;
+    } else {
+      html += `<p style="font-size:13px;color:var(--red);line-height:1.8;margin:0 0 6px;">入金日が記録されていません（${method}）。${isBank ? '通帳・明細で着金日を確認し、下の欄に入力して保存してください。' : 'カード決済の決済日は Stripe の管理画面で確認してください。'}<br><span style="font-size:11px;color:#888;">未記録のままだと、領収書の日付は受講開始日または申込日で代用されます。</span></p>`;
+    }
+    if (isBank) {
+      html += `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+        <input type="date" id="payment-date-input" value="${pd ? toDateInputValue(pd) : ''}" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;">
+        <button onclick="savePaymentDate('${id}')" style="padding:8px 14px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">💾 入金日を保存</button>
+      </div>`;
+    }
+    body.innerHTML = html;
+  }
+  window.renderPaymentDateSection = renderPaymentDateSection;
+
+  async function savePaymentDate(id) {
+    const a = all.find(x => x.id === id);
+    if (!a) return;
+    const d = fromDateInputValue(document.getElementById('payment-date-input')?.value);
+    if (!d) { alert('入金日を入力してください。'); return; }
+    if (d > new Date()) { alert('未来の日付は入力できません。'); return; }
+    if (!confirm(`入金日を ${d.toLocaleDateString('ja-JP')} にします。\n領収書の日付と売上一覧の「入金日」もこの日になります。よろしいですか？`)) return;
+    try {
+      await window.__updateDoc(window.__doc(window.__db, 'applications', id), {
+        confirmedAt: d,
+        confirmedAtEditedAt: window.__serverTs(),
+        confirmedAtEditedBy: window.__auth.currentUser?.email || '',
+      });
+      const snap = await window.__getDoc(window.__doc(window.__db, 'applications', id));
+      const idx = all.findIndex(x => x.id === id);
+      if (snap.exists() && idx > -1) all[idx] = { ...all[idx], ...snap.data() };
+      const fresh = all.find(x => x.id === id) || a;
+      renderPaymentDateSection(id, fresh);
+      renderReceiptSection(id, fresh);
+      alert('入金日を保存しました。');
+    } catch (e) { alert('保存に失敗しました：' + e.message); }
+  }
+  window.savePaymentDate = savePaymentDate;
+
   function renderReceiptSection(id, a) {
     const section = document.getElementById('receipt-section');
     const body = document.getElementById('receipt-section-body');
@@ -3459,12 +3543,17 @@ async function doLogin() {
       const issuedName = a.receiptIssuedName || name;
       const issuedAmount = a.receiptIssuedAmount != null ? a.receiptIssuedAmount.toLocaleString() + '円' : '—';
       body.innerHTML = `
-        <p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 10px;">発行済み（${issuedAt}）<br>宛名：${issuedName}　／　金額：${issuedAmount}</p>
+        <p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 10px;">発行済み（${issuedAt}）<br>宛名：${issuedName}　／　金額：${issuedAmount}　／　領収書の日付：${receiptDateOf(a).toLocaleDateString('ja-JP')}</p>
         <button onclick="printStoredReceipt('${id}')" style="padding:9px 16px;background:#fff;color:var(--teal-dark);border:1.5px solid var(--teal);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🖨 確認・印刷</button>
       `;
     } else {
+      const pd = getPaymentDate(a);
+      const dateNote = pd
+        ? `<p style="font-size:12px;color:var(--text-mid);margin:0 0 10px;">領収書の日付：<strong>${pd.toLocaleDateString('ja-JP')}</strong>（入金日）</p>`
+        : `<div style="margin:0 0 10px;background:#FFF5F5;border-left:3px solid var(--red);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--red);">⚠️ 入金日が記録されていません。このまま発行すると日付が受講開始日または申込日になります。${a.payment === '銀行振込' ? '先に上の「💴 入金日」で着金日を入力してください。' : ''}</div>`;
       body.innerHTML = `
         <p style="font-size:13px;color:var(--text-mid);line-height:1.8;margin:0 0 10px;">未発行です。通常は受講生がマイページから発行しますが、受講生が自分で発行できない場合は、代わりにこちらから発行できます。</p>
+        ${dateNote}
         <button onclick="issueReceiptAsAdmin('${id}')" style="padding:9px 16px;background:var(--teal);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🧾 代わりに発行する</button>
         <div style="margin-top:10px;background:#FFFDE7;border-left:3px solid #F9A825;border-radius:6px;padding:8px 12px;font-size:12px;">📌 宛名は受講者氏名（${name}）で発行されます。発行できるのは1回のみで、発行するとマイページからの発行もできなくなります。</div>
       `;
@@ -3476,7 +3565,7 @@ async function doLogin() {
     const a = all.find(x => x.id === id);
     if (!a || !a.receiptIssued) return;
     const hasTextbook = a.receiptIssuedAmount === 39600;
-    const receiptDate = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.() || a.receiptIssuedAt?.toDate?.() || new Date();
+    const receiptDate = receiptDateOf(a);
     await printReceiptCommon({
       name: a.receiptIssuedName || ((a.sei || '') + (a.mei ? '　' + a.mei : '')) || a.name || '—',
       amount: a.receiptIssuedAmount != null ? a.receiptIssuedAmount : (hasTextbook ? 39600 : 33000),
@@ -3514,7 +3603,7 @@ async function doLogin() {
       return;
     }
 
-    const receiptDate = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.() || new Date();
+    const receiptDate = receiptDateOf(a);
     await printReceiptCommon({ name, amount, hasTextbook, studentNo: a.studentNo, issuedAt: receiptDate });
     renderReceiptSection(id, a);
   }
@@ -4224,11 +4313,15 @@ async function doLogin() {
 
   async function confirmBankPayment() {
     if (!curId) return;
-    if (!confirm('振込入金を確認しました。受講確定にしますか？')) return;
+    const payDate = fromDateInputValue(document.getElementById('bank-confirm-date')?.value);
+    if (!payDate) { alert('入金日を入力してください。'); return; }
+    if (payDate > new Date()) { alert('未来の日付は入力できません。'); return; }
+    if (!confirm(`振込入金を確認しました。\n入金日：${payDate.toLocaleDateString('ja-JP')}（領収書の日付になります）\n受講確定にしますか？`)) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
         status: 'confirmed',
-        confirmedAt: window.__serverTs(),
+        confirmedAt: payDate,                       // 入金日（管理者が入力した着金日）
+        confirmedRecordedAt: window.__serverTs(),   // ボタンを押した日時（記録用）
       });
       const idx = all.findIndex(a => a.id === curId);
       if (idx > -1) all[idx].status = 'confirmed';
@@ -4238,6 +4331,7 @@ async function doLogin() {
       const appSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
       if (appSnap.exists()) {
         const appData = appSnap.data();
+        if (idx > -1) all[idx] = { ...all[idx], ...appData };
         try {
           await window.__addDoc(window.__col(window.__db, 'notices'), {
             applicationId: curId,
@@ -4260,7 +4354,9 @@ async function doLogin() {
       　}
       updateStats(); doFilter();
       if (typeof loadDocuments === 'function') loadDocuments();
-      alert('受講確定にしました！');
+      const fresh = all.find(a => a.id === curId);
+      if (fresh) { renderPaymentDateSection(curId, fresh); renderReceiptSection(curId, fresh); }
+      alert(`受講確定にしました！（入金日：${payDate.toLocaleDateString('ja-JP')}）`);
     } catch(e) { alert('更新に失敗しました：' + e.message); }
   }
   window.confirmBankPayment = confirmBankPayment;
@@ -8064,9 +8160,9 @@ async function doLogin() {
       // 見込み売上：申込日ベース（全申込）
       const cdt = a.createdAt?.toDate?.();
       if (cdt) { const fy=fiscalOf(cdt); getM(fy, cdt.getMonth()+1).expected += amt; fyData[fy].expected += amt; }
-      // 入金済み：入金確定日ベース（支払方法別件数）
+      // 入金済み：入金日ベース（振込＝入力した着金日 confirmedAt／カード＝決済完了日 paidAt。未記録の古いデータは受講開始日→申込日で代用）
       if (isPaidStatus(a)) {
-        const pdt = a.confirmedAt?.toDate?.() || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
+        const pdt = getPaymentDate(a) || a.activeAt?.toDate?.() || a.createdAt?.toDate?.();
         if (pdt) {
           const fy=fiscalOf(pdt), m=getM(fy, pdt.getMonth()+1), pm=a.payment||'不明';
           m.paidSum += amt; m.paidCount++; m.methods[pm] = (m.methods[pm]||0)+1;
@@ -8077,7 +8173,7 @@ async function doLogin() {
       // 返金：返金日ベース
       if (a.refunded === true) {
         const ramt = a.refundAmount != null ? Number(a.refundAmount) : amt;
-        const rdt = a.refundedAt?.toDate?.() || a.confirmedAt?.toDate?.() || a.createdAt?.toDate?.();
+        const rdt = a.refundedAt?.toDate?.() || getPaymentDate(a) || a.createdAt?.toDate?.();
         if (rdt) { const fy=fiscalOf(rdt); getM(fy, rdt.getMonth()+1).refund += ramt; fyData[fy].refund += ramt; fyData[fy].refundCount++; }
       }
     });
@@ -8169,7 +8265,7 @@ async function doLogin() {
     const listRows = listData.map(a => {
       const amt = parseAmount(a.fee);
       const paid = isPaidStatus(a);
-      const cfd = a.confirmedAt?.toDate?.()?.toLocaleDateString('ja-JP') || (a.activeAt?.toDate?.()?.toLocaleDateString('ja-JP') || '—');
+      const cfd = getPaymentDate(a)?.toLocaleDateString('ja-JP') || '<span style="color:#E65100;" title="入金日が記録されていません。申し込み詳細の「💴 入金日」で確認・入力してください">未記録</span>';
       const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
       const refundCell = a.refunded === true
         ? `<span style="color:var(--red);font-weight:700;">返金 −${yen(a.refundAmount != null ? a.refundAmount : amt)}</span>${a.refundedAt?.toDate?.() ? '<br><span style="font-size:11px;color:#888;">'+a.refundedAt.toDate().toLocaleDateString('ja-JP')+'</span>' : ''}${a.refundReason ? '<br><span style="font-size:11px;color:#888;">'+a.refundReason+'</span>' : ''}`
@@ -8190,7 +8286,7 @@ async function doLogin() {
     }).join('');
 
     document.getElementById('sales-list').innerHTML = listData.length
-      ? `<div style="padding:8px 14px;font-size:12px;color:var(--text-light);">${listData.length}件表示（全${rows.length}件）</div><table><thead><tr><th>入金状況</th><th>操作</th><th>受講番号</th><th>氏名</th><th style="text-align:right;">受講料</th><th>支払方法</th><th>確定日</th><th>返金</th></tr></thead><tbody>${listRows}</tbody></table>`
+      ? `<div style="padding:8px 14px;font-size:12px;color:var(--text-light);">${listData.length}件表示（全${rows.length}件）</div><table><thead><tr><th>入金状況</th><th>操作</th><th>受講番号</th><th>氏名</th><th style="text-align:right;">受講料</th><th>支払方法</th><th>入金日</th><th>返金</th></tr></thead><tbody>${listRows}</tbody></table>`
       : `<p style="color:var(--text-light);font-size:13px;padding:16px;">${rows.length ? '条件に一致する決済がありません。' : 'データがありません。'}</p>`;
   }
   window.renderSales = renderSales;

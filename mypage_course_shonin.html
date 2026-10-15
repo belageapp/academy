@@ -3232,8 +3232,9 @@
 
     const hasTextbook = data.textbook === 'purchase' || data.textbook === '購入（6,600円）';
     const amount = hasTextbook ? 39600 : 33000;
-    // 領収書の日付＝入金を確認した日（受領日）。発行ボタンを押した日ではない。
-    const receiptDate = data.confirmedAt?.toDate?.() || data.activeAt?.toDate?.() || data.createdAt?.toDate?.() || new Date();
+    // 領収書の日付＝入金日（受領日）。振込：管理者が入金確認時に入力した着金日（confirmedAt）／カード：Stripe の決済完了日（paidAt）。
+    // 発行ボタンを押した日ではない。入金日が未記録の古いデータだけ、受講開始日→申込日で代用する。
+    const receiptDate = data.confirmedAt?.toDate?.() || data.paidAt?.toDate?.() || data.activeAt?.toDate?.() || data.createdAt?.toDate?.() || new Date();
 
     try {
       const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
