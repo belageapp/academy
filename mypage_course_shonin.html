@@ -1407,6 +1407,7 @@
   <div style="background:white;border-radius:16px;width:100%;max-width:560px;padding:0;display:flex;flex-direction:column;max-height:90vh;">
     <div style="padding:28px 24px 0;overflow-y:auto;flex:1;">
     <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📝 修了レポート</div>
+    <div style="font-size:13px;font-weight:700;color:#92400E;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.7;">修了レポートは、OJT実習を終えてから、実習での体験も踏まえて記入してください。実習を終える前に提出された場合は、差し戻してあらためて提出をお願いすることがあります。</div>
     <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.7;">自分の言葉で記述してください。具体例を含め、それぞれ100〜200文字で記述してください。</p>
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
       <div>
@@ -2536,6 +2537,7 @@
       step4El.innerHTML =
         `<div class="step-flow-item ${ojtReportCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>OJT修了報告</div><div style="display:flex;align-items:center;gap:6px;">${ojtReportBtn}${ojtBadge(ojtReportState)}</div></div>` +
         `<div class="step-flow-item ${rptCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>修了レポート</div><div style="display:flex;align-items:center;gap:6px;">${rptBtn}${ojtBadge(rptState)}</div></div>` +
+        (rptBtn && !ojtReported && !ojtOk ? `<div style="font-size:11px;color:#92400E;margin:-4px 0 8px 22px;line-height:1.6;">OJT実習を終えてから、実習での体験も踏まえて記入してください</div>` : '') +
         `<div class="step-flow-item ${issueCls}" style="justify-content:space-between;"><div style="display:flex;align-items:center;gap:8px;"><div class="sfi-dot"></div>正式修了証明書の発行</div><div style="display:flex;align-items:center;gap:6px;">${ojtBadge(issueState)}</div></div>`;
 
       if (!test2Ok) {
