@@ -1043,7 +1043,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       gender:     fd.get('gender'),
       birthdate: document.getElementById('birthdate').value,
       phone:      fd.get('phone'),
-      email:      fd.get('email'),
+      email:      (fd.get('email') || '').trim().toLowerCase(),
       zip:        fd.get('zip'),
       address:    (fd.get('address1') || '') + (fd.get('address2') ? '　' + fd.get('address2') : ''),
       altAddr:    fd.get('alt_addr'),

@@ -369,11 +369,16 @@ apiKey: "AIzaSyB-j3hMFs9xWOsFVphKut0bTSQskG6FrW4",
 
     // 申し込みデータ取得
     try {
-const q = query(
-        collection(db, 'applications'),
-        where('email', '==', user.email)
-      );
-      const snap = await getDocs(q);
+// 申込は uid（アカウント作成時に保存）で引き、古いデータのためメールアドレスでも引いて統合する。
+      // ログインアカウントのメールアドレスは小文字で保存されるため、申込時に大文字を含むアドレスを
+      // 入力した受講生はメールアドレスの一致だけでは見つからない（v1.70.0）。
+      const [snapByUid, snapByEmail] = await Promise.all([
+        getDocs(query(collection(db, 'applications'), where('uid', '==', user.uid))),
+        getDocs(query(collection(db, 'applications'), where('email', '==', user.email))).catch(() => ({ docs: [] })),
+      ]);
+      const seen = new Set();
+      const mergedDocs = [...snapByUid.docs, ...snapByEmail.docs].filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; });
+      const snap = { empty: mergedDocs.length === 0, docs: mergedDocs };
 
       const courseList = document.getElementById('course-list');
 
@@ -590,7 +595,7 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(n => {
             if (n.target === 'all') return true;
-            if (n.target === 'specific' && n.emails && n.emails.includes(email)) return true;
+            if (n.target === 'specific' && n.emails && n.emails.some(e => (e || '').toLowerCase() === (email || '').toLowerCase())) return true;
             if (n.target === 'selected' && n.targetUids && n.targetUids.includes(uid)) return true;
             return false;
           });

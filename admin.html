@@ -2347,6 +2347,22 @@
               <div class="qa-item">
                 <div class="qa-q" onclick="qaToggle(this)">
                   <span class="qa-q-label">Q</span>
+                  <span class="qa-q-text">マイページにログインできるのに「受講中の講座はありません」と出る</span>
+                  <span class="qa-q-arrow">▼</span>
+                </div>
+                <div class="qa-a">
+                  マイページの講座一覧は、ログインしたアカウントに結び付いた申込を探して表示します。まずは受講生に、マイページを開き直す（ブラウザを更新する）よう案内してください。
+                  <ul>
+                    <li>2026年10月22日より前は、申込時に<strong>大文字を含むメールアドレス</strong>（例：<code>@iCloud.com</code>）を入力した受講生で、ログインできても講座が出ないことがありました。現在は修正済みで、画面を更新すれば表示されます</li>
+                    <li>それでも出ない場合は、申し込み管理で本人の申込があるか、ステータスがキャンセル・退講になっていないかを確認してください</li>
+                    <li>申込はあるのに出ない場合は、開発担当（Claude／システム管理者）に申込の受講番号を伝えて依頼してください</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="qa-item">
+                <div class="qa-q" onclick="qaToggle(this)">
+                  <span class="qa-q-label">Q</span>
                   <span class="qa-q-text">お申し込み確認メールが届いていない</span>
                   <span class="qa-q-arrow">▼</span>
                 </div>
@@ -3706,7 +3722,7 @@ async function doLogin() {
     const id = curId;
     const a = all.find(x => x.id === id);
     if (!a || !window.__canChangeEmail) return;
-    const newEmail = document.getElementById('email-change-input').value.trim();
+    const newEmail = document.getElementById('email-change-input').value.trim().toLowerCase();
     const errEl = document.getElementById('email-change-error');
     errEl.style.display = 'none';
     if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {

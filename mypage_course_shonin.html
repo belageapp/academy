@@ -1830,7 +1830,7 @@
           const appCreatedAt = (window.__appData?.createdAt || data?.createdAt)?.toMillis?.() || 0;
           const noticeCreatedAt = n.createdAt?.toMillis?.() || 0;
           if (n.target === 'all') return noticeCreatedAt >= appCreatedAt;
-          if (n.target === 'specific') return n.emails?.includes(email) || n.applicationId === window.__docId;
+          if (n.target === 'specific') return (n.emails || []).some(e => (e || '').toLowerCase() === (email || '').toLowerCase()) || n.applicationId === window.__docId;
           if (n.target === 'selected') return n.targetUids?.includes(uid) || n.applicationIds?.includes(window.__docId);
           return false;
         });
