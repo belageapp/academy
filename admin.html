@@ -7012,12 +7012,23 @@ async function doLogin() {
   function bulkA4Prev() { if(bulkA4Idx>0){bulkA4Idx--;renderBulkA4Preview();} }
   function bulkA4Next() { if(bulkA4Idx<bulkA4List.length-1){bulkA4Idx++;renderBulkA4Preview();} }
   function closeBulkA4Modal() { document.getElementById('bulk-a4-modal').style.display='none'; }
-  function printBulkA4() {
+  // 証明書の印刷前に、印刷領域内の画像（ロゴ・印影）の読み込み・デコード完了を待つ（最長3秒）。
+  // 画像の読み込みが終わる前に window.print() が走ると、ロゴや印影が抜けた状態で印刷されることがあるため
+  // （領収書の印刷 printReceiptCommon と同じ対策）
+  async function waitForCertImages(container) {
+    const imgs = [...(container?.querySelectorAll('img') || [])];
+    if (!imgs.length) return;
+    const timeout = new Promise(r => setTimeout(r, 3000));
+    await Promise.race([Promise.all(imgs.map(img => img.decode().catch(() => {}))), timeout]);
+  }
+
+  async function printBulkA4() {
     const list = [...bulkA4List];
     const isFormal = certPrintMode === 'formal';
     if (!isFormal) list.forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-a4-print-all');
     c.innerHTML = list.map(d=>`<div class="bulk-a4-print-page${isFormal ? ' formal-cert' : ''}">${a4CertInnerHTML(d, isFormal)}</div>`).join('');
+    await waitForCertImages(c);
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
@@ -7045,11 +7056,12 @@ async function doLogin() {
   function bulkCardPrev() { if(bulkCardPageIdx>0){bulkCardPageIdx--;renderBulkCardPreview();} }
   function bulkCardNext() { if(bulkCardPageIdx<bulkCardPages.length-1){bulkCardPageIdx++;renderBulkCardPreview();} }
   function closeBulkCardModal() { document.getElementById('bulk-card-modal').style.display='none'; }
-  function printBulkCard() {
+  async function printBulkCard() {
     const isFormal = certPrintMode === 'formal';
     if (!isFormal) bulkCardPages.flat().forEach(d => saveCertSnapshot(d.id, d));
     const c = document.getElementById('bulk-card-print-all');
     c.innerHTML = bulkCardPages.map(pg=>cardSheetHTML(pg,'bulk-card-print-sheet', isFormal)).join('');
+    await waitForCertImages(c);
     document.body.classList.add('bulk-card-print-mode');
     window.print();
     document.body.classList.remove('bulk-card-print-mode');
@@ -7057,13 +7069,14 @@ async function doLogin() {
   }
 
   // --- 正式修了証明書：1人分だけ印刷 ---
-  function printSingleFormalCert(docId, format) {
+  async function printSingleFormalCert(docId, format) {
     const a = window.__formalCertCache && window.__formalCertCache[docId];
     if (!a) return;
     const d = parseCertData(a, true);
     if (format === 'card') {
       const c = document.getElementById('bulk-card-print-all');
       c.innerHTML = cardSheetHTML([d], 'bulk-card-print-sheet', true);
+      await waitForCertImages(c);
       document.body.classList.add('bulk-card-print-mode');
       window.print();
       document.body.classList.remove('bulk-card-print-mode');
@@ -7071,6 +7084,7 @@ async function doLogin() {
     } else {
       const c = document.getElementById('bulk-a4-print-all');
       c.innerHTML = `<div class="bulk-a4-print-page formal-cert">${a4CertInnerHTML(d, true)}</div>`;
+      await waitForCertImages(c);
       document.body.classList.add('bulk-a4-print-mode');
       window.print();
       document.body.classList.remove('bulk-a4-print-mode');
@@ -7165,13 +7179,14 @@ async function doLogin() {
     }
   }
 
-  function printSingleA4() {
+  async function printSingleA4() {
     if (!currentCertData) return;
     const snapDocId = currentCertDocId;
     const snapData = currentCertData;
     saveCertSnapshot(snapDocId, snapData);
     const c = document.getElementById('bulk-a4-print-all');
     c.innerHTML = `<div class="bulk-a4-print-page">${a4CertInnerHTML(snapData)}</div>`;
+    await waitForCertImages(c);
     document.body.classList.add('bulk-a4-print-mode');
     window.print();
     document.body.classList.remove('bulk-a4-print-mode');
@@ -7179,11 +7194,12 @@ async function doLogin() {
     captureAndUploadCertImage(snapDocId, snapData);
   }
 
-  function printSingleCard() {
+  async function printSingleCard() {
     if (!currentCertData) return;
     saveCertSnapshot(currentCertDocId, currentCertData);
     const c = document.getElementById('bulk-card-print-all');
     c.innerHTML = cardSheetHTML([currentCertData], 'bulk-card-print-sheet');
+    await waitForCertImages(c);
     document.body.classList.add('bulk-card-print-mode');
     window.print();
     document.body.classList.remove('bulk-card-print-mode');
