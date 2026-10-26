@@ -511,10 +511,16 @@
     /* 修了レポート単票印刷: body に report-print-mode を付けて report-print-area だけ表示 */
     body.report-print-mode > * { display: none !important; }
     body.report-print-mode > #report-print-area { display: block !important; }
+    /* 余白は printReport() が印刷中だけ差し込む @page（15mm 18mm）で取る。
+       ページ側で padding/min-height を持つと、2枚目にまたがったときページ境界の行が余白ゼロの位置に印字され欠けるため */
     .report-print-page {
-      width: 210mm; min-height: 297mm; box-sizing: border-box;
-      padding: 15mm 18mm; font-family: 'Noto Sans JP', sans-serif; color: #000;
+      width: 100%; box-sizing: border-box; padding: 0;
+      font-family: 'Noto Sans JP', sans-serif; color: #000;
+      orphans: 2; widows: 2;
     }
+    .report-print-page .report-q { break-inside: avoid; page-break-inside: avoid; }
+    .report-print-page .report-q.report-q-long { break-inside: auto; page-break-inside: auto; }
+    .report-print-page .report-q-title { break-after: avoid; page-break-after: avoid; }
 
     /* 領収書印刷: body に receipt-print-mode を付けて receipt-print-area だけ表示（mypage_course_shonin.htmlと同じ方式） */
     body.receipt-print-mode > * { display: none !important; }
@@ -1785,7 +1791,7 @@
                   <ul>
                     <li>行を開いてレポート内容を確認し「承認」をクリックします（<code>reportApproved = true</code> が記録されます）</li>
                     <li>OJT修了報告も承認済み かつ OJT書類受領済みの場合、<strong>両承認完了メールが受講生に自動送信され、正式修了日も自動記録</strong>されます</li>
-                    <li><strong>🖨️ 印刷ボタン</strong>：承認済み・未承認どちらでも使用できます。受講生番号・氏名・メールアドレス・提出日・承認日・修了期限と回答内容をA4レイアウトで1人分だけ印刷できます（証明書の一括印刷と同じ仕組みで、印刷時は他の画面表示が自動的に隠れます）</li>
+                    <li><strong>🖨️ 印刷ボタン</strong>：承認済み・未承認どちらでも使用できます。受講生番号・氏名・メールアドレス・提出日・承認日・修了期限と回答内容をA4レイアウトで1人分だけ印刷できます（証明書の一括印刷と同じ仕組みで、印刷時は他の画面表示が自動的に隠れます）。回答が長い場合は2枚以上に分かれ、ページの上下に余白を取って行が欠けないようにしています（2026-10-26 修正）</li>
                   </ul>
                   <div class="note">📌 OJT修了報告・修了レポート・OJT書類受領の3つが揃ったタイミングで両承認完了メールが1回送信され、正式修了日（3条件のうち最後に完了した日）もFirestoreに自動記録されます。詳しくは「📜 正式修了証明書発行」を参照してください。</div>
                   <div class="note">📌 行を開くと表示される「詳細」ボタンから、申し込み管理と同じ受講生の詳細画面を直接開けます。</div>
@@ -3538,7 +3544,7 @@ async function doLogin() {
     if (!a) return;
     const d = fromDateInputValue(document.getElementById('payment-date-input')?.value);
     if (!d) { alert('入金日を入力してください。'); return; }
-    if (d > new Date()) { alert('未来の日付は入力できません。'); return; }
+    if (toDateInputValue(d) > toDateInputValue(new Date())) { alert('未来の日付は入力できません。'); return; }
     if (!confirm(`入金日を ${d.toLocaleDateString('ja-JP')} にします。\n領収書の日付と売上一覧の「入金日」もこの日になります。よろしいですか？`)) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', id), {
@@ -4344,7 +4350,7 @@ async function doLogin() {
     if (!curId) return;
     const payDate = fromDateInputValue(document.getElementById('bank-confirm-date')?.value);
     if (!payDate) { alert('入金日を入力してください。'); return; }
-    if (payDate > new Date()) { alert('未来の日付は入力できません。'); return; }
+    if (toDateInputValue(payDate) > toDateInputValue(new Date())) { alert('未来の日付は入力できません。'); return; }
     if (!confirm(`振込入金を確認しました。\n入金日：${payDate.toLocaleDateString('ja-JP')}（領収書の日付になります）\n受講確定にしますか？`)) return;
     try {
       await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
@@ -7652,8 +7658,8 @@ async function doLogin() {
       </table>
       <div style="display:flex;flex-direction:column;gap:14px;">
         ${[['①介護における「尊厳」とは何か',r.q1],['②利用者理解で大切なこと',r.q2],['③コミュニケーションで大切にしたいこと',r.q3],['④介護実技における安全と配慮',r.q4],['⑤今後の目標',r.q5]].map(([q,v])=>`
-          <div>
-            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${q}</div>
+          <div class="report-q${(v||'').length > 300 ? ' report-q-long' : ''}">
+            <div class="report-q-title" style="font-size:13px;font-weight:700;margin-bottom:4px;">${q}</div>
             <div style="font-size:13px;line-height:1.9;white-space:pre-wrap;">${v||'—'}</div>
           </div>`).join('')}
       </div>
@@ -7664,9 +7670,18 @@ async function doLogin() {
     const a = __reportCache.find(x => x.__id === id);
     if (!a) return;
     document.getElementById('report-print-area').innerHTML = reportPrintHTML(a);
+    // 証明書印刷用の @page { margin:0 } を、レポート印刷の間だけ余白ありに上書きする
+    // （2枚目にまたがったときにページ境界の行が欠けないように。印刷が終わったら元に戻す）
+    const pageStyle = document.createElement('style');
+    pageStyle.id = 'report-print-page-style';
+    pageStyle.textContent = '@page { margin: 15mm 18mm; size: A4 portrait; }';
+    document.head.appendChild(pageStyle);
     document.body.classList.add('report-print-mode');
-    window.print();
-    document.body.classList.remove('report-print-mode');
+    try { window.print(); }
+    finally {
+      document.body.classList.remove('report-print-mode');
+      pageStyle.remove();
+    }
   }
   window.printReport = printReport;
   window.approveReport = approveReport;
