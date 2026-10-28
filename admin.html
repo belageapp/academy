@@ -7683,6 +7683,8 @@ async function doLogin() {
       ['承認日', isApproved ? fmtD(a.reportApprovedAt) : '（未承認）'],
       ['修了期限', fmtLimit(a.activeAt, 8)],
     ];
+    // 印刷用だけ、受講生が段落の間に入れた空行（連続する改行）を1つの改行に詰める（画面表示・保存データは変えない）
+    const compactLines = (t) => String(t || '').replace(/\r\n?/g, '\n').replace(/[ \t\u3000]*\n(?:[ \t\u3000]*\n)+/g, '\n').trim();
     return `<div class="report-print-page">
       <h1 style="font-size:20px;border-bottom:2px solid #333;padding-bottom:10px;margin:0 0 20px;">修了レポート</h1>
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;">
@@ -7692,7 +7694,7 @@ async function doLogin() {
         ${[['①介護における「尊厳」とは何か',r.q1],['②利用者理解で大切なこと',r.q2],['③コミュニケーションで大切にしたいこと',r.q3],['④介護実技における安全と配慮',r.q4],['⑤今後の目標',r.q5]].map(([q,v])=>`
           <div class="report-q${(v||'').length > 300 ? ' report-q-long' : ''}">
             <div class="report-q-title" style="font-size:13px;font-weight:700;margin-bottom:4px;">${q}</div>
-            <div style="font-size:13px;line-height:1.9;white-space:pre-wrap;">${v||'—'}</div>
+            <div style="font-size:13px;line-height:1.9;white-space:pre-wrap;">${compactLines(v)||'—'}</div>
           </div>`).join('')}
       </div>
     </div>`;
