@@ -326,6 +326,11 @@
 
 </div>
 
+<script>
+  // 通信課程の終了日（福岡県通知：臨時的取扱いは令和9年3月31日で廃止）。仮修了・正式修了の期限はこの日を超えない
+  window.COURSE_END_DATE = new Date(2027, 2, 31);
+  window.capCourseDeadline = function(d) { return (d && d > window.COURSE_END_DATE) ? new Date(window.COURSE_END_DATE) : d; };
+</script>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut, updatePassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -429,8 +434,8 @@ const courseCode = data.courseCode || '4010';
           const sc = statusColors[statusText] || {bg:'#F3F4F6',border:'#D1D5DB',text:'#6B7280'};
           const startDate = data.activeAt ? new Date(data.activeAt.toMillis()) : null;
           const today = new Date(); today.setHours(0,0,0,0);
-          const tempLimit = startDate ? new Date(new Date(startDate).setMonth(startDate.getMonth()+3)) : null;
-          const fullLimit = startDate ? new Date(new Date(startDate).setMonth(startDate.getMonth()+8)) : null;
+          const tempLimit = startDate ? capCourseDeadline(new Date(new Date(startDate).setMonth(startDate.getMonth()+3))) : null;
+          const fullLimit = startDate ? capCourseDeadline(new Date(new Date(startDate).setMonth(startDate.getMonth()+8))) : null;
           const tempDays = tempLimit ? Math.ceil((tempLimit-today)/(1000*60*60*24)) : null;
           const fullDays = fullLimit ? Math.ceil((fullLimit-today)/(1000*60*60*24)) : null;
           const tempColor = tempDays !== null ? (tempDays<=7?'#e53935':tempDays<=30?'#F57C00':'inherit') : 'inherit';
@@ -472,8 +477,8 @@ card.href = `${m?.pageFile || 'mypage_course_shonin.html'}?id=${doc.id}`;
               const scH = statusColors[statusText] || {bg:'#F3F4F6',border:'#D1D5DB',text:'#6B7280'};
               const startH = data.activeAt ? new Date(data.activeAt.toMillis()) : null;
               const todayH = new Date(); todayH.setHours(0,0,0,0);
-              const tempLH = startH ? new Date(new Date(startH).setMonth(startH.getMonth()+3)) : null;
-              const fullLH = startH ? new Date(new Date(startH).setMonth(startH.getMonth()+8)) : null;
+              const tempLH = startH ? capCourseDeadline(new Date(new Date(startH).setMonth(startH.getMonth()+3))) : null;
+              const fullLH = startH ? capCourseDeadline(new Date(new Date(startH).setMonth(startH.getMonth()+8))) : null;
               const tempDH = tempLH ? Math.ceil((tempLH-todayH)/(1000*60*60*24)) : null;
               const fullDH = fullLH ? Math.ceil((fullLH-todayH)/(1000*60*60*24)) : null;
               const tempCH = tempDH!==null?(tempDH<=7?'#e53935':tempDH<=30?'#F57C00':'inherit'):'inherit';

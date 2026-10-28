@@ -1387,9 +1387,9 @@
 
                   <h4>受講中への変更時に自動で行われること</h4>
                   <ul>
-                    <li>AEGISC-LMSアカウント（ID・パスワード）を自動発行（未発行の場合のみ／<strong>テストデータ（isTest=true）には発番しません</strong>）</li>
+                    <li>AEGISC-LMSアカウント（ID・パスワード）を自動発行（未発行の場合のみ／<strong>テストデータ（isTest=true）には発番しません</strong>）。発行は申込と採番カウンターを同時に更新する仕組みで、短い間に2回操作しても二重には発行されません。欠番（counters/edulio の freeIds）があれば若い番号から再利用します</li>
                     <li>受講生に受講開始メールを自動送信</li>
-                    <li>受講開始日（activeAt）が記録され、仮修了期限（＋3か月）・正式修了期限（＋8か月）が自動計算されます</li>
+                    <li>受講開始日（activeAt）が記録され、仮修了期限（＋3か月）・正式修了期限（＋8か月）が自動計算されます（いずれも<strong>令和9年3月31日</strong>＝通信課程の終了日を上限とします）</li>
                   </ul>
 
                   <h4>主な操作</h4>
@@ -1448,8 +1448,8 @@
                     <tr><td>重複申込みの疑い</td><td>キャンセル・退講以外の申込み同士で、氏名（完全一致）・電話番号・住所のいずれかが一致する組み合わせ。一致した項目が2つ以上なら「重複の疑い（強）」、1つのみなら「一致あり（参考）」として区別表示されます。</td></tr>
                     <tr><td>メールアドレス重複</td><td>キャンセル・退講以外の申込みで、同じメールアドレスを使っている組み合わせ。</td></tr>
                     <tr><td>変更届の内容が同一</td><td>未対応の変更届（届出書一覧）で、提出された住所・氏名・電話番号などの内容が、現在登録されている申込み情報とすべて一致している場合（実質「変更なし」の届出）。</td></tr>
-                    <tr><td>仮修了期限が近い／超過</td><td>ステータスが「受講中」かつテスト２未合格で、仮修了期限（受講開始日＋3か月）まで残り30日以内、または既に超過している受講生。</td></tr>
-                    <tr><td>正式修了期限が近い／超過</td><td>ステータスが「受講中」かつOJT承認・修了レポート承認・OJT書類受領のいずれかが未完了で、正式修了期限（受講開始日＋8か月）まで残り30日以内、または既に超過している受講生。</td></tr>
+                    <tr><td>仮修了期限が近い／超過</td><td>ステータスが「受講中」かつテスト２未合格で、仮修了期限（受講開始日＋3か月。令和9年3月31日が上限）まで残り30日以内、または既に超過している受講生。</td></tr>
+                    <tr><td>正式修了期限が近い／超過</td><td>ステータスが「受講中」かつOJT承認・修了レポート承認・OJT書類受領のいずれかが未完了で、正式修了期限（受講開始日＋8か月。令和9年3月31日が上限）まで残り30日以内、または既に超過している受講生。</td></tr>
                   </table>
 
                   <h4>主な操作</h4>
@@ -1863,8 +1863,8 @@
                   <table>
                     <tr><th>通知名</th><th>対象</th><th>デフォルト設定</th></tr>
                     <tr><td>OJT施設未定リマインド</td><td>OJT施設が未定のまま受講中の受講生</td><td>14日間隔で送信</td></tr>
-                    <tr><td>仮修了期限アラート</td><td>受講開始から3か月の仮修了期限が近い受講生</td><td>期限の30・14・7・3・1日前に送信</td></tr>
-                    <tr><td>正式修了期限アラート</td><td>受講開始から8か月の正式修了期限が近い受講生</td><td>期限の30・14日前に送信</td></tr>
+                    <tr><td>仮修了期限アラート</td><td>受講開始から3か月（令和9年3月31日が上限）の仮修了期限が近い受講生</td><td>期限の30・14・7・3・1日前に送信</td></tr>
+                    <tr><td>正式修了期限アラート</td><td>受講開始から8か月（令和9年3月31日が上限）の正式修了期限が近い受講生</td><td>期限の30・14日前に送信</td></tr>
                   </table>
 
                   <h4>操作手順</h4>
@@ -2558,7 +2558,7 @@
                     <li>求人サイトで介護施設を検索して直接問い合わせる方法もあります</li>
                     <li>OJTOJT時間は約14〜15時間です。複数日に分けて受け入れ可能かどうか確認してもらいましょう</li>
                     <li>仮修了証明書は先に取得できる場合があります（担当者に相談するよう案内してください）</li>
-                    <li>受講期限（受講開始から8か月）が迫っている場合は早めにご相談いただくよう伝えてください</li>
+                    <li>受講期限（受講開始から8か月。ただし令和9年3月31日が上限）が迫っている場合は早めにご相談いただくよう伝えてください</li>
                   </ul>
                 </div>
               </div>
@@ -2684,6 +2684,7 @@
                   <ul>
                     <li><strong>仮修了期限</strong>：受講開始日から<strong>3か月</strong></li>
                     <li><strong>正式修了期限</strong>：受講開始日から<strong>8か月</strong></li>
+                    <li><strong>上限</strong>：いずれも<strong>令和9年3月31日</strong>（通信課程の終了日。福岡県の通知による）。受講開始日から8か月後がこの日より後になる場合は、令和9年3月31日が期限になります。この日までに正式修了証明書の発行まで終える必要があります</li>
                   </ul>
                   マイページや申し込み管理（一覧の「仮修了期限」「修了期限」列）で確認できます。期限が近い受講生には自動通知が送られます。
                 </div>
@@ -3097,7 +3098,7 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, arrayUnion, arrayRemove, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -3134,6 +3135,10 @@
   window.__updateDoc = updateDoc;
   window.__addDoc    = addDoc;
   window.__serverTs  = serverTimestamp;
+  window.__runTransaction = runTransaction;
+  // 通信課程の終了日（福岡県通知：臨時的取扱いは令和9年3月31日で廃止）。仮修了・正式修了の期限はこの日を超えない
+  window.__COURSE_END_DATE = new Date(2027, 2, 31);
+  window.__capDeadline = (d) => { if (d instanceof Date && d > window.__COURSE_END_DATE) d.setTime(window.__COURSE_END_DATE.getTime()); return d; };
   window.__deleteDoc = deleteDoc;
   window.__ref       = ref;
   window.__uploadBytes    = uploadBytes;
@@ -3300,7 +3305,7 @@ async function doLogin() {
     } else {
       const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
       // 終了期限＝受講開始日（activeAt）＋Nか月（学則：正式修了は8か月以内）
-      const fmtLimit = (v,m) => { if(!v?.toDate?.()) return '—'; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
+      const fmtLimit = (v,m) => { if(!v?.toDate?.()) return '—'; const d=v.toDate(); d.setMonth(d.getMonth()+m); window.__capDeadline(d); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
       tbody.innerHTML = items.map(a => {
         const venueInfo   = [a._ojtVenueCorp, a._ojtVenueName].filter(Boolean).join(' ') || '—';
         const contactInfo = [a._ojtVenuePhone, a._ojtVenueContact, a._ojtVenueContactPhone].filter(Boolean).join(' ') || '—';
@@ -4254,22 +4259,53 @@ async function doLogin() {
   }
   window.markTextOrdered = markTextOrdered;
 
-  // 重複しない次のedulio IDを発行してcounterを更新する
+  // AEGISC-LMS（edulio）IDの発行。申込（applications）と採番カウンター（counters/edulio）を
+  // 1つのトランザクションで読み書きする。申込に既にIDがあれば発行しない（二重発行の防止）。
+  // 欠番プール（counters/edulio.freeIds）があれば若い番号から再利用し、無ければカウンターで新番号を採番する。
+  // extraFields は申込に同時に書き込む項目（status・activeAt など）。テストデータ（isTest）には発番しない。
   const EDULIO_PASSWORD_MAP = ['aa','jj','dd','kk','zz','cc','tt','jj','uu','aa','ss','ee','vv','mm','ff','xx','bb','ee','yy','hh'];
-  async function issueEdulioId() {
+  async function issueEdulioIdFor(appId, extraFields = {}) {
+    const appRef = window.__doc(window.__db, 'applications', appId);
     const counterRef = window.__doc(window.__db, 'counters', 'edulio');
-    const counterSnap = await window.__getDoc(counterRef);
-    let num = counterSnap.exists() ? (counterSnap.data().count || 0) : 0;
     const usedIds = new Set(all.map(a => a.edulioId).filter(Boolean));
-    let candidate;
-    do {
-      num++;
-      candidate = 'hca' + String(num).padStart(3, '0');
-    } while (usedIds.has(candidate));
-    const edulioPassword = candidate + EDULIO_PASSWORD_MAP[(num - 1) % EDULIO_PASSWORD_MAP.length];
-    await window.__updateDoc(counterRef, { count: num });
-    console.log('edulio ID発行:', candidate, '（スキップ済み重複:', [...usedIds].filter(id => id < candidate).length, '件）');
-    return { edulioId: candidate, edulioPassword };
+    const result = await window.__runTransaction(window.__db, async (tx) => {
+      const appSnap = await tx.get(appRef);
+      const counterSnap = await tx.get(counterRef);
+      const appData = appSnap.data() || {};
+      if (appData.edulioId || appData.isTest === true) {
+        if (Object.keys(extraFields).length) tx.update(appRef, extraFields);
+        return { issued: false, edulioId: appData.edulioId || null, edulioPassword: appData.edulioPassword || null, appData };
+      }
+      const cdata = counterSnap.exists() ? counterSnap.data() : {};
+      const freeIds = (cdata.freeIds || []).slice().sort();
+      while (freeIds.length && usedIds.has(freeIds[0])) freeIds.shift(); // 既に使われている欠番は捨てる
+      let edulioId, num, counterUpdate;
+      if (freeIds.length) {
+        edulioId = freeIds.shift();
+        num = parseInt(edulioId.replace('hca', ''), 10) || 0;
+        counterUpdate = { freeIds };
+      } else {
+        num = cdata.count || 0;
+        do { num++; edulioId = 'hca' + String(num).padStart(3, '0'); } while (usedIds.has(edulioId));
+        counterUpdate = { count: num };
+      }
+      const edulioPassword = edulioId + EDULIO_PASSWORD_MAP[(num - 1) % EDULIO_PASSWORD_MAP.length];
+      if (counterSnap.exists()) tx.update(counterRef, counterUpdate); else tx.set(counterRef, counterUpdate);
+      tx.update(appRef, Object.assign({}, extraFields, { edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() }));
+      return { issued: true, edulioId, edulioPassword, appData };
+    });
+    const idx = all.findIndex(a => a.id === appId);
+    if (idx > -1 && result.edulioId) { all[idx].edulioId = result.edulioId; all[idx].edulioPassword = result.edulioPassword; }
+    if (result.issued) console.log('edulio ID発行:', result.edulioId);
+    else console.log('edulio ID発行スキップ（発行済みまたはテストデータ）:', result.edulioId);
+    return result;
+  }
+  // ID発行の管理者通知メール（info@）
+  function notifyEdulioIssued(d, edulioId, edulioPassword) {
+    fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: d.name, kana: d.kana, email: d.email, phone: d.phone, studentNo: d.studentNo, edulioId, edulioPassword })
+    }).catch(e => console.warn('AEGISC-LMS ID発行通知メール失敗:', e));
   }
 
   async function saveStatus() {
@@ -4285,20 +4321,9 @@ async function doLogin() {
       // activeに変更した時はedulio IDを自動発行・受講開始メール送信（未発行の場合のみ）
       if (ns === 'active') {
         try {
-          const existingSnap = await window.__getDoc(window.__doc(window.__db, 'applications', curId));
-          if (!existingSnap.data()?.edulioId && existingSnap.data()?.isTest !== true) {
-            const { edulioId, edulioPassword } = await issueEdulioId();
-            await window.__updateDoc(window.__doc(window.__db, 'applications', curId), {
-              edulioId, edulioPassword, edulioIssuedAt: window.__serverTs()
-            });
-            const d = existingSnap.data();
-            fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: d.name, kana: d.kana, email: d.email, phone: d.phone, studentNo: d.studentNo, edulioId, edulioPassword })
-            }).catch(e => console.warn('AEGISC-LMS ID発行通知メール失敗:', e));
-          } else {
-            console.log('edulio ID発行スキップ（発行済み）:', existingSnap.data().edulioId);
-          }
+          // トランザクションで発行（発行済みなら何もしない）
+          const r = await issueEdulioIdFor(curId);
+          if (r.issued) notifyEdulioIssued(r.appData, r.edulioId, r.edulioPassword);
         } catch(e) { console.warn('edulio ID発行失敗:', e); }
 
         // 受講開始メール送信
@@ -4398,7 +4423,7 @@ async function doLogin() {
 
   function exportCSV() {
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
-    const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
+    const fmtLimit = (v,m) => { if(!v?.toDate?.()) return ''; const d=v.toDate(); d.setMonth(d.getMonth()+m); window.__capDeadline(d); return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}); };
     const statusLabel = (s) => ({pending:'入金待ち（振込）',awaiting_payment:'入金待ち（カード）',ojt_hold:'OJT施設待ち（お支払い前）',confirmed:'受講確定',active:'受講中',completed:'修了',cancelled:'キャンセル',suspended:'休講中',withdrawn:'退講'}[s]||s||'');
     const headers = ['ステータス','受講者番号','申込日','入校日','仮修了期限','修了期限','氏名','ふりがな','性別','生年月日','電話番号','メールアドレス','郵便番号','住所','テキスト','AEGISCアカウント','パスワード','仮修了証発行日','OJT施設情報','連絡先・担当者','連絡日','資料送付日','修了レポート承認日','正式修了日','正式修了証明書発行','修了証発行先'];
     const rows = filtered.filter(a => !a.isTest).map(a => {
@@ -5022,6 +5047,7 @@ async function doLogin() {
       if (a.test2Passed !== true) {
         const deadline = new Date(activeAt);
         deadline.setMonth(deadline.getMonth() + 3);
+        window.__capDeadline(deadline);
         const alertFrom = new Date(deadline);
         alertFrom.setDate(alertFrom.getDate() - DEADLINE_ALERT_DAYS_BEFORE);
         if (now >= alertFrom) {
@@ -5039,6 +5065,7 @@ async function doLogin() {
       if (!(a.ojtPassed === true && a.reportApproved === true && a.facilityReported === true)) {
         const deadline = new Date(activeAt);
         deadline.setMonth(deadline.getMonth() + 8);
+        window.__capDeadline(deadline);
         const alertFrom = new Date(deadline);
         alertFrom.setDate(alertFrom.getDate() - DEADLINE_ALERT_DAYS_BEFORE);
         if (now >= alertFrom) {
@@ -5417,20 +5444,9 @@ async function doLogin() {
     const venueOk = appData.practiceVenueReported === true;
     console.log('active判定:', { photoOk, idOk, pledgeOk, venueOk });
     if (photoOk && idOk && pledgeOk && venueOk) {
-      const activeUpdateData = { status: 'active', activeAt: window.__serverTs() };
-      if (appData.isTest === true) {
-        console.log('edulio ID発行スキップ（テストデータ）');
-      } else if (!appData.edulioId) {
-        const { edulioId, edulioPassword } = await issueEdulioId();
-        Object.assign(activeUpdateData, { edulioId, edulioPassword, edulioIssuedAt: window.__serverTs() });
-        fetch('https://asia-northeast1-holiscare-academy.cloudfunctions.net/sendEdulioIssuedAdminMail', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: appData.name, kana: appData.kana, email: appData.email, phone: appData.phone, studentNo: appData.studentNo, edulioId, edulioPassword })
-        }).catch(e => console.warn('AEGISC-LMS ID発行通知メール失敗:', e));
-      } else {
-        console.log('edulio ID発行スキップ（発行済み）:', appData.edulioId);
-      }
-      await window.__updateDoc(window.__doc(window.__db, 'applications', docId), activeUpdateData);
+      // 受講開始（active）への変更とAEGISC-LMS ID発行を1つのトランザクションで行う（二重発行の防止）
+      const r = await issueEdulioIdFor(docId, { status: 'active', activeAt: window.__serverTs() });
+      if (r.issued) notifyEdulioIssued(r.appData, r.edulioId, r.edulioPassword);
       await sendNotice(appData, '受講開始できます！', '顔写真・本人確認書類・誓約書の確認が完了しました。受講を開始してください！', docId);
       // 受講開始メール送信
       try {
@@ -7490,7 +7506,7 @@ async function doLogin() {
     const el = document.getElementById('report-list');
     const showTest = document.getElementById('show-test-report')?.checked;
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP') : '—';
-    const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('ja-JP'); };
+    const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); window.__capDeadline(d); return d.toLocaleDateString('ja-JP'); };
 
     const rows = __reportCache.filter(a => showTest || !a.isTest);
     const pending  = rows.filter(a => a.reportApproved !== true);
@@ -7657,7 +7673,7 @@ async function doLogin() {
     const r = a.report || {};
     const name = a.name || ((a.sei||'')+(a.mei||'')) || '—';
     const fmtD = (v) => v?.toDate?.() ? v.toDate().toLocaleDateString('ja-JP') : '—';
-    const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('ja-JP'); };
+    const fmtLimit = (v, m) => { if (!v?.toDate?.()) return '—'; const d = v.toDate(); d.setMonth(d.getMonth() + m); window.__capDeadline(d); return d.toLocaleDateString('ja-JP'); };
     const isApproved = a.reportApproved === true;
     const rows = [
       ['受講生番号', a.studentNo || '—'],
@@ -8521,14 +8537,14 @@ async function doLogin() {
     },
     completion_deadline: {
       label: '正式修了期限アラート',
-      description: '正式修了期限（受講開始から8か月）が近い受講中の受講生に警告を送ります',
+      description: '正式修了期限（受講開始から8か月。令和9年3月31日が上限）が近い受講中の受講生に警告を送ります',
       enabled: true,
       alertDays: [30, 14],
       fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],
     },
     temp_completion_deadline: {
       label: '仮修了期限アラート',
-      description: '仮修了期限（受講開始から3か月）が近い受講中の受講生に警告を送ります',
+      description: '仮修了期限（受講開始から3か月。令和9年3月31日が上限）が近い受講中の受講生に警告を送ります',
       enabled: true,
       alertDays: [30, 14, 7, 3, 1],
       fields: [{ key: 'alertDays', label: '通知タイミング（カンマ区切り・日前）', type: 'text' }],

@@ -328,6 +328,14 @@
   
 </div>
 
+<!-- 通信課程終了のお知らせ（福岡県通知：令和9年3月31日）。v1.72.0 -->
+<div style="max-width:720px;margin:16px auto 0;padding:0 16px;box-sizing:border-box;">
+  <div style="background:#FFF8E1;border:2px solid #F9A825;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.8;color:#5D4037;">
+    <strong style="display:block;font-size:15px;color:#E65100;margin-bottom:4px;">⚠️ お申し込み前に必ずお読みください</strong>
+    現在のオンライン（通信）課程は、福岡県の通知により<strong>令和9年3月31日</strong>で終了します。この日までに<strong>正式修了証明書の発行まで</strong>終えていただく必要があります。今からのお申込みは、学則の8か月より短い期間での修了となりますので、OJT実習先の手配も含めて計画的に受講してください。
+  </div>
+</div>
+
 <!-- ステップバー -->
 <div class="step-bar">
   <div class="step-inner">
@@ -651,6 +659,13 @@
         
         <div class="err-msg" id="err-recaptcha" style="display:none; margin-bottom:12px;">「私はロボットではありません」にチェックを入れてください</div>
         <br>
+        <div style="margin-bottom:14px; text-align:center;">
+          <label style="display:inline-flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:14px; color:var(--text); text-align:left; max-width:560px;">
+            <input type="checkbox" id="courseend-agree" style="width:18px; height:18px; accent-color:var(--teal); cursor:pointer; flex-shrink:0; margin-top:2px;">
+            <span>現在のオンライン（通信）課程は<strong>令和9年3月31日</strong>で終了し、この日までに正式修了証明書の発行まで終える必要があることを確認しました</span>
+          </label>
+          <div class="err-msg" id="err-courseend" style="margin-top:6px;">修了期限（令和9年3月31日）の確認が必要です</div>
+        </div>
         <div style="margin-bottom:20px; text-align:center;">
           <label style="display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; color:var(--text);">
             <input type="checkbox" id="privacy-agree" style="width:18px; height:18px; accent-color:var(--teal); cursor:pointer; flex-shrink:0;">
@@ -674,6 +689,7 @@
       </div>
       <div class="card-body" style="padding-bottom:24px;">
         <p id="confirm-desc" style="font-size:13px;color:var(--text-mid);margin:16px 0;">以下の内容でよろしければボタンを押してください。</p>
+        <div style="background:#FFF8E1;border:1px solid #F9A825;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;color:#5D4037;margin-bottom:12px;">⚠️ 現在のオンライン（通信）課程は<strong>令和9年3月31日</strong>で終了します。この日までに正式修了証明書の発行まで終えていただく必要があります（確認済み）。</div>
         <table class="conf-table" id="conf-table"></table>
       </div>
     </div>
@@ -1032,6 +1048,7 @@ const gLabels = document.querySelectorAll('[name="gender"]');
     const isSingleName = !!document.getElementById('single-name')?.checked;
     return {
       course:     'オンライン初任者研修',
+      courseEndAcknowledged: !!document.getElementById('courseend-agree')?.checked, // 令和9年3月31日までの修了が必要なことを確認済み
       fee:        '33,000円（税込）',
       textbook:   fd.get('textbook'),
       payment:    fd.get('payment'),
@@ -1083,6 +1100,16 @@ const gLabels = document.querySelectorAll('[name="gender"]');
       return;
     }
     privacyErr.classList.remove('show');
+
+    // 修了期限（令和9年3月31日）の確認チェック
+    const courseEndAgree = document.getElementById('courseend-agree');
+    const courseEndErr = document.getElementById('err-courseend');
+    if (!courseEndAgree.checked) {
+      courseEndErr.classList.add('show');
+      courseEndAgree.focus();
+      return;
+    }
+    courseEndErr.classList.remove('show');
 
     // 同一メールアドレスでの重複申込チェック（キャンセル・退講済みは除外）
     const emailEl = document.getElementById('email');
