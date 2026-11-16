@@ -1752,6 +1752,7 @@
       if (!window.__taskListRendered) {
         const progressSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
         const progressData = progressSnap.exists() ? progressSnap.data() : {};
+        await reconcileQuizSummary(user.uid, progressData);
         renderTaskList(isActive, progressData, user.uid, status);
         window.__taskListRendered = true;
       }
@@ -1987,6 +1988,37 @@
     } catch(e) { console.error('通知エラー:', e); }
   }
   window.__sendCompletionNotice = sendCompletionNotice;
+
+  // ===== eラーニング 進捗まとめの補修 =====
+  // 採点結果（themeN.passed）は保存できたのに summary への反映が通信の途中断などで失敗した場合、
+  // 一覧に合格が出ず taskAllDone も立たないため、開いたときに summary・最高点記録を補う（v1.72.4）
+  async function reconcileQuizSummary(uid, progressData) {
+    try {
+      const missing = [1,2,3,4,5,6,7,8,9,10].filter(n => progressData['theme' + n] !== true);
+      if (missing.length === 0) return;
+      const snap = await getDocs(collection(db, 'users', uid, 'quizProgress'));
+      const docs = {};
+      snap.forEach(d => { docs[d.id] = d.data(); });
+      const fixed = missing.filter(n => docs['theme' + n] && docs['theme' + n].passed === true);
+      if (fixed.length === 0) return;
+      for (const n of fixed) {
+        const t = docs['theme' + n];
+        if (!docs['theme' + n + '_best']) {
+          await setDoc(doc(db, 'users', uid, 'quizProgress', 'theme' + n + '_best'),
+            { answers: t.answers || [], results: t.results || [], score: t.score || 0, passedAt: t.submittedAt || new Date() });
+        }
+        await setDoc(doc(db, 'users', uid, 'quizProgress', 'summary'), { ['theme' + n]: true }, { merge: true });
+        progressData['theme' + n] = true;
+      }
+      const allThemesPassed = [1,2,3,4,5,6,7,8,9,10].every(n => progressData['theme' + n] === true);
+      if (allThemesPassed && window.__docId) {
+        const appSnap = await getDoc(doc(db, 'applications', window.__docId));
+        if (appSnap.exists() && !appSnap.data().taskAllDone) {
+          await updateDoc(doc(db, 'applications', window.__docId), { taskAllDone: true });
+        }
+      }
+    } catch(e) { console.warn('eラーニング進捗の補修に失敗:', e); }
+  }
 
   // ===== eラーニング リスト描画 =====
   function renderTaskList(isActive, progressData, uid, status) {
@@ -2237,13 +2269,16 @@
     const correct = results.filter(r => r).length;
     const pct = Math.round((correct / questions.length) * 100);
     const isPassed = pct >= 70;
-    quizState.results = results; quizState.submitted = true;
+    quizState.results = results; quizState.submitted = true; quizState.saveError = false;
     try {
       const user = auth.currentUser;
       if (user) {
         await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum),
           { answers, results, passed: isPassed, score: pct, submittedAt: new Date() });
         if (isPassed) {
+          // 一覧の合格表示に使う summary を先に書く（途中で失敗しても合格が一覧に出るように。v1.72.4）
+          await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
+            { ['theme' + themeNum]: true }, { merge: true });
           // 合格結果は最高スコアのみ保存
           const bestSnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum + '_best'));
           const bestScore = bestSnap.exists() ? (bestSnap.data().score || 0) : 0;
@@ -2251,8 +2286,6 @@
             await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'theme' + themeNum + '_best'),
               { answers, results, score: pct, passedAt: new Date() });
           }
-          await setDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'),
-            { ['theme' + themeNum]: true }, { merge: true });
           // 全10テーマ完了チェック
           const summarySnap = await getDoc(doc(db, 'users', user.uid, 'quizProgress', 'summary'));
           const summaryData = summarySnap.exists() ? summarySnap.data() : {};
@@ -2268,7 +2301,10 @@
             { ['theme' + themeNum + '_failed']: true }, { merge: true });
         }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error('採点結果の保存に失敗:', e);
+      quizState.saveError = true;
+    }
     renderQuizResult(document.getElementById('modal-content'));
   };
 
@@ -2327,6 +2363,7 @@
       '<div class="quiz-result-detail">全' + total + '問中 <strong>' + correct + '問</strong> 正解（合格基準：70%以上）<br>' +
       (isPassed ? '' : '<span style="color:var(--red);">もう一度挑戦できます。何度でも挑戦してください。</span>') +
       '</div></div>' +
+      (quizState.saveError ? '<div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:12px;color:#B91C1C;line-height:1.7;">⚠️ 採点結果を保存できませんでした。通信状態をご確認のうえ「講座ページに戻る」を押し、一覧の表示が' + (isPassed ? '「合格」' : '「不合格」') + 'になっているかご確認ください。なっていない場合は、お手数ですがもう一度受験してください。</div>' : '') +
       '<div class="quiz-result-list"><div class="quiz-result-list-title">📋 全問 回答結果一覧</div>' + listHtml + '</div>' +
       '<div class="quiz-result-btns">' +
         '<button class="quiz-result-btn primary" onclick="window.closeTask();' + (quizState.viewOnly ? '' : 'location.reload();') + '">✅ 講座ページに戻る</button>' +
